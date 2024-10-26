@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import os
+from requests.exceptions import ConnectionError, Timeout
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -41,7 +42,8 @@ Longueur: {length}
                 "model": CURRENT_MODEL,
                 "prompt": prompt,
                 "stream": False
-            })
+            },
+            timeout=30)
         
         if response.status_code == 200:
             result = response.json()
@@ -50,6 +52,8 @@ Longueur: {length}
         else:
             return jsonify({"error": "Erreur lors de la reformulation"}), 500
             
+    except (ConnectionError, Timeout) as e:
+        return jsonify({"error": "Impossible de se connecter à Ollama. Assurez-vous qu'Ollama est en cours d'exécution et accessible."}), 503
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -74,7 +78,8 @@ Tu es un traducteur automatique. Détecte automatiquement la langue source du te
                 "model": CURRENT_MODEL,
                 "prompt": prompt,
                 "stream": False
-            })
+            },
+            timeout=30)
         
         if response.status_code == 200:
             result = response.json()
@@ -83,18 +88,32 @@ Tu es un traducteur automatique. Détecte automatiquement la langue source du te
         else:
             return jsonify({"error": "Erreur lors de la traduction"}), 500
             
+    except (ConnectionError, Timeout) as e:
+        return jsonify({"error": "Impossible de se connecter à Ollama. Assurez-vous qu'Ollama est en cours d'exécution et accessible."}), 503
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
     try:
-        response = requests.get(f"{OLLAMA_URL}/api/tags")
+        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
         if response.status_code == 200:
             return jsonify(response.json())
-        return jsonify({"error": "Impossible de récupérer les modèles"}), 500
+        return jsonify({
+            "error": "Impossible de récupérer les modèles. Vérifiez que le serveur Ollama répond correctement."
+        }), 500
+    except ConnectionError:
+        return jsonify({
+            "error": "Impossible de se connecter à Ollama. Assurez-vous qu'Ollama est en cours d'exécution et accessible à l'adresse configurée."
+        }), 503
+    except Timeout:
+        return jsonify({
+            "error": "Le serveur Ollama ne répond pas dans le délai imparti. Vérifiez son état."
+        }), 504
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": f"Une erreur inattendue s'est produite: {str(e)}"
+        }), 500
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():

@@ -5,20 +5,47 @@ document.addEventListener('DOMContentLoaded', function() {
     const refreshModels = document.getElementById('refreshModels');
     const saveSettings = document.getElementById('saveSettings');
 
+    function displayErrorInSelect(message) {
+        modelSelect.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = message;
+        option.disabled = true;
+        option.selected = true;
+        modelSelect.appendChild(option);
+    }
+
     async function loadModels() {
         try {
+            displayErrorInSelect('Chargement des modèles...');
+            refreshModels.disabled = true;
+
             const response = await fetch('/api/models');
             const data = await response.json();
             
+            if (data.error) {
+                displayErrorInSelect(`⚠️ ${data.error}`);
+                throw new Error(data.error);
+            }
+
             modelSelect.innerHTML = '';
-            data.models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model.name;
-                option.textContent = model.name;
-                modelSelect.appendChild(option);
-            });
+            if (data.models && data.models.length > 0) {
+                data.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+            } else {
+                displayErrorInSelect('Aucun modèle trouvé');
+            }
         } catch (error) {
             console.error('Error loading models:', error);
+            if (!error.message.includes('⚠️')) {
+                displayErrorInSelect('⚠️ Erreur de connexion à Ollama');
+            }
+        } finally {
+            refreshModels.disabled = false;
         }
     }
 
@@ -26,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     saveSettings.addEventListener('click', async function() {
         try {
-            await fetch('/api/settings', {
+            const response = await fetch('/api/settings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -36,10 +63,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     model: modelSelect.value
                 })
             });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la sauvegarde des paramètres');
+            }
             
             bootstrap.Modal.getInstance(settingsModal).hide();
         } catch (error) {
             console.error('Error saving settings:', error);
+            alert('Erreur lors de la sauvegarde des paramètres: ' + error.message);
         }
     });
 
