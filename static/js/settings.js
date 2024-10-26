@@ -1,24 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const settingsModal = document.getElementById('settingsModal');
-    const ollamaUrl = document.getElementById('ollamaUrl');
-    const modelSelect = document.getElementById('modelSelect');
-    const refreshModels = document.getElementById('refreshModels');
-    const saveSettings = document.getElementById('saveSettings');
+    // Helper function to safely get elements
+    function getElement(id) {
+        const element = document.getElementById(id);
+        if (!element) {
+            console.warn(`Element with id '${id}' not found`);
+        }
+        return element;
+    }
+
+    // Get elements with null checks
+    const ollamaUrl = getElement('ollamaUrl');
+    const modelSelect = getElement('modelSelect');
+    const refreshModels = getElement('refreshModels');
+    const saveConfig = getElement('saveConfig');
+    const systemPrompt = getElement('systemPrompt');
 
     function displayErrorInSelect(message) {
-        modelSelect.innerHTML = '';
-        const option = document.createElement('option');
-        option.value = '';
-        option.textContent = message;
-        option.disabled = true;
-        option.selected = true;
-        modelSelect.appendChild(option);
+        if (modelSelect) {
+            modelSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = message;
+            option.disabled = true;
+            option.selected = true;
+            modelSelect.appendChild(option);
+        }
     }
 
     async function loadModels() {
+        if (!modelSelect || !refreshModels) {
+            console.error('Required elements for loading models not found');
+            return;
+        }
+
         try {
             displayErrorInSelect('Chargement des modèles...');
-            refreshModels.disabled = true;
+            if (refreshModels) {
+                refreshModels.disabled = true;
+            }
 
             const response = await fetch('/api/models');
             const data = await response.json();
@@ -38,36 +57,59 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erreur lors de la récupération des modèles:', error);
             displayErrorInSelect('Erreur lors de la récupération des modèles');
         } finally {
-            refreshModels.disabled = false;
+            if (refreshModels) {
+                refreshModels.disabled = false;
+            }
         }
     }
 
-    refreshModels.addEventListener('click', loadModels);
+    // Add event listeners only if elements exist
+    if (refreshModels) {
+        refreshModels.addEventListener('click', loadModels);
+    }
 
-    saveSettings.addEventListener('click', async function() {
-        try {
-            const response = await fetch('/api/settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: ollamaUrl.value,
-                    model: modelSelect.value
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Erreur lors de la sauvegarde des paramètres');
+    if (saveConfig) {
+        saveConfig.addEventListener('click', async function() {
+            if (!ollamaUrl || !modelSelect || !systemPrompt) {
+                console.error('Required elements for saving configuration not found');
+                alert('Erreur: Éléments de configuration manquants');
+                return;
             }
-            
-            bootstrap.Modal.getInstance(settingsModal).hide();
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            alert('Erreur lors de la sauvegarde des paramètres');
-        }
-    });
 
-    // Load models when modal opens
-    settingsModal.addEventListener('show.bs.modal', loadModels);
+            try {
+                const settingsResponse = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: ollamaUrl.value,
+                        model: modelSelect.value
+                    })
+                });
+
+                const promptResponse = await fetch('/api/prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: systemPrompt.value
+                    })
+                });
+
+                if (!settingsResponse.ok || !promptResponse.ok) {
+                    throw new Error('Erreur lors de la sauvegarde de la configuration');
+                }
+
+                alert('Configuration sauvegardée avec succès');
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la sauvegarde de la configuration');
+            }
+        });
+    }
+
+    // Load initial configuration
+    loadModels();
 });
