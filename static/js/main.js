@@ -37,12 +37,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!isConnected) {
             const message = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
-            if (!document.querySelector('.status-message')) {
+            const existingMessage = document.querySelector('.status-message');
+            if (!existingMessage) {
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-warning mb-3 status-message';
                 alert.role = 'alert';
                 alert.textContent = message;
-                document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+                const container = document.querySelector('.container');
+                if (container) {
+                    container.insertBefore(alert, container.firstChild);
+                }
             }
         } else {
             const statusMessage = document.querySelector('.status-message');
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get selected value from a tag group
     function getSelectedValue(groupId) {
         const activeButton = document.querySelector(`#${groupId} .btn.active`);
-        return activeButton ? activeButton.dataset.value : '';
+        return activeButton ? activeButton.textContent : '';
     }
 
     // Reformulation functionality
@@ -89,6 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 outputText.value = "Veuillez entrer un texte à reformuler.";
                 return;
             }
+
+            const tone = getSelectedValue('toneGroup');
+            const format = getSelectedValue('formatGroup');
+            const length = getSelectedValue('lengthGroup');
+
+            // Debug logging
+            console.log('Selected values:', {
+                text: text,
+                tone: tone,
+                format: format,
+                length: length
+            });
 
             reformulateBtn.disabled = true;
             reformulateBtn.textContent = 'En cours...';
@@ -102,9 +118,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({
                         text: text,
-                        tone: getSelectedValue('toneGroup'),
-                        format: getSelectedValue('formatGroup'),
-                        length: getSelectedValue('lengthGroup')
+                        tone: tone,
+                        format: format,
+                        length: length
                     })
                 });
 
@@ -149,17 +165,5 @@ document.addEventListener('DOMContentLoaded', function() {
             if (inputText) inputText.value = '';
             if (outputText) outputText.value = '';
         });
-    }
-
-    // Utility functions
-    function displayError(element, message) {
-        if (!element) return;
-        element.value = `Erreur: ${message}`;
-    }
-
-    function updateButtonStatus(button, isLoading) {
-        if (!button) return;
-        button.disabled = isLoading;
-        button.textContent = isLoading ? 'En cours...' : button.dataset.originalText || 'Soumettre';
     }
 });
