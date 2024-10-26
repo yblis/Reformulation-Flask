@@ -16,10 +16,14 @@ def check_ollama_status():
     """Check if Ollama service is available"""
     try:
         response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=2)
-        return response.status_code == 200
-    except (ConnectionError, Timeout):
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                return bool(data.get('models'))
+            except ValueError:
+                return False
         return False
-    except Exception:
+    except (ConnectionError, Timeout, Exception):
         return False
 
 @app.route('/')
@@ -31,6 +35,55 @@ def get_status():
     """Get the current status of Ollama service"""
     return jsonify({"status": "connected" if check_ollama_status() else "disconnected"})
 
+@app.route('/api/models', methods=['GET'])
+def get_models():
+    try:
+        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if not data.get('models'):
+                    return jsonify({
+                        "error": "Aucun modèle n'a été trouvé sur le serveur Ollama."
+                    }), 404
+                
+                # Transform the response to match our expected format
+                models = []
+                for model in data['models']:
+                    if isinstance(model, dict) and 'name' in model:
+                        models.append({
+                            'name': model['name'],
+                            'model': model.get('model', model['name'])
+                        })
+                
+                return jsonify({"models": models})
+            except ValueError:
+                return jsonify({
+                    "error": "Le serveur Ollama a renvoyé une réponse invalide."
+                }), 500
+        elif response.status_code == 404:
+            return jsonify({
+                "error": "Le endpoint /api/tags n'est pas disponible sur le serveur Ollama."
+            }), 404
+        else:
+            return jsonify({
+                "error": f"Le serveur Ollama a répondu avec le code {response.status_code}"
+            }), response.status_code
+            
+    except ConnectionError:
+        return jsonify({
+            "error": "Impossible de se connecter au serveur Ollama. Vérifiez qu'il est en cours d'exécution."
+        }), 503
+    except Timeout:
+        return jsonify({
+            "error": "Le serveur Ollama ne répond pas dans le délai imparti."
+        }), 504
+    except Exception as e:
+        return jsonify({
+            "error": f"Une erreur inattendue s'est produite: {str(e)}"
+        }), 500
+
+# Other routes remain unchanged...
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
     if not check_ollama_status():
@@ -128,38 +181,11 @@ Tu es un traducteur automatique. Détecte automatiquement la langue source du te
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/models', methods=['GET'])
-def get_models():
-    if not check_ollama_status():
-        return jsonify({
-            "error": "Service Ollama non disponible. Veuillez vérifier la configuration."
-        }), 503
-
-    try:
-        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
-        if response.status_code == 200:
-            return jsonify(response.json())
-        return jsonify({
-            "error": "Impossible de récupérer les modèles. Vérifiez que le serveur Ollama répond correctement."
-        }), 500
-    except ConnectionError:
-        return jsonify({
-            "error": "Impossible de se connecter à Ollama. Assurez-vous qu'Ollama est en cours d'exécution."
-        }), 503
-    except Timeout:
-        return jsonify({
-            "error": "Le serveur Ollama ne répond pas dans le délai imparti."
-        }), 504
-    except Exception as e:
-        return jsonify({
-            "error": f"Une erreur inattendue s'est produite: {str(e)}"
-        }), 500
-
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
     data = request.json
-    OLLAMA_URL = data.get('url', OLLAMA_URL)
+    OLLAMA_URL = data.get('url', OLLAMA_URL).rstrip('/')  # Remove trailing slash if present
     CURRENT_MODEL = data.get('model', CURRENT_MODEL)
     return jsonify({"status": "success"})
 

@@ -6,15 +6,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveConfig = document.getElementById('saveConfig');
     const systemPrompt = document.getElementById('systemPrompt');
 
-    function displayErrorInSelect(message) {
-        if (modelSelect) {
-            modelSelect.innerHTML = '';
+    function showAlert(message, type = 'danger', duration = 5000) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = saveConfig.closest('.card-body');
+        container.insertBefore(alert, container.firstChild);
+
+        if (duration) {
+            setTimeout(() => alert.remove(), duration);
+        }
+    }
+
+    function updateModelSelect(models = []) {
+        if (!modelSelect) return;
+        
+        modelSelect.innerHTML = '';
+        if (models.length > 0) {
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.name;
+                option.textContent = model.name;
+                modelSelect.appendChild(option);
+            });
+            modelSelect.disabled = false;
+        } else {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = message;
+            option.textContent = 'Aucun modèle disponible';
             option.disabled = true;
             option.selected = true;
             modelSelect.appendChild(option);
+            modelSelect.disabled = true;
         }
     }
 
@@ -22,34 +49,40 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modelSelect || !refreshModels) return;
 
         try {
-            displayErrorInSelect('Chargement des modèles...');
             refreshModels.disabled = true;
+            updateModelSelect([]);
+            modelSelect.disabled = true;
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Chargement des modèles...';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            modelSelect.appendChild(placeholder);
 
             const response = await fetch('/api/models');
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Erreur de connexion à Ollama');
+                throw new Error(data.error || 'Erreur lors de la récupération des modèles');
             }
 
-            modelSelect.innerHTML = '';
-            if (data.models && data.models.length > 0) {
-                data.models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.name;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
-                });
-            } else {
-                displayErrorInSelect('Aucun modèle trouvé');
+            if (!data.models || !Array.isArray(data.models)) {
+                throw new Error('Format de réponse invalide du serveur');
             }
+
+            updateModelSelect(data.models);
+
+            if (data.models.length === 0) {
+                showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
+            }
+
         } catch (error) {
             console.error('Erreur:', error);
-            displayErrorInSelect(error.message || 'Erreur lors de la récupération des modèles');
+            updateModelSelect([]);
+            showAlert(error.message || 'Erreur lors de la récupération des modèles');
         } finally {
-            if (refreshModels) {
-                refreshModels.disabled = false;
-            }
+            refreshModels.disabled = false;
         }
     }
 
@@ -61,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             if (!ollamaUrl || !modelSelect) {
-                console.error('Required elements not found');
+                showAlert('Éléments de configuration manquants');
                 return;
             }
 
@@ -74,17 +107,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        url: ollamaUrl.value,
+                        url: ollamaUrl.value.trim(),
                         model: modelSelect.value
                     })
                 });
+
+                if (!settingsResponse.ok) {
+                    throw new Error('Erreur lors de la sauvegarde des paramètres');
+                }
 
                 if (systemPrompt) {
                     const promptResponse = await fetch('/api/prompt', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            prompt: systemPrompt.value
+                            prompt: systemPrompt.value.trim()
                         })
                     });
 
@@ -93,26 +130,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                if (!settingsResponse.ok) {
-                    throw new Error('Erreur lors de la sauvegarde des paramètres');
-                }
-
-                // Show success message
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-success';
-                alert.textContent = 'Configuration sauvegardée avec succès';
-                saveConfig.parentNode.insertBefore(alert, saveConfig);
-                setTimeout(() => alert.remove(), 3000);
-
+                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                
                 // Reload models to reflect any URL changes
-                loadModels();
+                await loadModels();
+
             } catch (error) {
                 console.error('Erreur:', error);
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-danger';
-                alert.textContent = error.message || 'Erreur lors de la sauvegarde';
-                saveConfig.parentNode.insertBefore(alert, saveConfig);
-                setTimeout(() => alert.remove(), 5000);
+                showAlert(error.message || 'Erreur lors de la sauvegarde');
             } finally {
                 saveConfig.disabled = false;
                 saveConfig.textContent = originalText;
