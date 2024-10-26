@@ -11,6 +11,7 @@ OLLAMA_URL = "http://localhost:11434"
 CURRENT_MODEL = "qwen2.5:3b"
 SYSTEM_PROMPT = """Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire."""
+TRANSLATION_PROMPT = """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire."""
 
 def check_ollama_status(url=None):
     """Check if Ollama service is available"""
@@ -35,7 +36,8 @@ def check_ollama_status(url=None):
 def index():
     return render_template('index.html', 
                          ollama_status=check_ollama_status(),
-                         system_prompt=SYSTEM_PROMPT)
+                         system_prompt=SYSTEM_PROMPT,
+                         translation_prompt=TRANSLATION_PROMPT)
 
 @app.route('/api/status', methods=['GET'])
 def get_status():
@@ -64,7 +66,6 @@ def get_models():
                         "error": "NO_MODELS_FOUND"
                     }), 404
                 
-                # Transform the response to match our expected format
                 models = []
                 for model in data['models']:
                     if isinstance(model, dict) and 'name' in model:
@@ -188,7 +189,7 @@ def translate():
         }), 400
 
     prompt = f'''<|im_start|>system
-Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {data['language']}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.
+{TRANSLATION_PROMPT.format(target_language=data['language'])}
 <|im_end|>
 <|im_start|>user
 {data['text']}
@@ -245,4 +246,17 @@ def update_prompt():
         }), 400
 
     SYSTEM_PROMPT = data.get('prompt', SYSTEM_PROMPT)
+    return jsonify({"status": "success"})
+
+@app.route('/api/translation_prompt', methods=['POST'])
+def update_translation_prompt():
+    global TRANSLATION_PROMPT
+    data = request.get_json()
+    if data is None:
+        return jsonify({
+            "message": "Le corps de la requête est invalide ou manquant.",
+            "error": "INVALID_REQUEST"
+        }), 400
+
+    TRANSLATION_PROMPT = data.get('prompt', TRANSLATION_PROMPT)
     return jsonify({"status": "success"})

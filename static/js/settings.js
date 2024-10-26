@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const refreshModels = document.getElementById('refreshModels');
     const saveConfig = document.getElementById('saveConfig');
     const systemPrompt = document.getElementById('systemPrompt');
+    const translationPrompt = document.getElementById('translationPrompt');
 
     function showAlert(message, type = 'danger', duration = 5000) {
         // Remove any existing alerts
@@ -170,6 +171,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!promptResponse.ok) {
                         const data = await promptResponse.json();
                         throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt');
+                    }
+                }
+
+                if (translationPrompt) {
+                    const translationPromptResponse = await fetch('/api/translation_prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: translationPrompt.value.trim()
+                        })
+                    });
+
+                    if (!translationPromptResponse.ok) {
+                        const data = await translationPromptResponse.json();
+                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt de traduction');
                     }
                 }
 
