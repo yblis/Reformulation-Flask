@@ -61,13 +61,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadModels() {
-        if (!modelSelect || !refreshModels) return;
+        if (!modelSelect || !refreshModels || !ollamaUrl) return;
 
         try {
+            // Validate URL format before making the request
+            let url;
+            try {
+                url = new URL(ollamaUrl.value.trim());
+            } catch (e) {
+                throw new Error("L'URL d'Ollama n'est pas valide");
+            }
+
             refreshModels.disabled = true;
             updateModelSelect([], 'Chargement des modèles...');
 
-            const response = await fetch('/api/models');
+            // Add the current URL as a query parameter
+            const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
+            const response = await fetch(apiUrl);
             const data = await response.json();
 
             if (!response.ok) {
@@ -96,6 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners
     if (refreshModels) {
         refreshModels.addEventListener('click', loadModels);
+    }
+
+    if (ollamaUrl) {
+        ollamaUrl.addEventListener('blur', loadModels);
     }
 
     if (saveConfig) {
@@ -148,8 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
                 
-                // Reload models to reflect any URL changes
-                await loadModels();
+                // Check connection with new URL
+                const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
+                const statusData = await statusResponse.json();
+                
+                if (statusData.status === 'connected') {
+                    // Only reload models if connection is successful
+                    await loadModels();
+                } else {
+                    showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
+                }
 
             } catch (error) {
                 console.error('Erreur:', error.message);

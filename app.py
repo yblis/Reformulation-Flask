@@ -12,10 +12,11 @@ CURRENT_MODEL = "qwen2.5:3b"
 SYSTEM_PROMPT = """Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire."""
 
-def check_ollama_status():
+def check_ollama_status(url=None):
     """Check if Ollama service is available"""
+    test_url = url or OLLAMA_URL
     try:
-        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=2)
+        response = requests.get(f"{test_url}/api/tags", timeout=2)
         if response.status_code == 200:
             try:
                 data = response.json()
@@ -37,24 +38,27 @@ def index():
 @app.route('/api/status', methods=['GET'])
 def get_status():
     """Get the current status of Ollama service"""
-    return jsonify({"status": "connected" if check_ollama_status() else "disconnected"})
+    url = request.args.get('url')
+    return jsonify({"status": "connected" if check_ollama_status(url) else "disconnected"})
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
-    if not check_ollama_status():
+    test_url = request.args.get('url', OLLAMA_URL)
+    
+    if not check_ollama_status(test_url):
         return jsonify({
-            "message": "Le service Ollama n'est pas accessible. Vérifiez qu'il est en cours d'exécution et que l'URL est correcte.",
+            "message": f"Le service Ollama n'est pas accessible à l'URL {test_url}. Vérifiez qu'il est en cours d'exécution et que l'URL est correcte.",
             "error": "SERVICE_UNAVAILABLE"
         }), 503
 
     try:
-        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
+        response = requests.get(f"{test_url}/api/tags", timeout=5)
         if response.status_code == 200:
             try:
                 data = response.json()
                 if not data.get('models'):
                     return jsonify({
-                        "message": "Aucun modèle n'est disponible sur le serveur Ollama.",
+                        "message": f"Aucun modèle n'est disponible sur le serveur Ollama à l'URL {test_url}.",
                         "error": "NO_MODELS_FOUND"
                     }), 404
                 
@@ -70,36 +74,37 @@ def get_models():
                 return jsonify({"models": models})
             except ValueError:
                 return jsonify({
-                    "message": "Le serveur Ollama a renvoyé une réponse invalide.",
+                    "message": f"Le serveur Ollama à l'URL {test_url} a renvoyé une réponse invalide.",
                     "error": "INVALID_RESPONSE"
                 }), 500
         elif response.status_code == 404:
             return jsonify({
-                "message": "L'API Ollama n'est pas accessible à l'URL spécifiée.",
+                "message": f"L'API Ollama n'est pas accessible à l'URL {test_url}.",
                 "error": "ENDPOINT_NOT_FOUND"
             }), 404
         else:
             return jsonify({
-                "message": f"Le serveur Ollama a répondu avec une erreur (code {response.status_code}).",
+                "message": f"Le serveur Ollama à l'URL {test_url} a répondu avec une erreur (code {response.status_code}).",
                 "error": "SERVER_ERROR"
             }), response.status_code
             
     except ConnectionError:
         return jsonify({
-            "message": "Impossible de se connecter au serveur Ollama. Vérifiez l'URL et que le service est démarré.",
+            "message": f"Impossible de se connecter au serveur Ollama à l'URL {test_url}. Vérifiez l'URL et que le service est démarré.",
             "error": "CONNECTION_ERROR"
         }), 503
     except Timeout:
         return jsonify({
-            "message": "Le serveur Ollama ne répond pas dans le délai imparti.",
+            "message": f"Le serveur Ollama à l'URL {test_url} ne répond pas dans le délai imparti.",
             "error": "TIMEOUT_ERROR"
         }), 504
     except Exception as e:
         return jsonify({
-            "message": f"Une erreur inattendue s'est produite: {str(e)}",
+            "message": f"Une erreur inattendue s'est produite lors de la connexion à {test_url}: {str(e)}",
             "error": "UNEXPECTED_ERROR"
         }), 500
 
+# Rest of the routes remain unchanged...
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
     if not check_ollama_status():
