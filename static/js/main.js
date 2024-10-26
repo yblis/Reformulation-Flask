@@ -6,26 +6,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
 
-    // Elements for translation
-    const translationInput = document.getElementById('translationInput');
-    const translationOutput = document.getElementById('translationOutput');
-    const targetLanguage = document.getElementById('targetLanguage');
-    const translateText = document.getElementById('translateText');
-    const copyTranslation = document.getElementById('copyTranslation');
-    const clearTranslation = document.getElementById('clearTranslation');
+    // Status check interval
+    let lastStatus = 'unknown';
+    
+    async function checkOllamaStatus() {
+        try {
+            const response = await fetch('/api/status');
+            const data = await response.json();
+            if (data.status !== lastStatus) {
+                lastStatus = data.status;
+                updateUIForStatus(data.status);
+            }
+        } catch (error) {
+            console.error('Error checking status:', error);
+            updateUIForStatus('disconnected');
+        }
+    }
 
-    // Elements for configuration
-    const ollamaUrl = document.getElementById('ollamaUrl');
-    const modelSelect = document.getElementById('modelSelect');
-    const refreshModels = document.getElementById('refreshModels');
-    const systemPrompt = document.getElementById('systemPrompt');
-    const saveConfig = document.getElementById('saveConfig');
+    function updateUIForStatus(status) {
+        const isConnected = status === 'connected';
+        const buttons = document.querySelectorAll('.requires-ollama');
+        buttons.forEach(button => {
+            button.disabled = !isConnected;
+            if (!isConnected) {
+                button.title = "Service Ollama non disponible";
+            } else {
+                button.title = "";
+            }
+        });
+
+        if (!isConnected) {
+            const message = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
+            if (!document.querySelector('.status-message')) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning mb-3 status-message';
+                alert.role = 'alert';
+                alert.textContent = message;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+            }
+        } else {
+            const statusMessage = document.querySelector('.status-message');
+            if (statusMessage) {
+                statusMessage.remove();
+            }
+        }
+    }
+
+    // Check status initially and every 30 seconds
+    checkOllamaStatus();
+    setInterval(checkOllamaStatus, 30000);
 
     // Handle tag groups
     function setupTagGroup(groupId) {
         const group = document.getElementById(groupId);
-        const buttons = group.querySelectorAll('.btn');
+        if (!group) return;
         
+        const buttons = group.querySelectorAll('.btn');
         buttons.forEach(button => {
             button.addEventListener('click', function() {
                 buttons.forEach(b => b.classList.remove('active'));
@@ -45,157 +81,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Reformulation functionality
-    reformulateBtn.addEventListener('click', async function() {
-        const text = inputText.value.trim();
-        if (!text) return;
-
-        reformulateBtn.disabled = true;
-        reformulateBtn.textContent = 'En cours...';
-
-        try {
-            const response = await fetch('/api/reformulate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: text,
-                    tone: getSelectedValue('toneGroup'),
-                    format: getSelectedValue('formatGroup'),
-                    length: getSelectedValue('lengthGroup')
-                })
-            });
-
-            const data = await response.json();
-            if (data.error) {
-                outputText.value = `Erreur: ${data.error}`;
-            } else {
-                outputText.value = data.text;
+    if (reformulateBtn) {
+        reformulateBtn.classList.add('requires-ollama');
+        reformulateBtn.addEventListener('click', async function() {
+            const text = inputText.value.trim();
+            if (!text) {
+                outputText.value = "Veuillez entrer un texte à reformuler.";
+                return;
             }
-        } catch (error) {
-            outputText.value = `Erreur: ${error.message}`;
-        } finally {
-            reformulateBtn.disabled = false;
-            reformulateBtn.textContent = 'Reformuler';
-        }
-    });
 
-    // Translation functionality
-    translateText.addEventListener('click', async function() {
-        const text = translationInput.value.trim();
-        if (!text) return;
+            reformulateBtn.disabled = true;
+            reformulateBtn.textContent = 'En cours...';
+            outputText.value = "Reformulation en cours...";
 
-        translateText.disabled = true;
-        translateText.textContent = 'En cours...';
-
-        try {
-            const response = await fetch('/api/translate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: text,
-                    language: targetLanguage.value
-                })
-            });
-
-            const data = await response.json();
-            if (data.error) {
-                translationOutput.value = `Erreur: ${data.error}`;
-            } else {
-                translationOutput.value = data.text;
-            }
-        } catch (error) {
-            translationOutput.value = `Erreur: ${error.message}`;
-        } finally {
-            translateText.disabled = false;
-            translateText.textContent = 'Traduire';
-        }
-    });
-
-    // Configuration functionality
-    async function loadModels() {
-        try {
-            modelSelect.innerHTML = '<option value="" disabled selected>Chargement des modèles...</option>';
-            refreshModels.disabled = true;
-
-            const response = await fetch('/api/models');
-            const data = await response.json();
-            
-            modelSelect.innerHTML = '';
-            if (data.models && data.models.length > 0) {
-                data.models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.name;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
+            try {
+                const response = await fetch('/api/reformulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        tone: getSelectedValue('toneGroup'),
+                        format: getSelectedValue('formatGroup'),
+                        length: getSelectedValue('lengthGroup')
+                    })
                 });
-            } else {
-                modelSelect.innerHTML = '<option value="" disabled selected>Aucun modèle trouvé</option>';
+
+                const data = await response.json();
+                if (response.ok) {
+                    outputText.value = data.text;
+                } else {
+                    outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                outputText.value = "Erreur de connexion. Veuillez réessayer.";
+            } finally {
+                reformulateBtn.disabled = false;
+                reformulateBtn.textContent = 'Reformuler';
             }
-        } catch (error) {
-            console.error('Erreur lors de la récupération des modèles:', error);
-            modelSelect.innerHTML = '<option value="" disabled selected>Erreur lors de la récupération des modèles</option>';
-        } finally {
-            refreshModels.disabled = false;
-        }
-    }
-
-    refreshModels.addEventListener('click', loadModels);
-
-    saveConfig.addEventListener('click', async function() {
-        try {
-            const settingsResponse = await fetch('/api/settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: ollamaUrl.value,
-                    model: modelSelect.value
-                })
-            });
-
-            const promptResponse = await fetch('/api/prompt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt: systemPrompt.value
-                })
-            });
-
-            if (!settingsResponse.ok || !promptResponse.ok) {
-                throw new Error('Erreur lors de la sauvegarde de la configuration');
-            }
-
-            alert('Configuration sauvegardée avec succès');
-        } catch (error) {
-            console.error('Erreur:', error);
-            alert('Erreur lors de la sauvegarde de la configuration');
-        }
-    });
-
-    // Utility functions
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).catch(err => {
-            console.error('Erreur lors de la copie:', err);
         });
     }
 
-    // Copy buttons
-    copyBtn.addEventListener('click', () => copyToClipboard(outputText.value));
-    copyTranslation.addEventListener('click', () => copyToClipboard(translationOutput.value));
+    // Copy functionality
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+            const text = outputText.value;
+            if (!text) return;
 
-    // Clear buttons
-    clearBtn.addEventListener('click', () => outputText.value = '');
-    clearTranslation.addEventListener('click', () => {
-        translationInput.value = '';
-        translationOutput.value = '';
-    });
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copié!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+        });
+    }
 
-    // Load initial configuration
-    loadModels();
+    // Clear functionality
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (inputText) inputText.value = '';
+            if (outputText) outputText.value = '';
+        });
+    }
+
+    // Utility functions
+    function displayError(element, message) {
+        if (!element) return;
+        element.value = `Erreur: ${message}`;
+    }
+
+    function updateButtonStatus(button, isLoading) {
+        if (!button) return;
+        button.disabled = isLoading;
+        button.textContent = isLoading ? 'En cours...' : button.dataset.originalText || 'Soumettre';
+    }
 });

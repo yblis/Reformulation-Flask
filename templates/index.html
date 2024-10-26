@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container my-4">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+<div class="container">
+    <!-- Main tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="reformulation-tab" data-bs-toggle="tab" data-bs-target="#reformulation" type="button" role="tab">
                 📝 Reformulation
@@ -25,117 +25,111 @@
     <div class="tab-content">
         <!-- Reformulation Tab -->
         <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
-            <div class="mb-4">
-                <label class="form-label">Entre ton texte à reformuler:</label>
-                <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+            <!-- Input Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Entre ton texte à reformuler:</h5>
+                    <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                </div>
             </div>
 
-            <!-- Collapsible Options Section -->
-            <div class="accordion mb-4" id="optionsAccordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse">
-                            Options de reformulation
-                        </button>
-                    </h2>
-                    <div id="optionsCollapse" class="accordion-collapse collapse show" data-bs-parent="#optionsAccordion">
-                        <div class="accordion-body">
-                            <!-- Tone Options -->
-                            <div class="mb-4">
-                                <h5 class="mb-3">Ton</h5>
-                                <div class="btn-group" role="group" id="toneGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
-                                </div>
-                            </div>
+            <!-- Options Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Options de reformulation</h5>
+                    
+                    <!-- Tone Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Ton</h6>
+                        <div class="btn-group" role="group" id="toneGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                        </div>
+                    </div>
 
-                            <!-- Format Options -->
-                            <div class="mb-4">
-                                <h5 class="mb-3">Format</h5>
-                                <div class="btn-group" role="group" id="formatGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
-                                </div>
-                            </div>
+                    <!-- Format Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Format</h6>
+                        <div class="btn-group" role="group" id="formatGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                        </div>
+                    </div>
 
-                            <!-- Length Options -->
-                            <div class="mb-4">
-                                <h5 class="mb-3">Longueur</h5>
-                                <div class="btn-group" role="group" id="lengthGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Court">Court</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Moyen">Moyen</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
-                                </div>
-                            </div>
+                    <!-- Length Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Longueur</h6>
+                        <div class="btn-group" role="group" id="lengthGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Court">Court</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Moyen">Moyen</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Action Button -->
             <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
 
-            <div class="mb-4">
-                <label class="form-label">Réponse:</label>
-                <textarea id="outputText" class="form-control" rows="6" readonly></textarea>
-            </div>
-
-            <div class="btn-group w-100">
-                <button id="copyBtn" class="btn btn-success">Copier</button>
-                <button id="clearBtn" class="btn btn-success">Effacer</button>
+            <!-- Output Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Réponse:</h5>
+                    <textarea id="outputText" class="form-control mb-3" rows="6" readonly></textarea>
+                    <div class="btn-group w-100">
+                        <button id="copyBtn" class="btn btn-success">Copier</button>
+                        <button id="clearBtn" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Translation Tab -->
         <div class="tab-pane fade" id="translation" role="tabpanel">
-            <div class="mb-4">
-                <label class="form-label">Texte à traduire:</label>
-                <textarea id="translationInput" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Texte à traduire:</h5>
+                    <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    
+                    <h5 class="mb-3">Traduire vers:</h5>
+                    <select id="targetLanguage" class="form-select mb-4">
+                        <option value="Anglais">Anglais</option>
+                        <option value="Français">Français</option>
+                        <option value="Espagnol">Espagnol</option>
+                        <option value="Allemand">Allemand</option>
+                        <option value="Italien">Italien</option>
+                        <option value="Portugais">Portugais</option>
+                    </select>
 
-            <div class="mb-4">
-                <label class="form-label">Traduire vers:</label>
-                <select id="targetLanguage" class="form-select">
-                    <option value="Anglais">Anglais</option>
-                    <option value="Français">Français</option>
-                    <option value="Espagnol">Espagnol</option>
-                    <option value="Allemand">Allemand</option>
-                    <option value="Italien">Italien</option>
-                    <option value="Portugais">Portugais</option>
-                </select>
-            </div>
+                    <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
 
-            <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
-
-            <div class="mb-4">
-                <label class="form-label">Traduction:</label>
-                <textarea id="translationOutput" class="form-control" rows="5" readonly></textarea>
-            </div>
-
-            <div class="btn-group w-100">
-                <button id="copyTranslation" class="btn btn-success">Copier</button>
-                <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                    <h5 class="mb-3">Traduction:</h5>
+                    <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                    
+                    <div class="btn-group w-100">
+                        <button id="copyTranslation" class="btn btn-success">Copier</button>
+                        <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Configuration Tab -->
         <div class="tab-pane fade" id="config" role="tabpanel">
-            <!-- Ollama Settings -->
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Configuration Ollama</h5>
-                </div>
                 <div class="card-body">
-                    <div class="mb-3">
+                    <h5 class="mb-3">Configuration Ollama</h5>
+                    <div class="mb-4">
                         <label class="form-label">URL d'Ollama:</label>
                         <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">Modèle:</label>
                         <select id="modelSelect" class="form-select"></select>
                     </div>
@@ -143,13 +137,10 @@
                 </div>
             </div>
 
-            <!-- Prompt Configuration -->
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Configuration du Prompt</h5>
-                </div>
                 <div class="card-body">
-                    <div class="mb-3">
+                    <h5 class="mb-3">Configuration du Prompt</h5>
+                    <div class="mb-4">
                         <label class="form-label">Prompt système:</label>
                         <textarea id="systemPrompt" class="form-control" rows="8"></textarea>
                     </div>
