@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateModelSelect(models = [], errorMessage = '') {
+    function updateModelSelect(models = [], errorMessage = '', previousSelection = '') {
         if (!modelSelect) return;
         
         modelSelect.innerHTML = '';
@@ -42,12 +42,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (models.length > 0) {
+            let hasSelectedModel = false;
             models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model.name;
                 option.textContent = model.name;
+                if (model.name === previousSelection) {
+                    option.selected = true;
+                    hasSelectedModel = true;
+                }
                 modelSelect.appendChild(option);
             });
+            
+            // Only auto-select first model if no previous selection exists
+            if (!hasSelectedModel && !previousSelection && models.length > 0) {
+                modelSelect.selectedIndex = 0;
+            }
             modelSelect.disabled = false;
         } else {
             const option = document.createElement('option');
@@ -64,6 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modelSelect || !refreshModels || !ollamaUrl) return;
 
         try {
+            // Remember current selection before refreshing
+            const previousSelection = modelSelect.value;
+
             // Validate URL format before making the request
             let url;
             try {
@@ -73,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             refreshModels.disabled = true;
-            updateModelSelect([], 'Chargement des modèles...');
+            updateModelSelect([], 'Chargement des modèles...', previousSelection);
 
             // Add the current URL as a query parameter
             const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
@@ -88,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Format de réponse invalide du serveur');
             }
 
-            updateModelSelect(data.models);
+            updateModelSelect(data.models, '', previousSelection);
 
             if (data.models.length === 0) {
                 showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');

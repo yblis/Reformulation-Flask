@@ -33,7 +33,9 @@ def check_ollama_status(url=None):
 
 @app.route('/')
 def index():
-    return render_template('index.html', ollama_status=check_ollama_status())
+    return render_template('index.html', 
+                         ollama_status=check_ollama_status(),
+                         system_prompt=SYSTEM_PROMPT)
 
 @app.route('/api/status', methods=['GET'])
 def get_status():
@@ -104,7 +106,6 @@ def get_models():
             "error": "UNEXPECTED_ERROR"
         }), 500
 
-# Rest of the routes remain unchanged...
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
     if not check_ollama_status():
