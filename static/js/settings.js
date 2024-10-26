@@ -8,22 +8,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const translationPrompt = document.getElementById('translationPrompt');
 
     function showAlert(message, type = 'danger', duration = 5000) {
-        // Remove any existing alerts
-        const existingAlerts = document.querySelectorAll('.alert');
-        existingAlerts.forEach(alert => alert.remove());
+        try {
+            // Remove any existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
 
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        const container = saveConfig.closest('.card-body');
-        container.insertBefore(alert, container.firstChild);
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Find the container in the config tab
+            const container = document.querySelector('#config');
+            if (!container) {
+                console.error('Alert container not found');
+                return;
+            }
 
-        if (duration) {
-            setTimeout(() => alert.remove(), duration);
+            // Insert at the beginning of the config tab
+            container.insertBefore(alert, container.firstChild);
+
+            if (duration) {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, duration);
+            }
+        } catch (e) {
+            console.error('Error showing alert:', e);
         }
     }
 
@@ -105,13 +120,21 @@ document.addEventListener('DOMContentLoaded', function() {
             updateModelSelect(data.models, '', previousSelection);
 
             if (data.models.length === 0) {
-                showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
+                try {
+                    showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
+                } catch (e) {
+                    console.error('Error showing alert:', e);
+                }
             }
 
         } catch (error) {
             console.error('Erreur lors de la récupération des modèles:', error.message);
             updateModelSelect([], error.message);
-            showAlert(error.message || 'Erreur lors de la récupération des modèles');
+            try {
+                showAlert(error.message || 'Erreur lors de la récupération des modèles');
+            } catch (e) {
+                console.error('Error showing alert:', e);
+            }
         } finally {
             refreshModels.disabled = false;
         }
@@ -129,7 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             if (!ollamaUrl || !modelSelect) {
-                showAlert('Éléments de configuration manquants');
+                try {
+                    showAlert('Éléments de configuration manquants');
+                } catch (e) {
+                    console.error('Error showing alert:', e);
+                }
                 return;
             }
 
@@ -189,7 +216,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                try {
+                    showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                } catch (e) {
+                    console.error('Error showing success alert:', e);
+                }
                 
                 // Check connection with new URL
                 const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
@@ -199,12 +230,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Only reload models if connection is successful
                     await loadModels();
                 } else {
-                    showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
+                    try {
+                        showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
+                    } catch (e) {
+                        console.error('Error showing warning alert:', e);
+                    }
                 }
 
             } catch (error) {
                 console.error('Erreur:', error.message);
-                showAlert(error.message || 'Erreur lors de la sauvegarde');
+                try {
+                    showAlert(error.message || 'Erreur lors de la sauvegarde');
+                } catch (e) {
+                    console.error('Error showing error alert:', e);
+                }
             } finally {
                 saveConfig.disabled = false;
                 saveConfig.textContent = originalText;
