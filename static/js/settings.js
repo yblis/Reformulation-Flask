@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const systemPrompt = document.getElementById('systemPrompt');
 
     function showAlert(message, type = 'danger', duration = 5000) {
+        // Remove any existing alerts
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} alert-dismissible fade show`;
         alert.innerHTML = `
@@ -22,10 +26,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateModelSelect(models = []) {
+    function updateModelSelect(models = [], errorMessage = '') {
         if (!modelSelect) return;
         
         modelSelect.innerHTML = '';
+        if (errorMessage) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = `Erreur: ${errorMessage}`;
+            option.disabled = true;
+            option.selected = true;
+            modelSelect.appendChild(option);
+            modelSelect.disabled = true;
+            return;
+        }
+
         if (models.length > 0) {
             models.forEach(model => {
                 const option = document.createElement('option');
@@ -50,21 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             refreshModels.disabled = true;
-            updateModelSelect([]);
-            modelSelect.disabled = true;
-
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = 'Chargement des modèles...';
-            placeholder.disabled = true;
-            placeholder.selected = true;
-            modelSelect.appendChild(placeholder);
+            updateModelSelect([], 'Chargement des modèles...');
 
             const response = await fetch('/api/models');
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Erreur lors de la récupération des modèles');
+                throw new Error(data.message || 'Erreur lors de la récupération des modèles');
             }
 
             if (!data.models || !Array.isArray(data.models)) {
@@ -78,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
         } catch (error) {
-            console.error('Erreur:', error);
-            updateModelSelect([]);
+            console.error('Erreur lors de la récupération des modèles:', error.message);
+            updateModelSelect([], error.message);
             showAlert(error.message || 'Erreur lors de la récupération des modèles');
         } finally {
             refreshModels.disabled = false;
@@ -103,6 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
             saveConfig.textContent = 'Sauvegarde en cours...';
 
             try {
+                // Validate URL format
+                try {
+                    new URL(ollamaUrl.value.trim());
+                } catch (e) {
+                    throw new Error("L'URL d'Ollama n'est pas valide");
+                }
+
                 const settingsResponse = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -113,7 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (!settingsResponse.ok) {
-                    throw new Error('Erreur lors de la sauvegarde des paramètres');
+                    const data = await settingsResponse.json();
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde des paramètres');
                 }
 
                 if (systemPrompt) {
@@ -126,7 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
                     if (!promptResponse.ok) {
-                        throw new Error('Erreur lors de la sauvegarde du prompt');
+                        const data = await promptResponse.json();
+                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt');
                     }
                 }
 
@@ -136,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 await loadModels();
 
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error('Erreur:', error.message);
                 showAlert(error.message || 'Erreur lors de la sauvegarde');
             } finally {
                 saveConfig.disabled = false;

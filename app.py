@@ -23,7 +23,11 @@ def check_ollama_status():
             except ValueError:
                 return False
         return False
-    except (ConnectionError, Timeout, Exception):
+    except ConnectionError:
+        return False
+    except Timeout:
+        return False
+    except Exception:
         return False
 
 @app.route('/')
@@ -37,6 +41,12 @@ def get_status():
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
+    if not check_ollama_status():
+        return jsonify({
+            "message": "Le service Ollama n'est pas accessible. Vérifiez qu'il est en cours d'exécution et que l'URL est correcte.",
+            "error": "SERVICE_UNAVAILABLE"
+        }), 503
+
     try:
         response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
         if response.status_code == 200:
@@ -44,7 +54,8 @@ def get_models():
                 data = response.json()
                 if not data.get('models'):
                     return jsonify({
-                        "error": "Aucun modèle n'a été trouvé sur le serveur Ollama."
+                        "message": "Aucun modèle n'est disponible sur le serveur Ollama.",
+                        "error": "NO_MODELS_FOUND"
                     }), 404
                 
                 # Transform the response to match our expected format
@@ -59,46 +70,61 @@ def get_models():
                 return jsonify({"models": models})
             except ValueError:
                 return jsonify({
-                    "error": "Le serveur Ollama a renvoyé une réponse invalide."
+                    "message": "Le serveur Ollama a renvoyé une réponse invalide.",
+                    "error": "INVALID_RESPONSE"
                 }), 500
         elif response.status_code == 404:
             return jsonify({
-                "error": "Le endpoint /api/tags n'est pas disponible sur le serveur Ollama."
+                "message": "L'API Ollama n'est pas accessible à l'URL spécifiée.",
+                "error": "ENDPOINT_NOT_FOUND"
             }), 404
         else:
             return jsonify({
-                "error": f"Le serveur Ollama a répondu avec le code {response.status_code}"
+                "message": f"Le serveur Ollama a répondu avec une erreur (code {response.status_code}).",
+                "error": "SERVER_ERROR"
             }), response.status_code
             
     except ConnectionError:
         return jsonify({
-            "error": "Impossible de se connecter au serveur Ollama. Vérifiez qu'il est en cours d'exécution."
+            "message": "Impossible de se connecter au serveur Ollama. Vérifiez l'URL et que le service est démarré.",
+            "error": "CONNECTION_ERROR"
         }), 503
     except Timeout:
         return jsonify({
-            "error": "Le serveur Ollama ne répond pas dans le délai imparti."
+            "message": "Le serveur Ollama ne répond pas dans le délai imparti.",
+            "error": "TIMEOUT_ERROR"
         }), 504
     except Exception as e:
         return jsonify({
-            "error": f"Une erreur inattendue s'est produite: {str(e)}"
+            "message": f"Une erreur inattendue s'est produite: {str(e)}",
+            "error": "UNEXPECTED_ERROR"
         }), 500
 
-# Other routes remain unchanged...
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
     if not check_ollama_status():
         return jsonify({
-            "error": "Service Ollama non disponible. Veuillez vérifier la configuration et vous assurer qu'Ollama est en cours d'exécution."
+            "message": "Le service Ollama n'est pas accessible. Vérifiez la configuration.",
+            "error": "SERVICE_UNAVAILABLE"
         }), 503
 
-    data = request.json
+    data = request.get_json()
+    if data is None:
+        return jsonify({
+            "message": "Le corps de la requête est invalide ou manquant.",
+            "error": "INVALID_REQUEST"
+        }), 400
+
     input_text = data.get('text')
     tone = data.get('tone')
     format_type = data.get('format')
     length = data.get('length')
 
     if not all([input_text, tone, format_type, length]):
-        return jsonify({"error": "Tous les champs sont requis"}), 400
+        return jsonify({
+            "message": "Tous les champs sont requis (texte, ton, format, longueur).",
+            "error": "MISSING_FIELDS"
+        }), 400
 
     prompt = f"""<|im_start|>system
 {SYSTEM_PROMPT}
@@ -126,65 +152,32 @@ Longueur: {length}
             reformulated_text = result['response'].strip()
             return jsonify({"text": reformulated_text})
         else:
-            return jsonify({"error": "Erreur lors de la reformulation"}), 500
+            return jsonify({
+                "message": "Erreur lors de la reformulation du texte.",
+                "error": "REFORMULATION_ERROR"
+            }), 500
             
     except (ConnectionError, Timeout):
         return jsonify({
-            "error": "Service Ollama non disponible. Veuillez vérifier la configuration."
+            "message": "Le service Ollama n'est pas accessible. Vérifiez la configuration.",
+            "error": "CONNECTION_ERROR"
         }), 503
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/translate', methods=['POST'])
-def translate():
-    if not check_ollama_status():
         return jsonify({
-            "error": "Service Ollama non disponible. Veuillez vérifier la configuration."
-        }), 503
-
-    data = request.json
-    input_text = data.get('text')
-    target_lang = data.get('language')
-
-    if not all([input_text, target_lang]):
-        return jsonify({"error": "Tous les champs sont requis"}), 400
-
-    prompt = f"""<|im_start|>system
-Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_lang}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.
-<|im_end|>
-<|im_start|>user
-{input_text}
-<|im_end|>
-<|im_start|>assistant"""
-
-    try:
-        response = requests.post(
-            f'{OLLAMA_URL}/api/generate',
-            json={
-                "model": CURRENT_MODEL,
-                "prompt": prompt,
-                "stream": False
-            },
-            timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            translated_text = result['response'].strip()
-            return jsonify({"text": translated_text})
-        else:
-            return jsonify({"error": "Erreur lors de la traduction"}), 500
-            
-    except (ConnectionError, Timeout):
-        return jsonify({
-            "error": "Service Ollama non disponible. Veuillez vérifier la configuration."
-        }), 503
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            "message": f"Une erreur inattendue s'est produite: {str(e)}",
+            "error": "UNEXPECTED_ERROR"
+        }), 500
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
-    data = request.json
+    data = request.get_json()
+    if data is None:
+        return jsonify({
+            "message": "Le corps de la requête est invalide ou manquant.",
+            "error": "INVALID_REQUEST"
+        }), 400
+
     OLLAMA_URL = data.get('url', OLLAMA_URL).rstrip('/')  # Remove trailing slash if present
     CURRENT_MODEL = data.get('model', CURRENT_MODEL)
     return jsonify({"status": "success"})
@@ -192,6 +185,12 @@ def update_settings():
 @app.route('/api/prompt', methods=['POST'])
 def update_prompt():
     global SYSTEM_PROMPT
-    data = request.json
+    data = request.get_json()
+    if data is None:
+        return jsonify({
+            "message": "Le corps de la requête est invalide ou manquant.",
+            "error": "INVALID_REQUEST"
+        }), 400
+
     SYSTEM_PROMPT = data.get('prompt', SYSTEM_PROMPT)
     return jsonify({"status": "success"})
