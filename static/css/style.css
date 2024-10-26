@@ -1,12 +1,31 @@
+/* Base styles */
 body {
     background-color: #323232;
 }
 
-.modal-content {
-    background-color: #323232;
-    color: white;
+/* Tab styles */
+.nav-tabs {
+    border-bottom-color: #484848;
 }
 
+.nav-tabs .nav-link {
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    background-color: #484848;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #3d3d3d;
+    border-color: transparent;
+    color: #fff;
+}
+
+/* Form elements */
 .form-control, .form-select {
     background-color: #3d3d3d !important;
     color: white !important;
@@ -22,6 +41,7 @@ body {
     border-color: #4CAF50;
 }
 
+/* Buttons */
 .btn-success {
     background-color: #4CAF50;
     border: none;
@@ -31,16 +51,36 @@ body {
     background-color: #45a049;
 }
 
-.card {
+/* Cards and accordions */
+.card, .accordion-item {
     background-color: #3d3d3d;
     border: none;
 }
 
-.card-header {
+.card-header, .accordion-header {
     background-color: #424242;
     border-bottom: none;
 }
 
+.accordion-button {
+    background-color: #424242;
+    color: white;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #484848;
+    color: white;
+}
+
+.accordion-button::after {
+    filter: invert(1);
+}
+
+.accordion-body {
+    background-color: #3d3d3d;
+}
+
+/* Button groups */
 .btn-group .btn.active {
     background-color: #4CAF50;
     border-color: #4CAF50;
@@ -55,4 +95,20 @@ body {
 .btn-outline-secondary:hover {
     background-color: #484848;
     border-color: #484848;
+}
+
+/* Tab content */
+.tab-content {
+    background-color: #3d3d3d;
+    border-radius: 0 0 8px 8px;
+    padding: 20px;
+}
+
+/* Spacing utilities */
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
 }
