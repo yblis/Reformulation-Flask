@@ -1,75 +1,76 @@
 /* Base styles */
 body {
-    background-color: #323232;
+    background-color: #1a1919;
+    color: #e8e8e8;
 }
 
 /* Tab styles */
 .nav-tabs {
-    border-bottom-color: #484848;
+    border-bottom-color: #252525;
 }
 
 .nav-tabs .nav-link {
-    color: #fff;
+    color: #e8e8e8;
     border: none;
     padding: 10px 20px;
 }
 
 .nav-tabs .nav-link:hover {
     border-color: transparent;
-    background-color: #484848;
+    background-color: #252525;
 }
 
 .nav-tabs .nav-link.active {
-    background-color: #3d3d3d;
+    background-color: #2b2b2b;
     border-color: transparent;
-    color: #fff;
+    color: #f2a202;
 }
 
 /* Form elements */
 .form-control, .form-select {
-    background-color: #3d3d3d !important;
-    color: white !important;
-    border: none;
+    background-color: #2b2b2b !important;
+    color: #e8e8e8 !important;
+    border: 1px solid #3d3d3d;
     border-radius: 8px;
     padding: 15px;
 }
 
 .form-control:focus, .form-select:focus {
-    background-color: #3d3d3d;
-    color: white;
-    box-shadow: none;
-    border-color: #4CAF50;
+    background-color: #2b2b2b;
+    color: #e8e8e8;
+    box-shadow: 0 0 0 0.25rem rgba(242, 162, 2, 0.25);
+    border-color: #f2a202;
 }
 
 /* Buttons */
 .btn-success {
-    background-color: #4CAF50;
+    background-color: #f2a202;
     border: none;
 }
 
 .btn-success:hover {
-    background-color: #45a049;
+    background-color: #e69a00;
 }
 
 /* Cards and accordions */
 .card, .accordion-item {
-    background-color: #3d3d3d;
+    background-color: #2b2b2b;
     border: none;
 }
 
 .card-header, .accordion-header {
-    background-color: #424242;
+    background-color: #252525;
     border-bottom: none;
 }
 
 .accordion-button {
-    background-color: #424242;
-    color: white;
+    background-color: #252525;
+    color: #e8e8e8;
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #484848;
-    color: white;
+    background-color: #2b2b2b;
+    color: #f2a202;
 }
 
 .accordion-button::after {
@@ -77,31 +78,37 @@ body {
 }
 
 .accordion-body {
-    background-color: #3d3d3d;
+    background-color: #2b2b2b;
 }
 
 /* Button groups */
 .btn-group .btn.active {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-    color: white;
+    background-color: #f2a202;
+    border-color: #f2a202;
+    color: #1a1919;
 }
 
 .btn-outline-secondary {
-    border-color: #424242;
-    color: white;
+    border-color: #252525;
+    color: #e8e8e8;
 }
 
 .btn-outline-secondary:hover {
-    background-color: #484848;
-    border-color: #484848;
+    background-color: #252525;
+    border-color: #252525;
+    color: #f2a202;
 }
 
 /* Tab content */
 .tab-content {
-    background-color: #3d3d3d;
+    background-color: #2b2b2b;
     border-radius: 0 0 8px 8px;
     padding: 20px;
+}
+
+/* Text colors */
+.text-muted {
+    color: rgba(232, 232, 232, 0.6) !important;
 }
 
 /* Spacing utilities */
