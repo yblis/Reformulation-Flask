@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group w-100">
+                <button id="settingsBtn" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                    ⚙️ Configuration Ollama
+                </button>
+                <button id="promptBtn" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#promptModal">
+                    📝 Configuration Prompt
+                </button>
+                <button id="translateBtn" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#translationModal">
+                    🌐 Traduction
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label">Entre ton texte à reformuler:</label>
+        <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Ton</h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group" id="toneGroup">
+                <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Format</h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group" id="formatGroup">
+                <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Longueur</h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group" id="lengthGroup">
+                <button type="button" class="btn btn-outline-secondary active" data-value="Court">Court</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Moyen">Moyen</button>
+                <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
+
+    <div class="mb-4">
+        <label class="form-label">Réponse:</label>
+        <textarea id="outputText" class="form-control" rows="6" readonly></textarea>
+    </div>
+
+    <div class="btn-group w-100">
+        <button id="copyBtn" class="btn btn-success">Copier</button>
+        <button id="clearBtn" class="btn btn-success">Effacer</button>
+    </div>
+</div>
+
+{% include 'settings_modal.html' %}
+{% include 'prompt_modal.html' %}
+{% include 'translation_modal.html' %}
+{% endblock %}

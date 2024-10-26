@@ -1,0 +1,25 @@
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configuration Ollama</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">URL d'Ollama:</label>
+                    <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Modèle:</label>
+                    <select id="modelSelect" class="form-select"></select>
+                </div>
+                <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" id="saveSettings">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
