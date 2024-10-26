@@ -23,11 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/api/models');
             const data = await response.json();
             
-            if (data.error) {
-                displayErrorInSelect(`⚠️ ${data.error}`);
-                throw new Error(data.error);
-            }
-
             modelSelect.innerHTML = '';
             if (data.models && data.models.length > 0) {
                 data.models.forEach(model => {
@@ -40,10 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayErrorInSelect('Aucun modèle trouvé');
             }
         } catch (error) {
-            console.error('Error loading models:', error);
-            if (!error.message.includes('⚠️')) {
-                displayErrorInSelect('⚠️ Erreur de connexion à Ollama');
-            }
+            console.error('Erreur lors de la récupération des modèles:', error);
+            displayErrorInSelect('Erreur lors de la récupération des modèles');
         } finally {
             refreshModels.disabled = false;
         }
@@ -71,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
             bootstrap.Modal.getInstance(settingsModal).hide();
         } catch (error) {
             console.error('Error saving settings:', error);
-            alert('Erreur lors de la sauvegarde des paramètres: ' + error.message);
+            alert('Erreur lors de la sauvegarde des paramètres');
         }
     });
 
