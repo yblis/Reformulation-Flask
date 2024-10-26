@@ -174,6 +174,52 @@ Longueur: {length}
             "error": "UNEXPECTED_ERROR"
         }), 500
 
+@app.route('/api/translate', methods=['POST'])
+def translate():
+    if not check_ollama_status():
+        return jsonify({
+            "error": "Le service Ollama n'est pas accessible. Vérifiez la configuration."
+        }), 503
+
+    data = request.get_json()
+    if not data or 'text' not in data or 'language' not in data:
+        return jsonify({
+            "error": "Le texte et la langue cible sont requis."
+        }), 400
+
+    prompt = f'''<|im_start|>system
+Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {data['language']}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.
+<|im_end|>
+<|im_start|>user
+{data['text']}
+<|im_end|>
+<|im_start|>assistant'''
+
+    try:
+        response = requests.post(
+            f'{OLLAMA_URL}/api/generate',
+            json={
+                "model": CURRENT_MODEL,
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            translated_text = result['response'].strip()
+            return jsonify({"text": translated_text})
+        else:
+            return jsonify({
+                "error": "Erreur lors de la traduction du texte."
+            }), 500
+
+    except Exception as e:
+        return jsonify({
+            "error": f"Erreur lors de la traduction: {str(e)}"
+        }), 500
+
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
