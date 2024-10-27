@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import requests
 import os
 from requests.exceptions import ConnectionError, Timeout
@@ -38,6 +38,14 @@ def index():
                          ollama_status=check_ollama_status(),
                          system_prompt=SYSTEM_PROMPT,
                          translation_prompt=TRANSLATION_PROMPT)
+
+@app.route('/sw.js')
+def service_worker():
+    return app.send_static_file('sw.js'), 200, {'Content-Type': 'application/javascript'}
+
+@app.route('/manifest.json')
+def manifest():
+    return app.send_static_file('manifest.json'), 200, {'Content-Type': 'application/json'}
 
 @app.route('/api/status', methods=['GET'])
 def get_status():

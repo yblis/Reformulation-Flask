@@ -1,15 +1,27 @@
 /* Base styles */
+:root {
+    --touch-target-size: 44px;
+}
+
 body {
     background-color: #1E1E1E;
     color: #FFFFFF;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.5;
+    -webkit-tap-highlight-color: rgba(76, 175, 80, 0.2);
 }
 
 /* Layout and spacing */
 .container {
-    max-width: 1200px;
-    padding: 2rem;
+    max-width: 100%;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 1200px;
+        padding: 2rem;
+    }
 }
 
 /* Card styling */
@@ -17,8 +29,14 @@ body {
     background-color: #2D2D2D;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
 }
 
 .card:hover {
@@ -27,7 +45,13 @@ body {
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
 }
 
 /* Form controls */
@@ -38,6 +62,8 @@ body {
     padding: 0.75rem;
     border-radius: 8px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-height: var(--touch-target-size);
+    font-size: 16px;
 }
 
 .form-control:focus {
@@ -50,9 +76,17 @@ body {
 /* Button groups and buttons */
 .btn-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
     margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
 }
 
 .btn {
@@ -60,6 +94,16 @@ body {
     padding: 0.75rem 1.25rem;
     transition: all 0.2s ease;
     white-space: nowrap;
+    min-height: var(--touch-target-size);
+    width: 100%;
+    font-size: 16px;
+    touch-action: manipulation;
+}
+
+@media (min-width: 768px) {
+    .btn {
+        width: auto;
+    }
 }
 
 .btn-outline-secondary {
@@ -94,7 +138,18 @@ body {
 /* Tabs styling */
 .nav-tabs {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+    .nav-tabs {
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
 }
 
 .nav-tabs .nav-link {
@@ -102,6 +157,8 @@ body {
     border: none;
     padding: 1rem 1.5rem;
     transition: color 0.2s ease;
+    min-height: var(--touch-target-size);
+    white-space: nowrap;
 }
 
 .nav-tabs .nav-link:hover {
@@ -127,7 +184,14 @@ body {
 .accordion-button {
     background-color: #2D2D2D;
     color: #FFFFFF;
-    padding: 1rem 1.5rem;
+    padding: 1rem;
+    min-height: var(--touch-target-size);
+}
+
+@media (min-width: 768px) {
+    .accordion-button {
+        padding: 1rem 1.5rem;
+    }
 }
 
 .accordion-button:not(.collapsed) {
@@ -145,21 +209,12 @@ body {
 }
 
 .accordion-body {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
-/* Responsive design adjustments */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-    
-    .btn-group {
-        flex-direction: column;
-    }
-    
-    .btn {
-        width: 100%;
+@media (min-width: 768px) {
+    .accordion-body {
+        padding: 1.5rem;
     }
 }
 
@@ -173,4 +228,15 @@ h5 {
 /* Text utilities */
 .text-muted {
     color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Pull to refresh animation */
+@keyframes pull-to-refresh {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+    100% { transform: translateY(0); }
+}
+
+.pull-to-refresh {
+    animation: pull-to-refresh 1s ease-in-out;
 }
