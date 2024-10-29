@@ -27,58 +27,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateUIForStatus(status) {
         const isConnected = status === 'connected';
         const buttons = document.querySelectorAll('.requires-ollama');
-        
         buttons.forEach(button => {
             button.disabled = !isConnected;
-            button.classList.toggle('btn-disabled', !isConnected);
-            
             if (!isConnected) {
-                button.setAttribute('title', 'Service Ollama non disponible');
-                button.classList.add('cursor-not-allowed', 'opacity-50');
-                
-                // Add visual feedback with a small warning icon
-                const warningIcon = document.createElement('span');
-                warningIcon.className = 'warning-icon ms-2';
-                warningIcon.innerHTML = '⚠️';
-                if (!button.querySelector('.warning-icon')) {
-                    button.appendChild(warningIcon);
-                }
+                button.title = "Service Ollama non disponible";
             } else {
-                button.removeAttribute('title');
-                button.classList.remove('cursor-not-allowed', 'opacity-50');
-                const warningIcon = button.querySelector('.warning-icon');
-                if (warningIcon) {
-                    warningIcon.remove();
-                }
+                button.title = "";
             }
         });
 
-        // Handle status message
-        const existingMessage = document.querySelector('.status-message');
         if (!isConnected) {
-            const message = "⚠️ Service Ollama non disponible. Vérifiez que le service est démarré et que l'URL est correcte dans la configuration.";
-            
+            const message = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
+            const existingMessage = document.querySelector('.status-message');
             if (!existingMessage) {
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-warning mb-3 status-message';
                 alert.role = 'alert';
-                alert.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <div class="me-3">
-                            <strong>État du service:</strong> Non connecté
-                        </div>
-                        <div>
-                            ${message}
-                        </div>
-                    </div>
-                `;
+                alert.textContent = message;
                 const container = document.querySelector('.container');
                 if (container) {
                     container.insertBefore(alert, container.firstChild);
                 }
             }
-        } else if (existingMessage) {
-            existingMessage.remove();
+        } else {
+            const statusMessage = document.querySelector('.status-message');
+            if (statusMessage) {
+                statusMessage.remove();
+            }
         }
     }
 
@@ -118,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const context = contextText.value.trim();
             
             if (!text) {
-                showAlert('Veuillez entrer un texte à reformuler.', 'warning');
+                outputText.value = "Veuillez entrer un texte à reformuler.";
                 return;
             }
 
@@ -127,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const length = getSelectedValue('lengthGroup');
 
             reformulateBtn.disabled = true;
-            reformulateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
+            reformulateBtn.textContent = 'En cours...';
             outputText.value = "Reformulation en cours...";
 
             try {
@@ -149,40 +124,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     outputText.value = data.text;
                 } else {
-                    showAlert(`Erreur: ${data.error || 'Une erreur est survenue'}`, 'danger');
-                    outputText.value = '';
+                    outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                showAlert('Erreur de connexion. Veuillez réessayer.', 'danger');
-                outputText.value = '';
+                outputText.value = "Erreur de connexion. Veuillez réessayer.";
             } finally {
                 reformulateBtn.disabled = false;
-                reformulateBtn.innerHTML = 'Reformuler';
-                checkOllamaStatus(); // Recheck status after operation
+                reformulateBtn.textContent = 'Reformuler';
             }
         });
-    }
-
-    // Show alert function
-    function showAlert(message, type = 'danger', duration = 5000) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        const container = document.querySelector('.container');
-        if (container) {
-            container.insertBefore(alertDiv, container.firstChild);
-        }
-
-        if (duration) {
-            setTimeout(() => {
-                alertDiv.remove();
-            }, duration);
-        }
     }
 
     // Copy functionality
@@ -200,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 2000);
             } catch (err) {
                 console.error('Erreur lors de la copie:', err);
-                showAlert('Erreur lors de la copie du texte', 'danger');
             }
         });
     }

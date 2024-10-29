@@ -33,75 +33,210 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Button states */
-.btn-disabled {
-    cursor: not-allowed !important;
-    opacity: 0.65;
-    position: relative;
+@media (min-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
 }
 
-.btn-disabled:hover {
-    transform: none !important;
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.btn-disabled::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 4px;
-    font-size: 0.875rem;
+.card-body {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Form controls */
+.form-control {
+    background-color: #2D2D2D;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-height: var(--touch-target-size);
+    font-size: 16px;
+}
+
+.form-control:focus {
+    background-color: #2D2D2D;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+    color: #FFFFFF;
+}
+
+/* Button groups and buttons */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.2s ease;
     white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
+    min-height: var(--touch-target-size);
+    width: 100%;
+    font-size: 16px;
+    touch-action: manipulation;
 }
 
-.btn-disabled:hover::after {
-    opacity: 1;
+@media (min-width: 768px) {
+    .btn {
+        width: auto;
+    }
 }
 
-/* Status indicators */
-.status-message {
-    border-left: 4px solid;
-    padding-left: 1rem;
+.btn-outline-secondary {
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
-.alert-warning {
-    border-left-color: var(--bs-warning);
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #4CAF50;
+    color: #4CAF50;
 }
 
-.alert-danger {
-    border-left-color: var(--bs-danger);
+.btn-outline-secondary.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: #FFFFFF;
 }
 
-.alert-success {
-    border-left-color: var(--bs-success);
+.btn-success {
+    background-color: #4CAF50;
+    border: none;
+    color: #FFFFFF;
 }
 
-/* Loading indicators */
-.spinner-border {
-    width: 1rem;
-    height: 1rem;
-    border-width: 0.15em;
+.btn-success:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
 }
 
-/* Form validation */
-.is-invalid {
-    border-color: var(--bs-danger) !important;
+/* Tabs styling */
+.nav-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-.is-invalid:focus {
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+@media (min-width: 768px) {
+    .nav-tabs {
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
 }
 
-/* Warning icon in buttons */
-.warning-icon {
-    font-size: 0.875em;
-    vertical-align: middle;
+.nav-tabs .nav-link {
+    color: #FFFFFF;
+    border: none;
+    padding: 1rem 1.5rem;
+    transition: color 0.2s ease;
+    min-height: var(--touch-target-size);
+    white-space: nowrap;
 }
 
-/* Rest of the existing styles remain unchanged */
+.nav-tabs .nav-link:hover {
+    border: none;
+    color: #4CAF50;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid #4CAF50;
+    color: #4CAF50;
+}
+
+/* Accordion styling */
+.accordion-item {
+    background-color: #2D2D2D;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.accordion-button {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+    padding: 1rem;
+    min-height: var(--touch-target-size);
+}
+
+@media (min-width: 768px) {
+    .accordion-button {
+        padding: 1rem 1.5rem;
+    }
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #2D2D2D;
+    color: #4CAF50;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.accordion-button::after {
+    filter: invert(1);
+}
+
+.accordion-body {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .accordion-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Section headings */
+h5 {
+    color: #FFFFFF;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+/* Text utilities */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Pull to refresh animation */
+@keyframes pull-to-refresh {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+    100% { transform: translateY(0); }
+}
+
+.pull-to-refresh {
+    animation: pull-to-refresh 1s ease-in-out;
+}
