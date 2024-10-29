@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
 
+    // Initialize reformulate button state
+    if (reformulateBtn) {
+        reformulateBtn.disabled = false; // Initialize as enabled
+    }
+
     // Status check interval
     let lastStatus = 'unknown';
     
@@ -20,7 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error checking status:', error);
-            updateUIForStatus('disconnected');
+            if (reformulateBtn) {
+                reformulateBtn.disabled = false; // Enable button on error
+            }
         }
     }
 
@@ -83,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reformulation functionality
     if (reformulateBtn) {
+        reformulateBtn.disabled = false; // Ensure button starts enabled
         reformulateBtn.addEventListener('click', async function() {
             if (!inputText.value.trim()) {
                 outputText.value = "Veuillez entrer un texte à reformuler.";
