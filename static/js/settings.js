@@ -8,37 +8,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const translationPrompt = document.getElementById('translationPrompt');
 
     function showAlert(message, type = 'danger', duration = 5000) {
-        try {
-            // Remove any existing alerts
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
+        // Remove any existing alerts
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
 
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Find the container in the config tab
-            const container = document.querySelector('#config');
-            if (!container) {
-                console.error('Alert container not found');
-                return;
-            }
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            <div class="d-flex align-items-center">
+                ${type === 'danger' ? '<i class="bi bi-exclamation-triangle-fill me-2"></i>' : ''}
+                ${type === 'warning' ? '<i class="bi bi-exclamation-circle-fill me-2"></i>' : ''}
+                ${type === 'success' ? '<i class="bi bi-check-circle-fill me-2"></i>' : ''}
+                <div>${message}</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Find the container in the config tab
+        const container = document.querySelector('#config');
+        if (!container) {
+            console.error('Alert container not found');
+            return;
+        }
 
-            // Insert at the beginning of the config tab
-            container.insertBefore(alert, container.firstChild);
+        // Insert at the beginning of the config tab
+        container.insertBefore(alert, container.firstChild);
 
-            if (duration) {
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
-                    }
-                }, duration);
-            }
-        } catch (e) {
-            console.error('Error showing alert:', e);
+        if (duration) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, duration);
         }
     }
 
@@ -62,10 +63,57 @@ document.addEventListener('DOMContentLoaded', function() {
                         option.selected = true;
                     }
                 }
+
+                // Check connection status
+                const statusResponse = await fetch('/api/status');
+                const statusData = await statusResponse.json();
+                updateUIForConnectionStatus(statusData.status === 'connected');
             }
         } catch (error) {
             console.error('Error loading preferences:', error);
-            showAlert('Error loading preferences');
+            showAlert('Erreur lors du chargement des préférences', 'danger');
+            updateUIForConnectionStatus(false);
+        }
+    }
+
+    function updateUIForConnectionStatus(isConnected) {
+        const configFields = [ollamaUrl, modelSelect, systemPrompt, translationPrompt, saveConfig, refreshModels];
+        
+        configFields.forEach(element => {
+            if (element) {
+                element.classList.toggle('is-invalid', !isConnected);
+            }
+        });
+
+        if (refreshModels) {
+            refreshModels.disabled = !isConnected;
+            refreshModels.innerHTML = isConnected ? 
+                'Rafraîchir les modèles' : 
+                '<i class="bi bi-exclamation-triangle"></i> Service non disponible';
+        }
+
+        // Update status indicator
+        const statusIndicator = document.createElement('div');
+        statusIndicator.className = `alert ${isConnected ? 'alert-success' : 'alert-danger'} mb-3`;
+        statusIndicator.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    <i class="bi ${isConnected ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                </div>
+                <div>
+                    <strong>État du service:</strong> ${isConnected ? 'Connecté' : 'Non connecté'}
+                </div>
+            </div>
+        `;
+
+        const existingStatus = document.querySelector('.alert-success, .alert-danger');
+        if (existingStatus) {
+            existingStatus.replaceWith(statusIndicator);
+        } else {
+            const configTab = document.querySelector('#config');
+            if (configTab) {
+                configTab.insertBefore(statusIndicator, configTab.firstChild);
+            }
         }
     }
 
@@ -81,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
             option.selected = true;
             modelSelect.appendChild(option);
             modelSelect.disabled = true;
+            modelSelect.classList.add('is-invalid');
             return;
         }
 
@@ -101,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.selectedIndex = 0;
             }
             modelSelect.disabled = false;
+            modelSelect.classList.remove('is-invalid');
         } else {
             const option = document.createElement('option');
             option.value = '';
@@ -109,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             option.selected = true;
             modelSelect.appendChild(option);
             modelSelect.disabled = true;
+            modelSelect.classList.add('is-invalid');
         }
     }
 
@@ -117,7 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const previousSelection = modelSelect.value;
-
+            refreshModels.disabled = true;
+            refreshModels.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Chargement...';
+            
             let url;
             try {
                 url = new URL(ollamaUrl.value.trim());
@@ -125,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error("L'URL d'Ollama n'est pas valide");
             }
 
-            refreshModels.disabled = true;
             updateModelSelect([], 'Chargement des modèles...', previousSelection);
 
             const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
@@ -141,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             updateModelSelect(data.models, '', previousSelection);
+            updateUIForConnectionStatus(true);
 
             if (data.models.length === 0) {
                 showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
@@ -149,9 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Erreur lors de la récupération des modèles:', error.message);
             updateModelSelect([], error.message);
-            showAlert(error.message || 'Erreur lors de la récupération des modèles');
+            updateUIForConnectionStatus(false);
+            showAlert(error.message || 'Erreur lors de la récupération des modèles', 'danger');
         } finally {
             refreshModels.disabled = false;
+            refreshModels.innerHTML = 'Rafraîchir les modèles';
         }
     }
 
@@ -167,13 +222,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             if (!ollamaUrl || !modelSelect) {
-                showAlert('Éléments de configuration manquants');
+                showAlert('Éléments de configuration manquants', 'danger');
                 return;
             }
 
             const originalText = saveConfig.textContent;
             saveConfig.disabled = true;
-            saveConfig.textContent = 'Sauvegarde en cours...';
+            saveConfig.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sauvegarde...';
 
             try {
                 try {
@@ -232,6 +287,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
                 const statusData = await statusResponse.json();
                 
+                updateUIForConnectionStatus(statusData.status === 'connected');
+                
                 if (statusData.status === 'connected') {
                     await loadModels();
                 } else {
@@ -240,10 +297,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } catch (error) {
                 console.error('Erreur:', error.message);
-                showAlert(error.message || 'Erreur lors de la sauvegarde');
+                showAlert(error.message || 'Erreur lors de la sauvegarde', 'danger');
+                updateUIForConnectionStatus(false);
             } finally {
                 saveConfig.disabled = false;
-                saveConfig.textContent = originalText;
+                saveConfig.innerHTML = originalText;
             }
         });
     }
