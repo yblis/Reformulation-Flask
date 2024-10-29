@@ -10,7 +10,8 @@ app.secret_key = os.urandom(24)
 OLLAMA_URL = "http://localhost:11434"
 CURRENT_MODEL = "qwen2.5:3b"
 SYSTEM_PROMPT = """Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
-Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire."""
+Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
+Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation."""
 TRANSLATION_PROMPT = """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire."""
 
 def check_ollama_status(url=None):
@@ -131,6 +132,7 @@ def reformulate():
         }), 400
 
     input_text = data.get('text')
+    context = data.get('context', '').strip()
     tone = data.get('tone')
     format_type = data.get('format')
     length = data.get('length')
@@ -141,11 +143,13 @@ def reformulate():
             "error": "MISSING_FIELDS"
         }), 400
 
+    context_section = f"Contexte / Email reçu:\n{context}\n\n" if context else ""
+    
     prompt = f"""<|im_start|>system
 {SYSTEM_PROMPT}
 <|im_end|>
 <|im_start|>user
-Texte à reformuler: {input_text}
+{context_section}Texte à reformuler: {input_text}
 Ton: {tone}
 Format: {format_type}
 Longueur: {length}

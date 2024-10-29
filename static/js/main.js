@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elements for reformulation
+    const contextText = document.getElementById('contextText');
     const inputText = document.getElementById('inputText');
     const outputText = document.getElementById('outputText');
     const reformulateBtn = document.getElementById('reformulateBtn');
@@ -81,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get selected value from a tag group
     function getSelectedValue(groupId) {
         const activeButton = document.querySelector(`#${groupId} .btn.active`);
-        return activeButton ? activeButton.textContent : '';
+        return activeButton ? activeButton.dataset.value : '';
     }
 
     // Reformulation functionality
@@ -89,6 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
         reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
             const text = inputText.value.trim();
+            const context = contextText.value.trim();
+            
             if (!text) {
                 outputText.value = "Veuillez entrer un texte à reformuler.";
                 return;
@@ -97,14 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const tone = getSelectedValue('toneGroup');
             const format = getSelectedValue('formatGroup');
             const length = getSelectedValue('lengthGroup');
-
-            // Debug logging
-            console.log('Selected values:', {
-                text: text,
-                tone: tone,
-                format: format,
-                length: length
-            });
 
             reformulateBtn.disabled = true;
             reformulateBtn.textContent = 'En cours...';
@@ -117,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        context: context,
                         text: text,
                         tone: tone,
                         format: format,
@@ -162,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear functionality
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
+            if (contextText) contextText.value = '';
             if (inputText) inputText.value = '';
             if (outputText) outputText.value = '';
         });
