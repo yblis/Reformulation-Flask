@@ -7,11 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
 
-    // Add requires-ollama class to reformulate button
-    if (reformulateBtn) {
-        reformulateBtn.classList.add('requires-ollama');
-    }
-
     // Status check interval
     let lastStatus = 'unknown';
     
@@ -35,17 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update reformulate button state
         if (reformulateBtn) {
             reformulateBtn.disabled = !isConnected;
-            reformulateBtn.title = !isConnected ? "Service Ollama non disponible" : "";
         }
-
-        // Update other buttons that require Ollama
-        const buttons = document.querySelectorAll('.requires-ollama');
-        buttons.forEach(button => {
-            if (button !== reformulateBtn) {  // Skip reformulateBtn as it's already handled
-                button.disabled = !isConnected;
-                button.title = !isConnected ? "Service Ollama non disponible" : "";
-            }
-        });
 
         if (!isConnected) {
             const message = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
@@ -99,21 +84,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reformulation functionality
     if (reformulateBtn) {
         reformulateBtn.addEventListener('click', async function() {
-            const text = inputText.value.trim();
-            const context = contextText.value.trim();
-            
-            if (!text) {
+            if (!inputText.value.trim()) {
                 outputText.value = "Veuillez entrer un texte à reformuler.";
                 return;
             }
 
-            const tone = getSelectedValue('toneGroup');
-            const format = getSelectedValue('formatGroup');
-            const length = getSelectedValue('lengthGroup');
-
+            const originalText = reformulateBtn.textContent;
             reformulateBtn.disabled = true;
             reformulateBtn.textContent = 'En cours...';
-            outputText.value = "Reformulation en cours...";
 
             try {
                 const response = await fetch('/api/reformulate', {
@@ -122,11 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        context: context,
-                        text: text,
-                        tone: tone,
-                        format: format,
-                        length: length
+                        context: contextText.value.trim(),
+                        text: inputText.value.trim(),
+                        tone: getSelectedValue('toneGroup'),
+                        format: getSelectedValue('formatGroup'),
+                        length: getSelectedValue('lengthGroup')
                     })
                 });
 
@@ -141,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 outputText.value = "Erreur de connexion. Veuillez réessayer.";
             } finally {
                 reformulateBtn.disabled = false;
-                reformulateBtn.textContent = 'Reformuler';
+                reformulateBtn.textContent = originalText;
             }
         });
     }
