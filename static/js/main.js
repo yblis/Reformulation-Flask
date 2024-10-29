@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
 
+    // Add requires-ollama class to reformulate button
+    if (reformulateBtn) {
+        reformulateBtn.classList.add('requires-ollama');
+    }
+
     // Status check interval
     let lastStatus = 'unknown';
     
@@ -26,13 +31,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateUIForStatus(status) {
         const isConnected = status === 'connected';
+        
+        // Update reformulate button state
+        if (reformulateBtn) {
+            reformulateBtn.disabled = !isConnected;
+            reformulateBtn.title = !isConnected ? "Service Ollama non disponible" : "";
+        }
+
+        // Update other buttons that require Ollama
         const buttons = document.querySelectorAll('.requires-ollama');
         buttons.forEach(button => {
-            button.disabled = !isConnected;
-            if (!isConnected) {
-                button.title = "Service Ollama non disponible";
-            } else {
-                button.title = "";
+            if (button !== reformulateBtn) {  // Skip reformulateBtn as it's already handled
+                button.disabled = !isConnected;
+                button.title = !isConnected ? "Service Ollama non disponible" : "";
             }
         });
 
@@ -87,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reformulation functionality
     if (reformulateBtn) {
-        reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
             const text = inputText.value.trim();
             const context = contextText.value.trim();
