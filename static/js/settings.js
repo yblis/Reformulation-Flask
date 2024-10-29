@@ -42,6 +42,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function loadPreferences() {
+        try {
+            const response = await fetch('/api/preferences');
+            if (response.ok) {
+                const prefs = await response.json();
+                ollamaUrl.value = prefs.ollama_url;
+                systemPrompt.value = prefs.system_prompt;
+                translationPrompt.value = prefs.translation_prompt;
+                
+                // Load models after setting URL
+                await loadModels();
+                
+                // Set the current model
+                if (modelSelect && prefs.current_model) {
+                    const options = Array.from(modelSelect.options);
+                    const option = options.find(opt => opt.value === prefs.current_model);
+                    if (option) {
+                        option.selected = true;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading preferences:', error);
+            showAlert('Error loading preferences');
+        }
+    }
+
     function updateModelSelect(models = [], errorMessage = '', previousSelection = '') {
         if (!modelSelect) return;
         
@@ -70,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.appendChild(option);
             });
             
-            // Only auto-select first model if no previous selection exists
             if (!hasSelectedModel && !previousSelection && models.length > 0) {
                 modelSelect.selectedIndex = 0;
             }
@@ -90,10 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modelSelect || !refreshModels || !ollamaUrl) return;
 
         try {
-            // Remember current selection before refreshing
             const previousSelection = modelSelect.value;
 
-            // Validate URL format before making the request
             let url;
             try {
                 url = new URL(ollamaUrl.value.trim());
@@ -104,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
             refreshModels.disabled = true;
             updateModelSelect([], 'Chargement des modèles...', previousSelection);
 
-            // Add the current URL as a query parameter
             const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
             const response = await fetch(apiUrl);
             const data = await response.json();
@@ -120,21 +143,13 @@ document.addEventListener('DOMContentLoaded', function() {
             updateModelSelect(data.models, '', previousSelection);
 
             if (data.models.length === 0) {
-                try {
-                    showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
-                } catch (e) {
-                    console.error('Error showing alert:', e);
-                }
+                showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
             }
 
         } catch (error) {
             console.error('Erreur lors de la récupération des modèles:', error.message);
             updateModelSelect([], error.message);
-            try {
-                showAlert(error.message || 'Erreur lors de la récupération des modèles');
-            } catch (e) {
-                console.error('Error showing alert:', e);
-            }
+            showAlert(error.message || 'Erreur lors de la récupération des modèles');
         } finally {
             refreshModels.disabled = false;
         }
@@ -152,11 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             if (!ollamaUrl || !modelSelect) {
-                try {
-                    showAlert('Éléments de configuration manquants');
-                } catch (e) {
-                    console.error('Error showing alert:', e);
-                }
+                showAlert('Éléments de configuration manquants');
                 return;
             }
 
@@ -165,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
             saveConfig.textContent = 'Sauvegarde en cours...';
 
             try {
-                // Validate URL format
                 try {
                     new URL(ollamaUrl.value.trim());
                 } catch (e) {
@@ -216,34 +226,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                try {
-                    showAlert('Configuration sauvegardée avec succès', 'success', 3000);
-                } catch (e) {
-                    console.error('Error showing success alert:', e);
-                }
+                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
                 
                 // Check connection with new URL
                 const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
                 const statusData = await statusResponse.json();
                 
                 if (statusData.status === 'connected') {
-                    // Only reload models if connection is successful
                     await loadModels();
                 } else {
-                    try {
-                        showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
-                    } catch (e) {
-                        console.error('Error showing warning alert:', e);
-                    }
+                    showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
                 }
 
             } catch (error) {
                 console.error('Erreur:', error.message);
-                try {
-                    showAlert(error.message || 'Erreur lors de la sauvegarde');
-                } catch (e) {
-                    console.error('Error showing error alert:', e);
-                }
+                showAlert(error.message || 'Erreur lors de la sauvegarde');
             } finally {
                 saveConfig.disabled = false;
                 saveConfig.textContent = originalText;
@@ -251,6 +248,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load initial configuration
-    loadModels();
+    // Load initial preferences and configuration
+    loadPreferences();
 });
