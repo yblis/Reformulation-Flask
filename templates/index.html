@@ -25,82 +25,74 @@
     <div class="tab-content">
         <!-- Reformulation Tab -->
         <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
-            <div class="row">
-                <!-- Left Column -->
-                <div class="col-md-6 mb-4 mb-md-0">
-                    <!-- Context Section -->
-                    <div class="card h-100 mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Contexte / Email reçu:</h5>
-                            <textarea id="contextText" class="form-control" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+            <!-- Context Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Contexte / Email reçu:</h5>
+                    <textarea id="contextText" class="form-control" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Entre ton texte à reformuler:</h5>
+                    <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                </div>
+            </div>
+
+            <!-- Options Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Options de reformulation</h5>
+                    
+                    <!-- Tone Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Ton</h6>
+                        <div class="btn-group" role="group" id="toneGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
                         </div>
                     </div>
 
-                    <!-- Input Section -->
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Entre ton texte à reformuler:</h5>
-                            <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <!-- Format Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Format</h6>
+                        <div class="btn-group" role="group" id="formatGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                        </div>
+                    </div>
+
+                    <!-- Length Options -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Longueur</h6>
+                        <div class="btn-group" role="group" id="lengthGroup">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Court">Court</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Moyen">Moyen</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Column -->
-                <div class="col-md-6">
-                    <!-- Options Section -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Options de reformulation</h5>
-                            
-                            <!-- Tone Options -->
-                            <div class="mb-4">
-                                <h6 class="mb-2">Ton</h6>
-                                <div class="btn-group" role="group" id="toneGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
-                                </div>
-                            </div>
+            <!-- Action Button -->
+            <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
 
-                            <!-- Format Options -->
-                            <div class="mb-4">
-                                <h6 class="mb-2">Format</h6>
-                                <div class="btn-group" role="group" id="formatGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
-                                </div>
-                            </div>
-
-                            <!-- Length Options -->
-                            <div class="mb-4">
-                                <h6 class="mb-2">Longueur</h6>
-                                <div class="btn-group" role="group" id="lengthGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Court">Court</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Moyen">Moyen</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
-
-                    <!-- Output Section -->
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="mb-3">Réponse:</h5>
-                            <textarea id="outputText" class="form-control mb-3" rows="6" readonly></textarea>
-                            <div class="btn-group w-100">
-                                <button id="copyBtn" class="btn btn-success">Copier</button>
-                                <button id="clearBtn" class="btn btn-success">Effacer</button>
-                            </div>
-                        </div>
+            <!-- Output Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Réponse:</h5>
+                    <textarea id="outputText" class="form-control mb-3" rows="6" readonly></textarea>
+                    <div class="btn-group w-100">
+                        <button id="copyBtn" class="btn btn-success">Copier</button>
+                        <button id="clearBtn" class="btn btn-success">Effacer</button>
                     </div>
                 </div>
             </div>
