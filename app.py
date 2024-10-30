@@ -188,27 +188,26 @@ def get_provider_models(provider):
                 if not preferences.groq_api_key:
                     return jsonify({"error": "Groq API key not configured"}), 401
                     
-                headers = {
-                    "Authorization": f"Bearer {preferences.groq_api_key}",
-                    "Content-Type": "application/json"
-                }
-                
+                # Use the exact format provided by user
                 response = requests.get(
                     "https://api.groq.com/openai/v1/models",
-                    headers=headers
+                    headers={
+                        "Authorization": f"Bearer {preferences.groq_api_key}",
+                        "Content-Type": "application/json"
+                    }
                 )
                 
                 if response.status_code != 200:
                     return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
                     
-                models = response.json()
+                models = response.json()["data"]
                 return jsonify({
                     "models": [
                         {
                             "id": model["id"],
                             "name": model.get("name", model["id"])
                         }
-                        for model in models["data"]
+                        for model in models
                     ]
                 })
             except Exception as e:
