@@ -7,6 +7,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
 
+    // Load saved URL from localStorage
+    if (ollamaUrl) {
+        const savedUrl = localStorage.getItem('ollamaUrl');
+        if (savedUrl) {
+            ollamaUrl.value = savedUrl;
+        }
+    }
+
     function showAlert(message, type = 'danger', duration = 5000) {
         try {
             // Remove any existing alerts
@@ -185,6 +193,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = await settingsResponse.json();
                     throw new Error(data.message || 'Erreur lors de la sauvegarde des paramètres');
                 }
+
+                // Store URL in localStorage
+                localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
 
                 if (systemPrompt) {
                     const promptResponse = await fetch('/api/prompt', {
