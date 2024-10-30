@@ -1,5 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Elements for reformulation
+    // Add collapse button icon handling
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-chevron-up');
+                icon.classList.toggle('bi-chevron-down');
+            }
+        });
+    });
+
+    // Rest of the existing main.js code...
     const contextText = document.getElementById('contextText');
     const inputText = document.getElementById('inputText');
     const outputText = document.getElementById('outputText');
@@ -92,26 +103,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusMessage = document.querySelector('.status-message');
         
         if (!isConnected && lastStatus !== 'unknown') {
-            const savedUrl = localStorage.getItem('ollamaUrl');
-            if (!savedUrl || !checkOllamaStatus()) {
-                if (!statusMessage) {
-                    const alert = document.createElement('div');
-                    alert.className = 'alert alert-warning mb-3 status-message';
-                    alert.role = 'alert';
-                    alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
-                    const container = document.querySelector('.container');
-                    if (container) {
-                        container.insertBefore(alert, container.firstChild);
-                    }
+            if (!statusMessage) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning mb-3 status-message';
+                alert.role = 'alert';
+                alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
+                const container = document.querySelector('.container');
+                if (container) {
+                    container.insertBefore(alert, container.firstChild);
                 }
             }
         } else if (statusMessage) {
             statusMessage.remove();
         }
     }
-
-    checkOllamaStatus();
-    setInterval(checkOllamaStatus, 30000);
 
     function setupTagGroup(groupId) {
         const group = document.getElementById(groupId);
@@ -220,5 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (outputText) updateTextStats(outputText.value, outputStats);
     if (contextText) updateTextStats(contextText.value, contextStats);
 
-    // Rest of the existing code...
+    // Initialize status check
+    checkOllamaStatus();
+    setInterval(checkOllamaStatus, 30000);
 });
