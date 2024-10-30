@@ -113,8 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!modelSelect || !refreshModels || !ollamaUrl) return;
 
         try {
+            // Get the previously selected model from localStorage
+            const savedModel = localStorage.getItem('selectedModel');
+
             // Remember current selection before refreshing
-            const previousSelection = modelSelect.value;
+            const previousSelection = savedModel || modelSelect.value;
 
             // Validate URL format before making the request
             let url;
@@ -209,8 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || 'Erreur lors de la sauvegarde des paramètres');
                 }
 
-                // Store URL in localStorage
+                // Store URL and selected model in localStorage
                 localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
+                localStorage.setItem('selectedModel', modelSelect.value);
 
                 // Store prompts in localStorage
                 if (systemPrompt) {
