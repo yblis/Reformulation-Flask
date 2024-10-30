@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 import requests
 import os
 from requests.exceptions import ConnectionError, Timeout
-from models import db, UserPreferences
+from models import db, UserPreferences, ReformulationHistory
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -39,11 +39,13 @@ def check_ollama_status(url=None):
 @app.route('/')
 def index():
     preferences = UserPreferences.get_or_create()
+    history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',
                          ollama_status=check_ollama_status(),
                          system_prompt=preferences.system_prompt,
                          translation_prompt=preferences.translation_prompt,
-                         email_prompt=preferences.email_prompt)
+                         email_prompt=preferences.email_prompt,
+                         history=[h.to_dict() for h in history])
 
 @app.route('/api/status')
 def check_status():
@@ -52,6 +54,11 @@ def check_status():
     return jsonify({
         "status": "connected" if status else "disconnected"
     })
+
+@app.route('/api/history')
+def get_history():
+    history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
+    return jsonify([h.to_dict() for h in history])
 
 @app.route('/api/models')
 def get_models():
@@ -99,7 +106,21 @@ Longueur: {data.get('length')}
         
         if response.status_code == 200:
             result = response.json()
-            return jsonify({"text": result['response'].strip()})
+            reformulated_text = result['response'].strip()
+            
+            # Save to history
+            history = ReformulationHistory(
+                original_text=data.get('text'),
+                context=data.get('context', ''),
+                reformulated_text=reformulated_text,
+                tone=data.get('tone'),
+                format=data.get('format'),
+                length=data.get('length')
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+            return jsonify({"text": reformulated_text})
         else:
             return jsonify({"error": "Error calling Ollama API"}), 500
             

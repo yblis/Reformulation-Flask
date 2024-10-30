@@ -27,3 +27,25 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
             db.session.add(pref)
             db.session.commit()
         return pref
+
+class ReformulationHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    original_text = db.Column(db.Text, nullable=False)
+    context = db.Column(db.Text)
+    reformulated_text = db.Column(db.Text, nullable=False)
+    tone = db.Column(db.String(50), nullable=False)
+    format = db.Column(db.String(50), nullable=False)
+    length = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'original_text': self.original_text,
+            'context': self.context,
+            'reformulated_text': self.reformulated_text,
+            'tone': self.tone,
+            'format': self.format,
+            'length': self.length,
+            'created_at': self.created_at.isoformat()
+        }
