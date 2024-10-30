@@ -92,21 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
             showAlert(error.message, 'danger', 5000);
-            
-            // Add direct API call for debugging
-            if (provider === 'groq') {
-                fetch('/api/models/groq')
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Groq models response:', data);
-                        if (data.error) {
-                            console.error('Error loading groq models:', data.error);
-                        } else {
-                            console.log('Loaded models:', data.models);
-                        }
-                    })
-                    .catch(error => console.error('Error fetching groq models:', error));
-            }
         } finally {
             if (button) {
                 button.disabled = false;
@@ -170,13 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Get provider-specific settings
                 if (selectedProvider === 'groq') {
                     const groqKeyInput = document.getElementById('groqKey');
-                    const groqModelSelect = document.getElementById('groqModel');
+                    console.log('Saving Groq key:', groqKeyInput?.value ? 'Key present' : 'No key'); // Debug log
                     
                     if (groqKeyInput && groqKeyInput.value.trim()) {
                         config.settings.apiKey = groqKeyInput.value.trim();
-                    }
-                    if (groqModelSelect && groqModelSelect.value) {
-                        config.settings.model = groqModelSelect.value;
                     }
                 } else if (selectedProvider === 'ollama') {
                     config.settings = {
@@ -195,6 +177,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
+                console.log('Sending config:', {...config, settings: {...config.settings, apiKey: '[REDACTED]'}}); // Debug log
+
                 const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -206,9 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                // Refresh models after saving settings if API key was provided
-                if (selectedProvider !== 'ollama' && config.settings.apiKey) {
-                    await loadProviderModels(selectedProvider);
+                // Only refresh models if we have an API key
+                if (selectedProvider === 'groq' && config.settings.apiKey) {
+                    await loadProviderModels('groq');
                 }
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
