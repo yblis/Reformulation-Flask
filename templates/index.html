@@ -142,9 +142,20 @@
                     
                     <h5 class="mb-3">Contenu et contexte:</h5>
                     <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+
+                    <h5 class="mb-3">Prénom NOM:</h5>
+                    <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
                     
                     <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
                     
+                    <div class="mb-4 d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-2">Objet généré:</h5>
+                            <input type="text" id="emailSubject" class="form-control" readonly>
+                        </div>
+                        <button id="copyEmailSubject" class="btn btn-success align-self-end" style="height: 38px;">Copier</button>
+                    </div>
+
                     <h5 class="mb-3">Email généré:</h5>
                     <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
                     

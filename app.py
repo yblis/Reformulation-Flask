@@ -248,12 +248,15 @@ def generate_email():
             "error": "Le type d'email et le contenu sont requis."
         }), 400
 
+    sender = data.get('sender', '').strip()
+    sender_info = f"\nSignature: {sender}" if sender else ""
+
     prompt = f'''<|im_start|>system
 {EMAIL_PROMPT}
 <|im_end|>
 <|im_start|>user
 Type d'email: {data['type']}
-Contenu et contexte: {data['content']}
+Contenu et contexte: {data['content']}{sender_info}
 <|im_end|>
 <|im_start|>assistant'''
 

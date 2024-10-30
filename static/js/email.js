@@ -1,9 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const emailType = document.getElementById('emailType');
     const emailContent = document.getElementById('emailContent');
+    const emailSender = document.getElementById('emailSender');
+    const emailSubject = document.getElementById('emailSubject');
     const emailOutput = document.getElementById('emailOutput');
     const generateEmail = document.getElementById('generateEmail');
     const copyEmail = document.getElementById('copyEmail');
+    const copyEmailSubject = document.getElementById('copyEmailSubject');
     const clearEmail = document.getElementById('clearEmail');
     const emailPrompt = document.getElementById('emailPrompt');
 
@@ -20,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         generateEmail.addEventListener('click', async function() {
             const type = emailType.value.trim();
             const content = emailContent.value.trim();
+            const sender = emailSender.value.trim();
             
             if (!type || !content) {
                 emailOutput.value = "Veuillez remplir tous les champs.";
@@ -29,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
             generateEmail.disabled = true;
             generateEmail.textContent = 'En cours...';
             emailOutput.value = "Génération de l'email en cours...";
+            emailSubject.value = "";
 
             try {
                 const response = await fetch('/api/generate-email', {
@@ -38,13 +43,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({
                         type: type,
-                        content: content
+                        content: content,
+                        sender: sender
                     })
                 });
 
                 const data = await response.json();
                 if (response.ok) {
-                    emailOutput.value = data.text;
+                    // Split the response into subject and body
+                    const lines = data.text.split('\n');
+                    const subjectLine = lines.find(line => line.toLowerCase().startsWith('objet:'));
+                    
+                    if (subjectLine) {
+                        emailSubject.value = subjectLine.substring(6).trim();
+                        emailOutput.value = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
+                    } else {
+                        emailSubject.value = "";
+                        emailOutput.value = data.text;
+                    }
                 } else {
                     emailOutput.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
                 }
@@ -76,10 +92,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    if (copyEmailSubject) {
+        copyEmailSubject.addEventListener('click', async () => {
+            const text = emailSubject.value;
+            if (!text) return;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = copyEmailSubject.textContent;
+                copyEmailSubject.textContent = 'Copié!';
+                setTimeout(() => {
+                    copyEmailSubject.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+        });
+    }
+
     if (clearEmail) {
         clearEmail.addEventListener('click', () => {
             emailType.value = '';
             emailContent.value = '';
+            emailSender.value = '';
+            emailSubject.value = '';
             emailOutput.value = '';
         });
     }
