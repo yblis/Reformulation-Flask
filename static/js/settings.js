@@ -7,15 +7,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const useOpenAI = document.getElementById('useOpenAI');
     const ollamaConfig = document.getElementById('ollamaConfig');
     const openaiConfig = document.getElementById('openaiConfig');
+    const openaiUrl = document.getElementById('openaiUrl');
     const openaiApiKey = document.getElementById('openaiApiKey');
     const openaiModelSelect = document.getElementById('openaiModelSelect');
+    const refreshOpenAIModels = document.getElementById('refreshOpenAIModels');
     const alertContainer = document.getElementById('alertContainer');
 
-    // Load saved URL from localStorage
+    // Load saved URLs from localStorage
     if (ollamaUrl) {
         const savedUrl = localStorage.getItem('ollamaUrl');
         if (savedUrl) {
             ollamaUrl.value = savedUrl;
+        }
+    }
+
+    if (openaiUrl) {
+        const savedOpenAIUrl = localStorage.getItem('openaiUrl');
+        if (savedOpenAIUrl) {
+            openaiUrl.value = savedOpenAIUrl;
         }
     }
 
@@ -32,56 +41,63 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reload models for the selected provider
             loadModels();
         });
-    }
 
-    function showAlert(message, type = 'danger', duration = 5000) {
-        try {
-            if (!alertContainer) {
-                console.error('Alert container not found');
-                return;
-            }
-
-            // Remove any existing alerts
-            const existingAlerts = alertContainer.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
-
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            alertContainer.appendChild(alert);
-
-            if (duration) {
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
-                    }
-                }, duration);
-            }
-        } catch (e) {
-            console.error('Error showing alert:', e);
+        // Set initial visibility based on checkbox state
+        if (useOpenAI.checked) {
+            if (ollamaConfig) ollamaConfig.style.display = 'none';
+            if (openaiConfig) openaiConfig.style.display = 'block';
+        } else {
+            if (ollamaConfig) ollamaConfig.style.display = 'block';
+            if (openaiConfig) openaiConfig.style.display = 'none';
         }
     }
 
-    function updateModelSelect(models = [], errorMessage = '', previousSelection = '') {
-        if (!modelSelect) return;
+    function showAlert(message, type = 'danger', duration = 5000) {
+        if (!alertContainer) {
+            console.error('Alert container not found');
+            return;
+        }
+
+        // Remove any existing alerts
+        const existingAlerts = alertContainer.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
         
-        modelSelect.innerHTML = '';
+        alertContainer.appendChild(alert);
+
+        if (duration) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, duration);
+        }
+    }
+
+    function updateModelSelect(models = [], errorMessage = '', previousSelection = '', isOpenAI = false) {
+        const select = isOpenAI ? openaiModelSelect : modelSelect;
+        if (!select) return;
+        
+        select.innerHTML = '';
+        
         if (errorMessage) {
             const option = document.createElement('option');
             option.value = '';
             option.textContent = `Erreur: ${errorMessage}`;
             option.disabled = true;
             option.selected = true;
-            modelSelect.appendChild(option);
-            modelSelect.disabled = true;
+            select.appendChild(option);
+            select.disabled = true;
             return;
         }
 
-        if (models.length > 0) {
+        if (Array.isArray(models) && models.length > 0) {
             let hasSelectedModel = false;
             models.forEach(model => {
                 const option = document.createElement('option');
@@ -91,38 +107,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.selected = true;
                     hasSelectedModel = true;
                 }
-                modelSelect.appendChild(option);
+                select.appendChild(option);
             });
             
             if (!hasSelectedModel && models.length > 0) {
-                modelSelect.selectedIndex = 0;
+                select.selectedIndex = 0;
             }
-            modelSelect.disabled = false;
+            select.disabled = false;
         } else {
             const option = document.createElement('option');
             option.value = '';
             option.textContent = 'Aucun modèle disponible';
             option.disabled = true;
             option.selected = true;
-            modelSelect.appendChild(option);
-            modelSelect.disabled = true;
+            select.appendChild(option);
+            select.disabled = true;
         }
     }
 
-    async function loadModels() {
-        if (!modelSelect) return;
+    async function loadOpenAIModels() {
+        if (!openaiModelSelect) return;
 
         try {
-            const previousSelection = localStorage.getItem('selectedModel');
+            const previousSelection = localStorage.getItem('selectedOpenAIModel');
+            
+            if (refreshOpenAIModels) refreshOpenAIModels.disabled = true;
+            updateModelSelect([], 'Chargement des modèles...', previousSelection, true);
 
-            if (refreshModels) refreshModels.disabled = true;
-            updateModelSelect([], 'Chargement des modèles...', previousSelection);
-
-            const apiUrl = useOpenAI && useOpenAI.checked ? 
-                '/api/openai_models' : 
-                '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
-
-            const response = await fetch(apiUrl);
+            const response = await fetch('/api/openai_models');
             const data = await response.json();
 
             if (!response.ok) {
@@ -130,28 +142,71 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const models = data.models || [];
-            updateModelSelect(models, '', previousSelection);
+            updateModelSelect(models, '', previousSelection, true);
 
             if (models.length === 0) {
-                showAlert('Aucun modèle disponible.', 'warning');
+                showAlert('Aucun modèle OpenAI disponible.', 'warning');
             }
-
         } catch (error) {
             console.error('Erreur lors de la récupération des modèles:', error.message);
-            updateModelSelect([], error.message);
-            showAlert(error.message || 'Erreur lors de la récupération des modèles');
+            updateModelSelect([], error.message, '', true);
+            showAlert(error.message || 'Erreur lors de la récupération des modèles OpenAI');
+        } finally {
+            if (refreshOpenAIModels) refreshOpenAIModels.disabled = false;
+        }
+    }
+
+    async function loadOllamaModels() {
+        if (!modelSelect) return;
+
+        try {
+            const previousSelection = localStorage.getItem('selectedModel');
+
+            if (refreshModels) refreshModels.disabled = true;
+            updateModelSelect([], 'Chargement des modèles...', previousSelection, false);
+
+            const url = ollamaUrl ? ollamaUrl.value.trim() : '';
+            const response = await fetch('/api/models?url=' + encodeURIComponent(url));
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors de la récupération des modèles');
+            }
+
+            const models = data.models || [];
+            updateModelSelect(models, '', previousSelection, false);
+
+            if (models.length === 0) {
+                showAlert('Aucun modèle Ollama disponible.', 'warning');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération des modèles:', error.message);
+            updateModelSelect([], error.message, '', false);
+            showAlert(error.message || 'Erreur lors de la récupération des modèles Ollama');
         } finally {
             if (refreshModels) refreshModels.disabled = false;
         }
     }
 
+    async function loadModels() {
+        if (useOpenAI && useOpenAI.checked) {
+            await loadOpenAIModels();
+        } else {
+            await loadOllamaModels();
+        }
+    }
+
     // Add event listeners
     if (refreshModels) {
-        refreshModels.addEventListener('click', loadModels);
+        refreshModels.addEventListener('click', loadOllamaModels);
+    }
+
+    if (refreshOpenAIModels) {
+        refreshOpenAIModels.addEventListener('click', loadOpenAIModels);
     }
 
     if (ollamaUrl) {
-        ollamaUrl.addEventListener('blur', loadModels);
+        ollamaUrl.addEventListener('blur', loadOllamaModels);
     }
 
     if (saveConfig) {
@@ -163,29 +218,13 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Prepare settings data
                 const settingsData = {
-                    use_openai: useOpenAI && useOpenAI.checked
+                    use_openai: useOpenAI && useOpenAI.checked,
+                    url: ollamaUrl ? ollamaUrl.value.trim() : undefined,
+                    model: modelSelect ? modelSelect.value : undefined,
+                    openai_api_key: openaiApiKey ? openaiApiKey.value : undefined,
+                    openai_url: openaiUrl ? openaiUrl.value.trim() : undefined,
+                    openai_model: openaiModelSelect ? openaiModelSelect.value : undefined
                 };
-
-                if (useOpenAI && useOpenAI.checked) {
-                    // OpenAI settings
-                    if (openaiApiKey && openaiApiKey.value) {
-                        if (!openaiApiKey.value.startsWith('sk-')) {
-                            throw new Error("Format de clé API OpenAI invalide");
-                        }
-                        settingsData.openai_api_key = openaiApiKey.value;
-                    }
-                    if (openaiModelSelect) {
-                        settingsData.openai_model = openaiModelSelect.value;
-                    }
-                } else {
-                    // Ollama settings
-                    if (ollamaUrl) {
-                        settingsData.url = ollamaUrl.value.trim();
-                    }
-                    if (modelSelect) {
-                        settingsData.model = modelSelect.value;
-                    }
-                }
 
                 const response = await fetch('/api/settings', {
                     method: 'POST',
@@ -199,26 +238,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Store settings in localStorage
-                if (!settingsData.use_openai) {
+                if (settingsData.use_openai) {
+                    localStorage.setItem('openaiUrl', openaiUrl.value.trim());
+                    localStorage.setItem('selectedOpenAIModel', openaiModelSelect.value);
+                } else {
                     localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
                     localStorage.setItem('selectedModel', modelSelect.value);
                 }
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
-                
-                // Check provider status
-                const statusUrl = settingsData.use_openai ? 
-                    '/api/status' : 
-                    '/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim());
-                
-                const statusResponse = await fetch(statusUrl);
-                const statusData = await statusResponse.json();
-                
-                if (statusData.status === 'connected') {
-                    await loadModels();
-                } else {
-                    showAlert('Configuration sauvegardée mais le service n\'est pas accessible.', 'warning');
-                }
+
+                // Reload models for the selected provider
+                await loadModels();
 
             } catch (error) {
                 console.error('Erreur:', error.message);

@@ -13,6 +13,7 @@ class UserPreferences(db.Model):
     use_openai = db.Column(db.Boolean, default=False)
     openai_api_key = db.Column(db.String(255))
     openai_model = db.Column(db.String(100), default="gpt-3.5-turbo")
+    openai_url = db.Column(db.String(255), default="https://api.openai.com/v1")
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

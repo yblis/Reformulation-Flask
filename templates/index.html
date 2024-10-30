@@ -247,17 +247,18 @@
                     <div id="openaiConfig" class="mt-4" {% if not use_openai %}style="display: none;"{% endif %}>
                         <h5 class="mb-3">Configuration OpenAI</h5>
                         <div class="mb-3">
+                            <label class="form-label">URL de l'API OpenAI:</label>
+                            <input type="text" id="openaiUrl" class="form-control" value="{{ openai_url }}">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Clé API OpenAI:</label>
                             <input type="password" id="openaiApiKey" class="form-control" placeholder="sk-...">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Modèle:</label>
-                            <select id="openaiModelSelect" class="form-select">
-                                <option value="gpt-4" {% if openai_model == 'gpt-4' %}selected{% endif %}>GPT-4</option>
-                                <option value="gpt-3.5-turbo" {% if openai_model == 'gpt-3.5-turbo' %}selected{% endif %}>GPT-3.5 Turbo</option>
-                                <option value="gpt-3.5-turbo-16k" {% if openai_model == 'gpt-3.5-turbo-16k' %}selected{% endif %}>GPT-3.5 Turbo 16K</option>
-                            </select>
+                            <select id="openaiModelSelect" class="form-select"></select>
                         </div>
+                        <button id="refreshOpenAIModels" class="btn btn-success w-100 mb-3">Rafraîchir les modèles</button>
                     </div>
 
                     <!-- Save Button -->

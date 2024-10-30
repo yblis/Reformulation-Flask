@@ -33,6 +33,8 @@ with app.app_context():
     OPENAI_MODEL = preferences.openai_model
     if preferences.openai_api_key:
         openai.api_key = preferences.openai_api_key
+        if preferences.openai_url:
+            openai.api_base = preferences.openai_url
 
 def check_ollama_status(url=None):
     """Check if Ollama service is available"""
@@ -59,6 +61,7 @@ def index():
                          email_prompt=preferences.email_prompt,
                          use_openai=preferences.use_openai,
                          openai_model=preferences.openai_model,
+                         openai_url=preferences.openai_url or 'https://api.openai.com/v1',
                          history=history)
 
 @app.route('/api/status')
@@ -119,6 +122,11 @@ def update_settings():
                     return jsonify({"error": "Invalid OpenAI API key format"}), 400
                 preferences.openai_api_key = data['openai_api_key']
                 openai.api_key = data['openai_api_key']
+            
+            if 'openai_url' in data:
+                preferences.openai_url = data['openai_url'].rstrip('/')
+                openai.api_base = preferences.openai_url
+            
             preferences.openai_model = data.get('openai_model', OPENAI_MODEL)
         
         # Update Ollama settings
