@@ -40,6 +40,13 @@
                 <div class="card-body">
                     <h5 class="mb-3">Contexte / Email reçu:</h5>
                     <textarea id="contextText" class="form-control" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -48,6 +55,13 @@
                 <div class="card-body">
                     <h5 class="mb-3">Entre ton texte à reformuler:</h5>
                     <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -107,6 +121,13 @@
                 <div class="card-body">
                     <h5 class="mb-3">Réponse:</h5>
                     <textarea id="outputText" class="form-control mb-3" rows="6" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="outputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="outputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="outputParaCount">0</span></small>
+                        </div>
+                    </div>
                     <div class="btn-group w-100">
                         <button id="copyBtn" class="btn btn-success">Copier</button>
                         <button id="clearBtn" class="btn btn-success">Effacer</button>
@@ -121,6 +142,13 @@
                 <div class="card-body">
                     <h5 class="mb-3">Texte à traduire:</h5>
                     <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                        </div>
+                    </div>
                     
                     <h5 class="mb-3">Traduire vers:</h5>
                     <div class="btn-group" role="group" id="targetLanguageGroup">
@@ -136,6 +164,13 @@
 
                     <h5 class="mb-3">Traduction:</h5>
                     <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                        </div>
+                    </div>
                     
                     <div class="btn-group w-100">
                         <button id="copyTranslation" class="btn btn-success">Copier</button>
@@ -154,6 +189,13 @@
                     
                     <h5 class="mb-3">Contenu et contexte:</h5>
                     <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="emailContentCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="emailContentWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="emailContentParaCount">0</span></small>
+                        </div>
+                    </div>
 
                     <h5 class="mb-3">Prénom NOM:</h5>
                     <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
@@ -170,6 +212,13 @@
 
                     <h5 class="mb-3">Email généré:</h5>
                     <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="emailOutputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="emailOutputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="emailOutputParaCount">0</span></small>
+                        </div>
+                    </div>
                     
                     <div class="btn-group w-100">
                         <button id="copyEmail" class="btn btn-success">Copier</button>
@@ -290,4 +339,9 @@
         </div>
     </div>
 </div>
+
+{% include 'translation_modal.html' %}
+{% include 'prompt_modal.html' %}
+{% include 'settings_modal.html' %}
+
 {% endblock %}
