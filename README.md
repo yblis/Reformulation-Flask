@@ -6,25 +6,20 @@ A Flask-based web application for text reformulation, translation, and email gen
 - Text reformulation with customizable tone, format, and length
 - Translation to multiple languages
 - Professional email generation
-- Persistent settings storage
+- Persistent settings storage with SQLite
 - PWA support for mobile use
 - Responsive design for all devices
+- History of recent reformulations
 
 ## Requirements
 - Python 3.8+
-- PostgreSQL database
+- SQLite database (included)
 - Ollama server running with desired models
 
 ## Installation
 1. Clone the repository
 2. Install requirements: `pip install -r requirements.txt`
-3. Set up PostgreSQL database and environment variables:
-   - DATABASE_URL
-   - PGDATABASE
-   - PGHOST
-   - PGPORT
-   - PGUSER
-   - PGPASSWORD
+3. The SQLite database will be created automatically on first run
 
 ## Running the Application
 1. Ensure Ollama server is running
