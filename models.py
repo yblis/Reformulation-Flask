@@ -5,11 +5,36 @@ db = SQLAlchemy()
 
 class UserPreferences(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    
+    # Current AI Provider
+    current_provider = db.Column(db.String(50), nullable=False, default="ollama")
+    
+    # Ollama Settings
     ollama_url = db.Column(db.String(255), nullable=False, default="http://localhost:11434")
-    current_model = db.Column(db.String(100), nullable=False, default="qwen2.5:3b")
+    ollama_model = db.Column(db.String(100), nullable=False, default="qwen2.5:3b")
+    
+    # OpenAI Settings
+    openai_api_key = db.Column(db.String(255))
+    openai_model = db.Column(db.String(100))
+    
+    # Groq Settings
+    groq_api_key = db.Column(db.String(255))
+    groq_model = db.Column(db.String(100))
+    
+    # Anthropic Settings
+    anthropic_api_key = db.Column(db.String(255))
+    anthropic_model = db.Column(db.String(100))
+    
+    # Google Gemini Settings
+    google_api_key = db.Column(db.String(255))
+    gemini_model = db.Column(db.String(100))
+    
+    # Prompts
     system_prompt = db.Column(db.Text, nullable=False)
     translation_prompt = db.Column(db.Text, nullable=False)
     email_prompt = db.Column(db.Text, nullable=False)
+    
+    # Timestamps
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

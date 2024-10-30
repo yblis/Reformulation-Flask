@@ -1,222 +1,133 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
-    const ollamaUrl = document.getElementById('ollamaUrl');
-    const modelSelect = document.getElementById('modelSelect');
-    const refreshModels = document.getElementById('refreshModels');
+    const aiProvider = document.getElementById('aiProvider');
+    const providerConfigs = document.querySelectorAll('.provider-config');
     const saveConfig = document.getElementById('saveConfig');
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
 
-    // Load saved prompts from localStorage
-    if (systemPrompt) {
-        const savedSystemPrompt = localStorage.getItem('systemPrompt');
-        if (savedSystemPrompt) {
-            systemPrompt.value = savedSystemPrompt;
+    // Load saved prompts and settings from localStorage
+    function loadSavedSettings() {
+        const savedProvider = localStorage.getItem('aiProvider') || 'ollama';
+        aiProvider.value = savedProvider;
+        showProviderConfig(savedProvider);
+
+        // Load provider-specific settings
+        if (ollamaUrl) {
+            ollamaUrl.value = localStorage.getItem('ollamaUrl') || 'http://localhost:11434';
         }
-    }
-
-    if (translationPrompt) {
-        const savedTranslationPrompt = localStorage.getItem('translationPrompt');
-        if (savedTranslationPrompt) {
-            translationPrompt.value = savedTranslationPrompt;
-        }
-    }
-
-    // Load saved URL from localStorage
-    if (ollamaUrl) {
-        const savedUrl = localStorage.getItem('ollamaUrl');
-        if (savedUrl) {
-            ollamaUrl.value = savedUrl;
-        }
-    }
-
-    function showAlert(message, type = 'danger', duration = 5000) {
-        try {
-            // Remove any existing alerts
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
-
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Find the container in the config tab
-            const container = document.querySelector('#config');
-            if (!container) {
-                console.error('Alert container not found');
-                return;
-            }
-
-            // Insert at the beginning of the config tab
-            container.insertBefore(alert, container.firstChild);
-
-            if (duration) {
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
-                    }
-                }, duration);
-            }
-        } catch (e) {
-            console.error('Error showing alert:', e);
-        }
-    }
-
-    function updateModelSelect(models = [], errorMessage = '', previousSelection = '') {
-        if (!modelSelect) return;
         
-        modelSelect.innerHTML = '';
-        if (errorMessage) {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = `Erreur: ${errorMessage}`;
-            option.disabled = true;
-            option.selected = true;
-            modelSelect.appendChild(option);
-            modelSelect.disabled = true;
-            return;
+        // Load prompts
+        if (systemPrompt) {
+            const savedSystemPrompt = localStorage.getItem('systemPrompt');
+            if (savedSystemPrompt) {
+                systemPrompt.value = savedSystemPrompt;
+            }
+        }
+        if (translationPrompt) {
+            const savedTranslationPrompt = localStorage.getItem('translationPrompt');
+            if (savedTranslationPrompt) {
+                translationPrompt.value = savedTranslationPrompt;
+            }
         }
 
-        if (models.length > 0) {
-            let hasSelectedModel = false;
-            models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model.name;
-                option.textContent = model.name;
-                if (model.name === previousSelection) {
-                    option.selected = true;
-                    hasSelectedModel = true;
-                }
-                modelSelect.appendChild(option);
-            });
-            
-            // Only auto-select first model if no previous selection exists
-            if (!hasSelectedModel && !previousSelection && models.length > 0) {
-                modelSelect.selectedIndex = 0;
-            }
-            modelSelect.disabled = false;
-        } else {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = 'Aucun modèle disponible';
-            option.disabled = true;
-            option.selected = true;
-            modelSelect.appendChild(option);
-            modelSelect.disabled = true;
-        }
+        // Load models for the selected provider
+        loadProviderModels(savedProvider);
     }
 
-    async function loadModels() {
-        if (!modelSelect || !refreshModels || !ollamaUrl) return;
+    function showProviderConfig(provider) {
+        providerConfigs.forEach(config => {
+            config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
+        });
+    }
 
+    async function loadProviderModels(provider) {
         try {
-            // Get the previously selected model from localStorage
-            const savedModel = localStorage.getItem('selectedModel');
-
-            // Remember current selection before refreshing
-            const previousSelection = savedModel || modelSelect.value;
-
-            // Validate URL format before making the request
-            let url;
-            try {
-                url = new URL(ollamaUrl.value.trim());
-            } catch (e) {
-                throw new Error("L'URL d'Ollama n'est pas valide");
-            }
-
-            refreshModels.disabled = true;
-            updateModelSelect([], 'Chargement des modèles...', previousSelection);
-
-            // Add the current URL as a query parameter
-            const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
-            const response = await fetch(apiUrl);
+            const response = await fetch(`/api/models/${provider}`);
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erreur lors de la récupération des modèles');
+            
+            const modelSelect = document.getElementById(`${provider}Model`);
+            if (!modelSelect) return;
+            
+            modelSelect.innerHTML = '';
+            if (data.models) {
+                data.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id || model.name;
+                    option.textContent = model.id || model.name;
+                    modelSelect.appendChild(option);
+                });
             }
-
-            if (!data.models || !Array.isArray(data.models)) {
-                throw new Error('Format de réponse invalide du serveur');
-            }
-
-            updateModelSelect(data.models, '', previousSelection);
-
-            if (data.models.length === 0) {
-                try {
-                    showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
-                } catch (e) {
-                    console.error('Error showing alert:', e);
-                }
-            }
-
         } catch (error) {
-            console.error('Erreur lors de la récupération des modèles:', error.message);
-            updateModelSelect([], error.message);
-            try {
-                showAlert(error.message || 'Erreur lors de la récupération des modèles');
-            } catch (e) {
-                console.error('Error showing alert:', e);
-            }
-        } finally {
-            refreshModels.disabled = false;
+            console.error(`Error loading ${provider} models:`, error);
+            showAlert(`Error loading ${provider} models: ${error.message}`);
         }
     }
 
-    // Add event listeners
-    if (refreshModels) {
-        refreshModels.addEventListener('click', loadModels);
+    // Event listeners
+    if (aiProvider) {
+        aiProvider.addEventListener('change', function() {
+            const selectedProvider = this.value;
+            showProviderConfig(selectedProvider);
+            loadProviderModels(selectedProvider);
+            localStorage.setItem('aiProvider', selectedProvider);
+        });
     }
 
-    if (ollamaUrl) {
-        ollamaUrl.addEventListener('blur', loadModels);
-    }
+    // Add refresh button listeners for each provider
+    const refreshButtons = {
+        'ollama': document.getElementById('refreshModels'),
+        'openai': document.getElementById('refreshOpenaiModels'),
+        'groq': document.getElementById('refreshGroqModels'),
+        'anthropic': document.getElementById('refreshAnthropicModels'),
+        'gemini': document.getElementById('refreshGeminiModels')
+    };
+
+    Object.entries(refreshButtons).forEach(([provider, button]) => {
+        if (button) {
+            button.addEventListener('click', () => loadProviderModels(provider));
+        }
+    });
 
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
-            if (!ollamaUrl || !modelSelect) {
-                try {
-                    showAlert('Éléments de configuration manquants');
-                } catch (e) {
-                    console.error('Error showing alert:', e);
+            const selectedProvider = aiProvider.value;
+            const config = {
+                provider: selectedProvider,
+                settings: {}
+            };
+
+            // Get provider-specific settings
+            const providerConfig = document.getElementById(`${selectedProvider}Config`);
+            if (providerConfig) {
+                const apiKeyInput = providerConfig.querySelector('input[type="password"]');
+                const modelSelect = providerConfig.querySelector('select');
+
+                if (selectedProvider === 'ollama') {
+                    config.settings = {
+                        url: document.getElementById('ollamaUrl').value.trim(),
+                        model: document.getElementById('modelSelect').value
+                    };
+                } else {
+                    config.settings = {
+                        apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
+                        model: modelSelect ? modelSelect.value : ''
+                    };
                 }
-                return;
             }
 
-            const originalText = saveConfig.textContent;
-            saveConfig.disabled = true;
-            saveConfig.textContent = 'Sauvegarde en cours...';
-
             try {
-                // Validate URL format
-                try {
-                    new URL(ollamaUrl.value.trim());
-                } catch (e) {
-                    throw new Error("L'URL d'Ollama n'est pas valide");
-                }
-
-                const settingsResponse = await fetch('/api/settings', {
+                const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        url: ollamaUrl.value.trim(),
-                        model: modelSelect.value
-                    })
+                    body: JSON.stringify(config)
                 });
 
-                if (!settingsResponse.ok) {
-                    const data = await settingsResponse.json();
-                    throw new Error(data.message || 'Erreur lors de la sauvegarde des paramètres');
+                if (!response.ok) {
+                    throw new Error('Failed to save settings');
                 }
 
-                // Store URL and selected model in localStorage
-                localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
-                localStorage.setItem('selectedModel', modelSelect.value);
-
-                // Store prompts in localStorage
+                // Save prompts
                 if (systemPrompt) {
                     localStorage.setItem('systemPrompt', systemPrompt.value.trim());
                 }
@@ -224,71 +135,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('translationPrompt', translationPrompt.value.trim());
                 }
 
-                if (systemPrompt) {
-                    const promptResponse = await fetch('/api/prompt', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            prompt: systemPrompt.value.trim()
-                        })
-                    });
-
-                    if (!promptResponse.ok) {
-                        const data = await promptResponse.json();
-                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt');
-                    }
-                }
-
-                if (translationPrompt) {
-                    const translationPromptResponse = await fetch('/api/translation_prompt', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            prompt: translationPrompt.value.trim()
-                        })
-                    });
-
-                    if (!translationPromptResponse.ok) {
-                        const data = await translationPromptResponse.json();
-                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt de traduction');
-                    }
-                }
-
-                try {
-                    showAlert('Configuration sauvegardée avec succès', 'success', 3000);
-                } catch (e) {
-                    console.error('Error showing success alert:', e);
-                }
-                
-                // Check connection with new URL
-                const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
-                const statusData = await statusResponse.json();
-                
-                if (statusData.status === 'connected') {
-                    // Only reload models if connection is successful
-                    await loadModels();
-                } else {
-                    try {
-                        showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
-                    } catch (e) {
-                        console.error('Error showing warning alert:', e);
-                    }
-                }
-
+                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
             } catch (error) {
-                console.error('Erreur:', error.message);
-                try {
-                    showAlert(error.message || 'Erreur lors de la sauvegarde');
-                } catch (e) {
-                    console.error('Error showing error alert:', e);
-                }
-            } finally {
-                saveConfig.disabled = false;
-                saveConfig.textContent = originalText;
+                console.error('Error saving settings:', error);
+                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres');
             }
         });
     }
 
-    // Load initial configuration
-    loadModels();
+    function showAlert(message, type = 'danger', duration = 5000) {
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('#config');
+        if (container) {
+            container.insertBefore(alert, container.firstChild);
+        }
+
+        if (duration) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, duration);
+        }
+    }
+
+    // Initialize settings
+    loadSavedSettings();
 });
