@@ -54,39 +54,46 @@
             <!-- Options Section -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Options de reformulation</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Options de reformulation</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
                     
-                    <!-- Tone Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-2">Ton</h6>
-                        <div class="btn-group" role="group" id="toneGroup">
-                            <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                    <div class="collapse show" id="optionsCollapse">
+                        <!-- Tone Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Ton</h6>
+                            <div class="btn-group" role="group" id="toneGroup">
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Format Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-2">Format</h6>
-                        <div class="btn-group" role="group" id="formatGroup">
-                            <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                        <!-- Format Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Format</h6>
+                            <div class="btn-group" role="group" id="formatGroup">
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Length Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-2">Longueur</h6>
-                        <div class="btn-group" role="group" id="lengthGroup">
-                            <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
-                            <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
-                            <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                        <!-- Length Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Longueur</h6>
+                            <div class="btn-group" role="group" id="lengthGroup">
+                                <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -274,7 +281,7 @@
                     <h5 class="mb-3">Configuration du Prompt de Génération d'Email</h5>
                     <div class="mb-4">
                         <label class="form-label">Prompt système pour la génération d'email:</label>
-                        <textarea id="emailPrompt" class="form-control" rows="8">Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'.</textarea>
+                        <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
                     </div>
                 </div>
             </div>
