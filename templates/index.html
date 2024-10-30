@@ -106,16 +106,16 @@
                     <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
                     
                     <h5 class="mb-3">Traduire vers:</h5>
-                    <select id="targetLanguage" class="form-select mb-4">
-                        <option value="Anglais">Anglais</option>
-                        <option value="Français">Français</option>
-                        <option value="Espagnol">Espagnol</option>
-                        <option value="Allemand">Allemand</option>
-                        <option value="Italien">Italien</option>
-                        <option value="Portugais">Portugais</option>
-                    </select>
+                    <div class="btn-group" role="group" id="targetLanguageGroup">
+                        <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
+                    </div>
 
-                    <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
+                    <button id="translateText" class="btn btn-success w-100 my-4">Traduire</button>
 
                     <h5 class="mb-3">Traduction:</h5>
                     <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
