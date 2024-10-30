@@ -142,36 +142,70 @@ def get_provider_models(provider):
     
     try:
         if provider == 'openai':
-            api_key = os.getenv('OPENAI_API_KEY') or preferences.openai_api_key
-            if not api_key:
-                return jsonify({"error": "OpenAI API key not configured"}), 400
-            client = OpenAI(api_key=api_key)
             try:
-                models = client.models.list()
-                return jsonify({"models": [{"id": m.id} for m in models if m.id.startswith('gpt-')]})
+                headers = {
+                    "Authorization": f"Bearer {preferences.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                response = requests.get(
+                    "https://api.openai.com/v1/models",
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": f"OpenAI API error: {response.text}"}), response.status_code
+                    
+                models = response.json()
+                return jsonify({
+                    "models": [
+                        {"id": model["id"]} 
+                        for model in models["data"]
+                        if "gpt" in model["id"]
+                    ]
+                })
             except Exception as e:
-                return jsonify({"error": f"Failed to fetch OpenAI models: {str(e)}"}), 500
+                return jsonify({"error": str(e)}), 500
                 
         elif provider == 'anthropic':
-            api_key = os.getenv('ANTHROPIC_API_KEY') or preferences.anthropic_api_key
-            if not api_key:
-                return jsonify({"error": "Anthropic API key not configured"}), 400
-            models = ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240229"]
-            return jsonify({"models": [{"id": m} for m in models]})
+            models = [
+                {"id": "claude-3-haiku-20240307"},
+                {"id": "claude-3-opus-20240229"},
+                {"id": "claude-3-sonnet-20240229"},
+                {"id": "claude-3-5-sonnet-20241022"}
+            ]
+            return jsonify({"models": models})
                 
         elif provider == 'groq':
-            api_key = os.getenv('GROQ_API_KEY') or preferences.groq_api_key
-            if not api_key:
-                return jsonify({"error": "Groq API key not configured"}), 400
-            models = ['mixtral-8x7b-32768', 'llama2-70b-4096']
-            return jsonify({"models": [{"id": m} for m in models]})
+            try:
+                headers = {
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                response = requests.get(
+                    "https://api.groq.com/v1/models",
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
+                    
+                models = response.json()
+                return jsonify({
+                    "models": [{"id": model["id"]} for model in models["data"]]
+                })
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
             
         elif provider == 'gemini':
-            api_key = os.getenv('GOOGLE_API_KEY') or preferences.google_api_key
-            if not api_key:
-                return jsonify({"error": "Google API key not configured"}), 400
-            models = ['gemini-pro', 'gemini-pro-vision']
-            return jsonify({"models": [{"id": m} for m in models]})
+            models = [
+                {"id": "gemini-1.5-pro-001"},
+                {"id": "gemini-1.5-flash-001"},
+                {"id": "gemini-pro-experimental"},
+                {"id": "gemini-flash-experimental"}
+            ]
+            return jsonify({"models": models})
                 
         elif provider == 'ollama':
             url = request.args.get('url', preferences.ollama_url)
