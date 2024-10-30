@@ -15,6 +15,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
+                ✉️ Générateur d'Email
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">
                 ⚙️ Configuration
             </button>
@@ -128,6 +133,29 @@
             </div>
         </div>
 
+        <!-- Email Generator Tab -->
+        <div class="tab-pane fade" id="email" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Type d'email:</h5>
+                    <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
+                    
+                    <h5 class="mb-3">Contenu et contexte:</h5>
+                    <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+                    
+                    <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
+                    
+                    <h5 class="mb-3">Email généré:</h5>
+                    <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
+                    
+                    <div class="btn-group w-100">
+                        <button id="copyEmail" class="btn btn-success">Copier</button>
+                        <button id="clearEmail" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Configuration Tab -->
         <div class="tab-pane fade" id="config" role="tabpanel">
             <div class="card mb-4">
@@ -161,6 +189,16 @@
                     <div class="mb-4">
                         <label class="form-label">Prompt système pour la traduction:</label>
                         <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration du Prompt de Génération d'Email</h5>
+                    <div class="mb-4">
+                        <label class="form-label">Prompt système pour la génération d'email:</label>
+                        <textarea id="emailPrompt" class="form-control" rows="8">Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'.</textarea>
                     </div>
                 </div>
             </div>

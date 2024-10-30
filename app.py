@@ -13,6 +13,7 @@ SYSTEM_PROMPT = """Tu es un expert en reformulation. Tu dois reformuler le texte
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
 Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation."""
 TRANSLATION_PROMPT = """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire."""
+EMAIL_PROMPT = """Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
 
 def check_ollama_status(url=None):
     """Check if Ollama service is available"""
@@ -38,7 +39,8 @@ def index():
     return render_template('index.html', 
                          ollama_status=check_ollama_status(),
                          system_prompt=SYSTEM_PROMPT,
-                         translation_prompt=TRANSLATION_PROMPT)
+                         translation_prompt=TRANSLATION_PROMPT,
+                         email_prompt=EMAIL_PROMPT)
 
 @app.route('/sw.js')
 def service_worker():
@@ -233,6 +235,53 @@ def translate():
             "error": f"Erreur lors de la traduction: {str(e)}"
         }), 500
 
+@app.route('/api/generate-email', methods=['POST'])
+def generate_email():
+    if not check_ollama_status():
+        return jsonify({
+            "error": "Le service Ollama n'est pas accessible. Vérifiez la configuration."
+        }), 503
+
+    data = request.get_json()
+    if not data or 'type' not in data or 'content' not in data:
+        return jsonify({
+            "error": "Le type d'email et le contenu sont requis."
+        }), 400
+
+    prompt = f'''<|im_start|>system
+{EMAIL_PROMPT}
+<|im_end|>
+<|im_start|>user
+Type d'email: {data['type']}
+Contenu et contexte: {data['content']}
+<|im_end|>
+<|im_start|>assistant'''
+
+    try:
+        response = requests.post(
+            f'{OLLAMA_URL}/api/generate',
+            json={
+                "model": CURRENT_MODEL,
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            email_text = result['response'].strip()
+            return jsonify({"text": email_text})
+        else:
+            return jsonify({
+                "error": "Erreur lors de la génération de l'email."
+            }), 500
+
+    except Exception as e:
+        return jsonify({
+            "error": f"Erreur lors de la génération: {str(e)}"
+        }), 500
+
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
@@ -271,4 +320,17 @@ def update_translation_prompt():
         }), 400
 
     TRANSLATION_PROMPT = data.get('prompt', TRANSLATION_PROMPT)
+    return jsonify({"status": "success"})
+
+@app.route('/api/email_prompt', methods=['POST'])
+def update_email_prompt():
+    global EMAIL_PROMPT
+    data = request.get_json()
+    if data is None:
+        return jsonify({
+            "message": "Le corps de la requête est invalide ou manquant.",
+            "error": "INVALID_REQUEST"
+        }), 400
+
+    EMAIL_PROMPT = data.get('prompt', EMAIL_PROMPT)
     return jsonify({"status": "success"})
