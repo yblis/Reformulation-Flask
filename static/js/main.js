@@ -29,31 +29,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const buttons = document.querySelectorAll('.requires-ollama');
         buttons.forEach(button => {
             button.disabled = !isConnected;
-            if (!isConnected) {
-                button.title = "Service Ollama non disponible";
-            } else {
-                button.title = "";
-            }
+            button.title = !isConnected ? "Service Ollama non disponible" : "";
         });
 
-        if (!isConnected) {
-            const message = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
-            const existingMessage = document.querySelector('.status-message');
-            if (!existingMessage) {
+        const statusMessage = document.querySelector('.status-message');
+        
+        // Only show warning if we're disconnected AND not in the initial loading state
+        if (!isConnected && lastStatus !== 'unknown') {
+            if (!statusMessage) {
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-warning mb-3 status-message';
                 alert.role = 'alert';
-                alert.textContent = message;
+                alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
                 const container = document.querySelector('.container');
                 if (container) {
                     container.insertBefore(alert, container.firstChild);
                 }
             }
-        } else {
-            const statusMessage = document.querySelector('.status-message');
-            if (statusMessage) {
-                statusMessage.remove();
-            }
+        } else if (statusMessage) {
+            statusMessage.remove();
         }
     }
 
