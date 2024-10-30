@@ -11,16 +11,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastStatus = 'unknown';
     
     async function checkOllamaStatus() {
+        const savedUrl = localStorage.getItem('ollamaUrl');
         try {
-            const response = await fetch('/api/status');
+            const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
+            const response = await fetch(url);
             const data = await response.json();
             if (data.status !== lastStatus) {
                 lastStatus = data.status;
                 updateUIForStatus(data.status);
             }
+            return data.status === 'connected';
         } catch (error) {
             console.error('Error checking status:', error);
             updateUIForStatus('disconnected');
+            return false;
         }
     }
 
@@ -34,16 +38,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const statusMessage = document.querySelector('.status-message');
         
-        // Only show warning if we're disconnected AND not in the initial loading state
+        // Only show warning if we're actually disconnected
         if (!isConnected && lastStatus !== 'unknown') {
-            if (!statusMessage) {
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-warning mb-3 status-message';
-                alert.role = 'alert';
-                alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
-                const container = document.querySelector('.container');
-                if (container) {
-                    container.insertBefore(alert, container.firstChild);
+            // Check if we have a working URL in localStorage before showing warning
+            const savedUrl = localStorage.getItem('ollamaUrl');
+            if (!savedUrl || !checkOllamaStatus()) {
+                if (!statusMessage) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-warning mb-3 status-message';
+                    alert.role = 'alert';
+                    alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
+                    const container = document.querySelector('.container');
+                    if (container) {
+                        container.insertBefore(alert, container.firstChild);
+                    }
                 }
             }
         } else if (statusMessage) {
