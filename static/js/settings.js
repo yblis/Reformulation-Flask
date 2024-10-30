@@ -7,6 +7,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
 
+    // Load saved prompts from localStorage
+    if (systemPrompt) {
+        const savedSystemPrompt = localStorage.getItem('systemPrompt');
+        if (savedSystemPrompt) {
+            systemPrompt.value = savedSystemPrompt;
+        }
+    }
+
+    if (translationPrompt) {
+        const savedTranslationPrompt = localStorage.getItem('translationPrompt');
+        if (savedTranslationPrompt) {
+            translationPrompt.value = savedTranslationPrompt;
+        }
+    }
+
     // Load saved URL from localStorage
     if (ollamaUrl) {
         const savedUrl = localStorage.getItem('ollamaUrl');
@@ -196,6 +211,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Store URL in localStorage
                 localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
+
+                // Store prompts in localStorage
+                if (systemPrompt) {
+                    localStorage.setItem('systemPrompt', systemPrompt.value.trim());
+                }
+                if (translationPrompt) {
+                    localStorage.setItem('translationPrompt', translationPrompt.value.trim());
+                }
 
                 if (systemPrompt) {
                     const promptResponse = await fetch('/api/prompt', {
