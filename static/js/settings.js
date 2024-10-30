@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         showProviderConfig(savedProvider);
 
         // Load provider-specific settings
-        if (document.getElementById('ollamaUrl')) {
-            document.getElementById('ollamaUrl').value = localStorage.getItem('ollamaUrl') || 'http://localhost:11434';
+        if (ollamaUrl) {
+            ollamaUrl.value = localStorage.getItem('ollamaUrl') || 'http://localhost:11434';
         }
         
         // Load prompts
@@ -107,6 +107,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Add event listeners for API key changes
+    const apiKeyInputs = {
+        'openai': document.getElementById('openaiKey'),
+        'groq': document.getElementById('groqKey'),
+        'anthropic': document.getElementById('anthropicKey'),
+        'gemini': document.getElementById('geminiKey')
+    };
+
+    Object.entries(apiKeyInputs).forEach(([provider, input]) => {
+        if (input) {
+            input.addEventListener('change', () => {
+                if (input.value.trim()) {
+                    loadProviderModels(provider);
+                }
+            });
+        }
+    });
+
     // Add refresh button listeners for each provider
     const refreshButtons = {
         'ollama': document.getElementById('refreshModels'),
@@ -134,21 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Get provider-specific settings
                 const providerConfig = document.getElementById(`${selectedProvider}Config`);
                 if (providerConfig) {
-                    if (selectedProvider === 'groq') {
-                        const apiKeyInput = document.getElementById('groqKey');
-                        const modelSelect = document.getElementById('groqModel');
-                        config.settings = {
-                            apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
-                            model: modelSelect ? modelSelect.value : ''
-                        };
-                    } else if (selectedProvider === 'ollama') {
+                    const apiKeyInput = providerConfig.querySelector('input[type="password"]');
+                    const modelSelect = providerConfig.querySelector('select');
+
+                    if (selectedProvider === 'ollama') {
                         config.settings = {
                             url: document.getElementById('ollamaUrl').value.trim(),
                             model: document.getElementById('modelSelect').value
                         };
                     } else {
-                        const apiKeyInput = providerConfig.querySelector('input[type="password"]');
-                        const modelSelect = providerConfig.querySelector('select');
                         config.settings = {
                             apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
                             model: modelSelect ? modelSelect.value : ''
