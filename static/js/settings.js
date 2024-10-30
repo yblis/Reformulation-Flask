@@ -54,14 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
             if (!modelSelect) return;
 
-            // Check for API key if not Ollama
-            if (provider !== 'ollama') {
-                const apiKeyInput = document.getElementById(`${provider}Key`);
-                if (!apiKeyInput || !apiKeyInput.value.trim()) {
-                    throw new Error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API key not configured. Please enter your API key first.`);
-                }
-            }
-
             // For Ollama, include the URL in the request
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
@@ -90,27 +82,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     modelSelect.appendChild(option);
                 });
                 
-                // Select first option by default if none selected
-                if (modelSelect.options.length > 0 && !modelSelect.value) {
-                    modelSelect.selectedIndex = 0;
-                }
-                
                 showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
             } else {
                 throw new Error('No models found');
             }
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
-            showAlert(`${error.message}`, 'danger', 5000);
-            
-            // Clear model options on error
-            if (modelSelect) {
-                modelSelect.innerHTML = '';
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Please configure API key first';
-                modelSelect.appendChild(option);
-            }
+            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;

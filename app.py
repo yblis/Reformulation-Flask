@@ -69,7 +69,7 @@ def generate_text_groq(prompt):
         "Content-Type": "application/json"
     }
     response = requests.post(
-        "https://api.groq.com/v1/chat/completions",
+        "https://api.groq.com/openai/v1/chat/completions",
         headers=headers,
         json={
             "model": preferences.groq_model or "mixtral-8x7b-32768",
@@ -188,7 +188,6 @@ def get_provider_models(provider):
                 if not preferences.groq_api_key:
                     return jsonify({"error": "Groq API key not configured"}), 401
                     
-                # Use the exact format provided by user
                 response = requests.get(
                     "https://api.groq.com/openai/v1/models",
                     headers={
@@ -200,14 +199,14 @@ def get_provider_models(provider):
                 if response.status_code != 200:
                     return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
                     
-                models = response.json()["data"]
+                models = response.json()
                 return jsonify({
                     "models": [
                         {
                             "id": model["id"],
                             "name": model.get("name", model["id"])
                         }
-                        for model in models
+                        for model in models["data"]
                     ]
                 })
             except Exception as e:
