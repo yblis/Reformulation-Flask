@@ -338,10 +338,7 @@ Signature: {data.get('sender')}
 def update_settings():
     data = request.get_json()
     if data is None:
-        return jsonify({
-            "message": "Invalid request body",
-            "error": "INVALID_REQUEST"
-        }), 400
+        return jsonify({"error": "Invalid request"}), 400
 
     try:
         preferences = UserPreferences.get_or_create()
@@ -349,17 +346,20 @@ def update_settings():
         
         settings = data.get('settings', {})
         
-        if preferences.current_provider == 'ollama':
+        if preferences.current_provider == 'groq':
+            # Explicitly handle Groq API key
+            api_key = settings.get('apiKey')
+            if api_key:
+                preferences.groq_api_key = api_key
+            if model := settings.get('model'):
+                preferences.groq_model = model
+        elif preferences.current_provider == 'ollama':
             preferences.ollama_url = settings.get('url', preferences.ollama_url)
             preferences.ollama_model = settings.get('model', preferences.ollama_model)
         elif preferences.current_provider == 'openai':
             if api_key := settings.get('apiKey'):
                 preferences.openai_api_key = api_key
             preferences.openai_model = settings.get('model', preferences.openai_model)
-        elif preferences.current_provider == 'groq':
-            if api_key := settings.get('apiKey'):
-                preferences.groq_api_key = api_key
-            preferences.groq_model = settings.get('model', preferences.groq_model)
         elif preferences.current_provider == 'anthropic':
             if api_key := settings.get('apiKey'):
                 preferences.anthropic_api_key = api_key
@@ -373,48 +373,6 @@ def update_settings():
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/prompt', methods=['POST'])
-def update_prompt():
-    data = request.get_json()
-    if data is None:
-        return jsonify({
-            "message": "Le corps de la requête est invalide ou manquant.",
-            "error": "INVALID_REQUEST"
-        }), 400
-
-    preferences = UserPreferences.get_or_create()
-    preferences.system_prompt = data.get('prompt', preferences.system_prompt)
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-@app.route('/api/translation_prompt', methods=['POST'])
-def update_translation_prompt():
-    data = request.get_json()
-    if data is None:
-        return jsonify({
-            "message": "Le corps de la requête est invalide ou manquant.",
-            "error": "INVALID_REQUEST"
-        }), 400
-
-    preferences = UserPreferences.get_or_create()
-    preferences.translation_prompt = data.get('prompt', preferences.translation_prompt)
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-@app.route('/api/email_prompt', methods=['POST'])
-def update_email_prompt():
-    data = request.get_json()
-    if data is None:
-        return jsonify({
-            "message": "Le corps de la requête est invalide ou manquant.",
-            "error": "INVALID_REQUEST"
-        }), 400
-
-    preferences = UserPreferences.get_or_create()
-    preferences.email_prompt = data.get('prompt', preferences.email_prompt)
-    db.session.commit()
-    return jsonify({"status": "success"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
