@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.models && Array.isArray(data.models)) {
                 data.models.forEach(model => {
                     const option = document.createElement('option');
-                    option.value = model.id || model;
-                    option.textContent = model.id || model;
+                    option.value = model.id;
+                    option.textContent = model.name || model.id;
                     modelSelect.appendChild(option);
                 });
                 

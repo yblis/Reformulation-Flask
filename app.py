@@ -163,7 +163,10 @@ def get_provider_models(provider):
                 models = response.json()
                 return jsonify({
                     "models": [
-                        {"id": model["id"]} 
+                        {
+                            "id": model["id"],
+                            "name": model.get("name", model["id"])
+                        }
                         for model in models["data"]
                         if "gpt" in model["id"]
                     ]
@@ -173,10 +176,10 @@ def get_provider_models(provider):
                 
         elif provider == 'anthropic':
             models = [
-                {"id": "claude-3-haiku-20240307"},
-                {"id": "claude-3-opus-20240229"},
-                {"id": "claude-3-sonnet-20240229"},
-                {"id": "claude-3-5-sonnet-20241022"}
+                {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
+                {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
+                {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"},
+                {"id": "claude-3-5-sonnet-20241022", "name": "claude-3.5-sonnet"}
             ]
             return jsonify({"models": models})
                 
@@ -190,24 +193,33 @@ def get_provider_models(provider):
                     "Content-Type": "application/json"
                 }
                 
-                models = {
-                    "data": [
-                        {"id": "mixtral-8x7b-32768"},
-                        {"id": "llama2-70b-4096"}
-                    ]
-                }
+                response = requests.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
+                    
+                models = response.json()
                 return jsonify({
-                    "models": [{"id": model["id"]} for model in models["data"]]
+                    "models": [
+                        {
+                            "id": model["id"],
+                            "name": model.get("name", model["id"])
+                        }
+                        for model in models["data"]
+                    ]
                 })
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             
         elif provider == 'gemini':
             models = [
-                {"id": "gemini-1.5-pro-001"},
-                {"id": "gemini-1.5-flash-001"},
-                {"id": "gemini-pro-experimental"},
-                {"id": "gemini-flash-experimental"}
+                {"id": "gemini-1.5-pro-001", "name": "Gemini 1.5 Pro"},
+                {"id": "gemini-1.5-flash-001", "name": "Gemini 1.5 Flash"},
+                {"id": "gemini-pro-experimental", "name": "Gemini 1.5 Pro Experimental"},
+                {"id": "gemini-flash-experimental", "name": "Gemini 1.5 Flash Experimental"}
             ]
             return jsonify({"models": models})
                 
@@ -217,7 +229,7 @@ def get_provider_models(provider):
                 response = requests.get(f"{url}/api/tags", timeout=5)
                 if response.status_code == 200:
                     data = response.json()
-                    return jsonify({"models": [{"id": model["name"]} for model in data.get("models", [])]})
+                    return jsonify({"models": [{"id": model["name"], "name": model["name"]} for model in data.get("models", [])]})
                 return jsonify({"error": f"Failed to fetch models: HTTP {response.status_code}"}), response.status_code
             except requests.exceptions.RequestException as e:
                 return jsonify({"error": f"Connection error: {str(e)}"}), 500
