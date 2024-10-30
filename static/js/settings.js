@@ -43,12 +43,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProviderModels(provider, button = null) {
         try {
-            // If a button was provided, update its state
+            // Show loading state
             if (button) {
                 const originalText = button.textContent;
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
+
+            // Get the correct model select element
+            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
+            if (!modelSelect) return;
 
             // For Ollama, include the URL in the request
             let url = `/api/models/${provider}`;
@@ -65,25 +69,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error(data.error || `HTTP error! status: ${response.status}`);
             }
-            
-            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
-            if (!modelSelect) return;
-            
-            // Save current selection if any
-            const currentSelection = modelSelect.value;
-            
+
+            // Clear existing options
             modelSelect.innerHTML = '';
-            if (data.models && data.models.length > 0) {
+            
+            // Add new options
+            if (data.models && Array.isArray(data.models)) {
                 data.models.forEach(model => {
                     const option = document.createElement('option');
-                    option.value = model.id;
-                    option.textContent = model.id;
+                    option.value = model.id || model;
+                    option.textContent = model.id || model;
                     modelSelect.appendChild(option);
                 });
                 
-                // Restore previous selection if it exists in new model list
-                if (currentSelection && [...modelSelect.options].some(opt => opt.value === currentSelection)) {
-                    modelSelect.value = currentSelection;
+                // Select first option by default if none selected
+                if (modelSelect.options.length > 0 && !modelSelect.value) {
+                    modelSelect.selectedIndex = 0;
                 }
                 
                 showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
@@ -94,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`Error loading ${provider} models:`, error);
             showAlert(`Error loading ${provider} models: ${error.message}`, 'danger', 5000);
         } finally {
-            // Reset button state if one was provided
             if (button) {
                 button.disabled = false;
                 button.textContent = 'Rafraîchir les modèles';
@@ -111,6 +111,24 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('aiProvider', selectedProvider);
         });
     }
+
+    // Add event listeners for API key changes
+    const apiKeyInputs = {
+        'openai': document.getElementById('openaiKey'),
+        'groq': document.getElementById('groqKey'),
+        'anthropic': document.getElementById('anthropicKey'),
+        'gemini': document.getElementById('geminiKey')
+    };
+
+    Object.entries(apiKeyInputs).forEach(([provider, input]) => {
+        if (input) {
+            input.addEventListener('change', () => {
+                if (input.value.trim()) {
+                    loadProviderModels(provider);
+                }
+            });
+        }
+    });
 
     // Add refresh button listeners for each provider
     const refreshButtons = {
