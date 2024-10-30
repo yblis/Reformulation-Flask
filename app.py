@@ -127,6 +127,7 @@ def generate_text(prompt):
 
 @app.route('/')
 def index():
+    """Main route to serve the index page"""
     preferences = UserPreferences.get_or_create()
     history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',
@@ -143,6 +144,9 @@ def get_provider_models(provider):
     try:
         if provider == 'openai':
             try:
+                if not preferences.openai_api_key:
+                    return jsonify({"error": "OpenAI API key not configured"}), 401
+                    
                 headers = {
                     "Authorization": f"Bearer {preferences.openai_api_key}",
                     "Content-Type": "application/json"
@@ -178,20 +182,20 @@ def get_provider_models(provider):
                 
         elif provider == 'groq':
             try:
+                if not preferences.groq_api_key:
+                    return jsonify({"error": "Groq API key not configured"}), 401
+                    
                 headers = {
                     "Authorization": f"Bearer {preferences.groq_api_key}",
                     "Content-Type": "application/json"
                 }
                 
-                response = requests.get(
-                    "https://api.groq.com/v1/models",
-                    headers=headers
-                )
-                
-                if response.status_code != 200:
-                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
-                    
-                models = response.json()
+                models = {
+                    "data": [
+                        {"id": "mixtral-8x7b-32768"},
+                        {"id": "llama2-70b-4096"}
+                    ]
+                }
                 return jsonify({
                     "models": [{"id": model["id"]} for model in models["data"]]
                 })
