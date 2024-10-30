@@ -4,16 +4,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const modelSelect = document.getElementById('modelSelect');
     const refreshModels = document.getElementById('refreshModels');
     const saveConfig = document.getElementById('saveConfig');
-    const useOpenAI = document.getElementById('useOpenAI');
-    const ollamaConfig = document.getElementById('ollamaConfig');
-    const openaiConfig = document.getElementById('openaiConfig');
-    const openaiUrl = document.getElementById('openaiUrl');
-    const openaiApiKey = document.getElementById('openaiApiKey');
-    const openaiModelSelect = document.getElementById('openaiModelSelect');
-    const refreshOpenAIModels = document.getElementById('refreshOpenAIModels');
-    const alertContainer = document.getElementById('alertContainer');
+    const systemPrompt = document.getElementById('systemPrompt');
+    const translationPrompt = document.getElementById('translationPrompt');
 
-    // Load saved URLs from localStorage
+    // Load saved prompts from localStorage
+    if (systemPrompt) {
+        const savedSystemPrompt = localStorage.getItem('systemPrompt');
+        if (savedSystemPrompt) {
+            systemPrompt.value = savedSystemPrompt;
+        }
+    }
+
+    if (translationPrompt) {
+        const savedTranslationPrompt = localStorage.getItem('translationPrompt');
+        if (savedTranslationPrompt) {
+            translationPrompt.value = savedTranslationPrompt;
+        }
+    }
+
+    // Load saved URL from localStorage
     if (ollamaUrl) {
         const savedUrl = localStorage.getItem('ollamaUrl');
         if (savedUrl) {
@@ -21,239 +30,258 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (openaiUrl) {
-        const savedOpenAIUrl = localStorage.getItem('openaiUrl');
-        if (savedOpenAIUrl) {
-            openaiUrl.value = savedOpenAIUrl;
-        }
-    }
-
-    // Toggle between Ollama and OpenAI configurations
-    if (useOpenAI) {
-        useOpenAI.addEventListener('change', function() {
-            if (this.checked) {
-                if (ollamaConfig) ollamaConfig.style.display = 'none';
-                if (openaiConfig) openaiConfig.style.display = 'block';
-            } else {
-                if (ollamaConfig) ollamaConfig.style.display = 'block';
-                if (openaiConfig) openaiConfig.style.display = 'none';
-            }
-            // Reload models for the selected provider
-            loadModels();
-        });
-
-        // Set initial visibility based on checkbox state
-        if (useOpenAI.checked) {
-            if (ollamaConfig) ollamaConfig.style.display = 'none';
-            if (openaiConfig) openaiConfig.style.display = 'block';
-        } else {
-            if (ollamaConfig) ollamaConfig.style.display = 'block';
-            if (openaiConfig) openaiConfig.style.display = 'none';
-        }
-    }
-
     function showAlert(message, type = 'danger', duration = 5000) {
-        if (!alertContainer) {
-            console.error('Alert container not found');
-            return;
-        }
+        try {
+            // Remove any existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
 
-        // Remove any existing alerts
-        const existingAlerts = alertContainer.querySelectorAll('.alert');
-        existingAlerts.forEach(alert => alert.remove());
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Find the container in the config tab
+            const container = document.querySelector('#config');
+            if (!container) {
+                console.error('Alert container not found');
+                return;
+            }
 
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        alertContainer.appendChild(alert);
+            // Insert at the beginning of the config tab
+            container.insertBefore(alert, container.firstChild);
 
-        if (duration) {
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.remove();
-                }
-            }, duration);
+            if (duration) {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, duration);
+            }
+        } catch (e) {
+            console.error('Error showing alert:', e);
         }
     }
 
-    function updateModelSelect(models = [], errorMessage = '', previousSelection = '', isOpenAI = false) {
-        const select = isOpenAI ? openaiModelSelect : modelSelect;
-        if (!select) return;
+    function updateModelSelect(models = [], errorMessage = '', previousSelection = '') {
+        if (!modelSelect) return;
         
-        select.innerHTML = '';
-        
+        modelSelect.innerHTML = '';
         if (errorMessage) {
             const option = document.createElement('option');
             option.value = '';
             option.textContent = `Erreur: ${errorMessage}`;
             option.disabled = true;
             option.selected = true;
-            select.appendChild(option);
-            select.disabled = true;
+            modelSelect.appendChild(option);
+            modelSelect.disabled = true;
             return;
         }
 
-        if (Array.isArray(models) && models.length > 0) {
+        if (models.length > 0) {
             let hasSelectedModel = false;
             models.forEach(model => {
                 const option = document.createElement('option');
-                option.value = model.name || model.id;
-                option.textContent = model.name || model.id;
-                if (model.name === previousSelection || model.id === previousSelection) {
+                option.value = model.name;
+                option.textContent = model.name;
+                if (model.name === previousSelection) {
                     option.selected = true;
                     hasSelectedModel = true;
                 }
-                select.appendChild(option);
+                modelSelect.appendChild(option);
             });
             
-            if (!hasSelectedModel && models.length > 0) {
-                select.selectedIndex = 0;
+            // Only auto-select first model if no previous selection exists
+            if (!hasSelectedModel && !previousSelection && models.length > 0) {
+                modelSelect.selectedIndex = 0;
             }
-            select.disabled = false;
+            modelSelect.disabled = false;
         } else {
             const option = document.createElement('option');
             option.value = '';
             option.textContent = 'Aucun modèle disponible';
             option.disabled = true;
             option.selected = true;
-            select.appendChild(option);
-            select.disabled = true;
-        }
-    }
-
-    async function loadOpenAIModels() {
-        if (!openaiModelSelect) return;
-
-        try {
-            const previousSelection = localStorage.getItem('selectedOpenAIModel');
-            
-            if (refreshOpenAIModels) refreshOpenAIModels.disabled = true;
-            updateModelSelect([], 'Chargement des modèles...', previousSelection, true);
-
-            const response = await fetch('/api/openai_models');
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Erreur lors de la récupération des modèles');
-            }
-
-            const models = data.models || [];
-            updateModelSelect(models, '', previousSelection, true);
-
-            if (models.length === 0) {
-                showAlert('Aucun modèle OpenAI disponible.', 'warning');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération des modèles:', error.message);
-            updateModelSelect([], error.message, '', true);
-            showAlert(error.message || 'Erreur lors de la récupération des modèles OpenAI');
-        } finally {
-            if (refreshOpenAIModels) refreshOpenAIModels.disabled = false;
-        }
-    }
-
-    async function loadOllamaModels() {
-        if (!modelSelect) return;
-
-        try {
-            const previousSelection = localStorage.getItem('selectedModel');
-
-            if (refreshModels) refreshModels.disabled = true;
-            updateModelSelect([], 'Chargement des modèles...', previousSelection, false);
-
-            const url = ollamaUrl ? ollamaUrl.value.trim() : '';
-            const response = await fetch('/api/models?url=' + encodeURIComponent(url));
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Erreur lors de la récupération des modèles');
-            }
-
-            const models = data.models || [];
-            updateModelSelect(models, '', previousSelection, false);
-
-            if (models.length === 0) {
-                showAlert('Aucun modèle Ollama disponible.', 'warning');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la récupération des modèles:', error.message);
-            updateModelSelect([], error.message, '', false);
-            showAlert(error.message || 'Erreur lors de la récupération des modèles Ollama');
-        } finally {
-            if (refreshModels) refreshModels.disabled = false;
+            modelSelect.appendChild(option);
+            modelSelect.disabled = true;
         }
     }
 
     async function loadModels() {
-        if (useOpenAI && useOpenAI.checked) {
-            await loadOpenAIModels();
-        } else {
-            await loadOllamaModels();
+        if (!modelSelect || !refreshModels || !ollamaUrl) return;
+
+        try {
+            // Get the previously selected model from localStorage
+            const savedModel = localStorage.getItem('selectedModel');
+
+            // Remember current selection before refreshing
+            const previousSelection = savedModel || modelSelect.value;
+
+            // Validate URL format before making the request
+            let url;
+            try {
+                url = new URL(ollamaUrl.value.trim());
+            } catch (e) {
+                throw new Error("L'URL d'Ollama n'est pas valide");
+            }
+
+            refreshModels.disabled = true;
+            updateModelSelect([], 'Chargement des modèles...', previousSelection);
+
+            // Add the current URL as a query parameter
+            const apiUrl = '/api/models?url=' + encodeURIComponent(ollamaUrl.value.trim());
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Erreur lors de la récupération des modèles');
+            }
+
+            if (!data.models || !Array.isArray(data.models)) {
+                throw new Error('Format de réponse invalide du serveur');
+            }
+
+            updateModelSelect(data.models, '', previousSelection);
+
+            if (data.models.length === 0) {
+                try {
+                    showAlert('Aucun modèle disponible sur le serveur Ollama.', 'warning');
+                } catch (e) {
+                    console.error('Error showing alert:', e);
+                }
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la récupération des modèles:', error.message);
+            updateModelSelect([], error.message);
+            try {
+                showAlert(error.message || 'Erreur lors de la récupération des modèles');
+            } catch (e) {
+                console.error('Error showing alert:', e);
+            }
+        } finally {
+            refreshModels.disabled = false;
         }
     }
 
     // Add event listeners
     if (refreshModels) {
-        refreshModels.addEventListener('click', loadOllamaModels);
-    }
-
-    if (refreshOpenAIModels) {
-        refreshOpenAIModels.addEventListener('click', loadOpenAIModels);
+        refreshModels.addEventListener('click', loadModels);
     }
 
     if (ollamaUrl) {
-        ollamaUrl.addEventListener('blur', loadOllamaModels);
+        ollamaUrl.addEventListener('blur', loadModels);
     }
 
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
+            if (!ollamaUrl || !modelSelect) {
+                try {
+                    showAlert('Éléments de configuration manquants');
+                } catch (e) {
+                    console.error('Error showing alert:', e);
+                }
+                return;
+            }
+
             const originalText = saveConfig.textContent;
             saveConfig.disabled = true;
             saveConfig.textContent = 'Sauvegarde en cours...';
 
             try {
-                // Prepare settings data
-                const settingsData = {
-                    use_openai: useOpenAI && useOpenAI.checked,
-                    url: ollamaUrl ? ollamaUrl.value.trim() : undefined,
-                    model: modelSelect ? modelSelect.value : undefined,
-                    openai_api_key: openaiApiKey ? openaiApiKey.value : undefined,
-                    openai_url: openaiUrl ? openaiUrl.value.trim() : undefined,
-                    openai_model: openaiModelSelect ? openaiModelSelect.value : undefined
-                };
+                // Validate URL format
+                try {
+                    new URL(ollamaUrl.value.trim());
+                } catch (e) {
+                    throw new Error("L'URL d'Ollama n'est pas valide");
+                }
 
-                const response = await fetch('/api/settings', {
+                const settingsResponse = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(settingsData)
+                    body: JSON.stringify({
+                        url: ollamaUrl.value.trim(),
+                        model: modelSelect.value
+                    })
                 });
 
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || 'Erreur lors de la sauvegarde des paramètres');
+                if (!settingsResponse.ok) {
+                    const data = await settingsResponse.json();
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde des paramètres');
                 }
 
-                // Store settings in localStorage
-                if (settingsData.use_openai) {
-                    localStorage.setItem('openaiUrl', openaiUrl.value.trim());
-                    localStorage.setItem('selectedOpenAIModel', openaiModelSelect.value);
+                // Store URL and selected model in localStorage
+                localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
+                localStorage.setItem('selectedModel', modelSelect.value);
+
+                // Store prompts in localStorage
+                if (systemPrompt) {
+                    localStorage.setItem('systemPrompt', systemPrompt.value.trim());
+                }
+                if (translationPrompt) {
+                    localStorage.setItem('translationPrompt', translationPrompt.value.trim());
+                }
+
+                if (systemPrompt) {
+                    const promptResponse = await fetch('/api/prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: systemPrompt.value.trim()
+                        })
+                    });
+
+                    if (!promptResponse.ok) {
+                        const data = await promptResponse.json();
+                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt');
+                    }
+                }
+
+                if (translationPrompt) {
+                    const translationPromptResponse = await fetch('/api/translation_prompt', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: translationPrompt.value.trim()
+                        })
+                    });
+
+                    if (!translationPromptResponse.ok) {
+                        const data = await translationPromptResponse.json();
+                        throw new Error(data.message || 'Erreur lors de la sauvegarde du prompt de traduction');
+                    }
+                }
+
+                try {
+                    showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                } catch (e) {
+                    console.error('Error showing success alert:', e);
+                }
+                
+                // Check connection with new URL
+                const statusResponse = await fetch('/api/status?url=' + encodeURIComponent(ollamaUrl.value.trim()));
+                const statusData = await statusResponse.json();
+                
+                if (statusData.status === 'connected') {
+                    // Only reload models if connection is successful
+                    await loadModels();
                 } else {
-                    localStorage.setItem('ollamaUrl', ollamaUrl.value.trim());
-                    localStorage.setItem('selectedModel', modelSelect.value);
+                    try {
+                        showAlert('Configuration sauvegardée mais le service Ollama n\'est pas accessible.', 'warning');
+                    } catch (e) {
+                        console.error('Error showing warning alert:', e);
+                    }
                 }
-
-                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
-
-                // Reload models for the selected provider
-                await loadModels();
 
             } catch (error) {
                 console.error('Erreur:', error.message);
-                showAlert(error.message || 'Erreur lors de la sauvegarde');
+                try {
+                    showAlert(error.message || 'Erreur lors de la sauvegarde');
+                } catch (e) {
+                    console.error('Error showing error alert:', e);
+                }
             } finally {
                 saveConfig.disabled = false;
                 saveConfig.textContent = originalText;

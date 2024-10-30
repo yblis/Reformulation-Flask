@@ -2,4 +2,3 @@ flask
 flask-sqlalchemy
 requests
 python-dotenv
-openai
