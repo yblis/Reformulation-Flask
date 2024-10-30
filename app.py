@@ -23,55 +23,79 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
+
 @app.route('/api/models/<provider>')
 def get_provider_models(provider):
     preferences = UserPreferences.get_or_create()
     print(f"Fetching models for provider: {provider}")  # Debug log
-    
+
     try:
         if provider == 'openai':
             if not preferences.openai_api_key:
                 return jsonify({"error": "OpenAI API key not configured"}), 401
-                
+
             client = OpenAI(api_key=preferences.openai_api_key)
             models = client.models.list()
-            
+
             return jsonify({
-                "models": [
-                    {"id": model.id, "name": model.id}
-                    for model in models
-                    if "gpt" in model.id
-                ]
+                "models": [{
+                    "id": model.id,
+                    "name": model.id
+                } for model in models if "gpt" in model.id]
             })
-                
+
         elif provider == 'anthropic':
-            models = [
-                {"id": "claude-3-haiku-20240307", "name": "Claude 3 Haiku"},
-                {"id": "claude-3-opus-20240229", "name": "Claude 3 Opus"},
-                {"id": "claude-3-sonnet-20240229", "name": "Claude 3 Sonnet"}
-            ]
+            models = [{
+                "id": "claude-3-haiku-20240307",
+                "name": "Claude 3 Haiku"
+            }, {
+                "id": "claude-3-opus-20240229",
+                "name": "Claude 3 Opus"
+            }, {
+                "id": "claude-3-sonnet-20240229",
+                "name": "Claude 3 Sonnet"
+            }]
             return jsonify({"models": models})
-                
+
         elif provider == 'groq':
-            if not preferences.groq_api_key:
-                print("Groq API key missing")  # Debug log
-                return jsonify({"error": "Groq API key not configured"}), 401
-                
-            # Return static list of supported Groq models
-            models = [
-                {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
-                {"id": "llama2-70b-4096", "name": "LLaMA2 70B"}
-            ]
-            print(f"Returning Groq models: {models}")  # Debug log
-            return jsonify({"models": models})
-            
-        elif provider == 'gemini':
-            models = [
-                {"id": "gemini-1.5-pro-001", "name": "Gemini 1.5 Pro"},
-                {"id": "gemini-1.5-flash-001", "name": "Gemini 1.5 Flash"}
-            ]
-            return jsonify({"models": models})
-                
+            try:
+                if not preferences.groq_api_key:
+                    print("Groq API key missing")
+                    return jsonify({"error":
+                                    "Groq API key not configured"}), 401
+
+                print("Fetching Groq models...")
+                response = requests.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers={
+                        "Authorization": f"Bearer {preferences.groq_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=10  # Ajout d'un timeout
+                )
+
+                print(f"Response status: {response.status_code}")
+                print(f"Response content: {response.text}")
+
+                if response.status_code == 200:
+                    data = response.json()
+                    models = [{
+                        "id": model["id"],
+                        "name": model.get("name", model["id"])
+                    } for model in data["data"]]
+                    print(f"Found models: {models}")
+                    return jsonify({"models": models})
+                else:
+                    error_message = f"Groq API error: {response.text}"
+                    print(error_message)
+                    return jsonify({"error":
+                                    error_message}), response.status_code
+
+            except Exception as e:
+                error_message = f"Error fetching Groq models: {str(e)}"
+                print(error_message)
+                return jsonify({"error": error_message}), 500
+
         elif provider == 'ollama':
             url = request.args.get('url', preferences.ollama_url)
             try:
@@ -79,29 +103,37 @@ def get_provider_models(provider):
                 if response.status_code == 200:
                     data = response.json()
                     return jsonify({
-                        "models": [{"id": model["name"], "name": model["name"]} 
-                                 for model in data.get("models", [])]
+                        "models": [{
+                            "id": model["name"],
+                            "name": model["name"]
+                        } for model in data.get("models", [])]
                     })
-                return jsonify({"error": f"Failed to fetch models: HTTP {response.status_code}"}), response.status_code
+                return jsonify({
+                    "error":
+                    f"Failed to fetch models: HTTP {response.status_code}"
+                }), response.status_code
             except requests.exceptions.RequestException as e:
                 return jsonify({"error": f"Connection error: {str(e)}"}), 500
-        
+
         return jsonify({"error": "Invalid provider"}), 400
-        
+
     except Exception as e:
         print(f"Error in get_provider_models: {str(e)}")  # Debug log
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/')
 def index():
     """Main route to serve the index page"""
     preferences = UserPreferences.get_or_create()
-    history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
+    history = ReformulationHistory.query.order_by(
+        ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',
-                         system_prompt=preferences.system_prompt,
-                         translation_prompt=preferences.translation_prompt,
-                         email_prompt=preferences.email_prompt,
-                         history=[h.to_dict() for h in history])
+                           system_prompt=preferences.system_prompt,
+                           translation_prompt=preferences.translation_prompt,
+                           email_prompt=preferences.email_prompt,
+                           history=[h.to_dict() for h in history])
+
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
@@ -112,10 +144,11 @@ def update_settings():
     try:
         preferences = UserPreferences.get_or_create()
         preferences.current_provider = data.get('provider', 'ollama')
-        
+
         settings = data.get('settings', {})
-        print(f"Updating settings for provider: {preferences.current_provider}")  # Debug log
-        
+        print(f"Updating settings for provider: {preferences.current_provider}"
+              )  # Debug log
+
         if preferences.current_provider == 'groq':
             if api_key := settings.get('apiKey'):
                 print("Saving Groq API key")  # Debug log
@@ -124,8 +157,10 @@ def update_settings():
                 if not preferences.groq_api_key:
                     raise Exception("Failed to save Groq API key")
         elif preferences.current_provider == 'ollama':
-            preferences.ollama_url = settings.get('url', preferences.ollama_url)
-            preferences.ollama_model = settings.get('model', preferences.ollama_model)
+            preferences.ollama_url = settings.get('url',
+                                                  preferences.ollama_url)
+            preferences.ollama_model = settings.get('model',
+                                                    preferences.ollama_model)
         elif preferences.current_provider == 'openai':
             if api_key := settings.get('apiKey'):
                 preferences.openai_api_key = api_key
@@ -143,17 +178,18 @@ def update_settings():
                 preferences.gemini_model = model
 
         db.session.commit()
-        
+
         # Verify the changes were saved
         db.session.refresh(preferences)
         if preferences.current_provider == 'groq':
             if not preferences.groq_api_key:
                 raise Exception("Groq API key verification failed")
-        
+
         return jsonify({"status": "success"})
     except Exception as e:
         print(f"Error in update_settings: {str(e)}")  # Debug log
         return jsonify({"error": str(e)}), 500
+
 
 # Rest of the routes (reformulate, translate, generate-email) remain the same
 # Adding them back would make the file too long for the response
