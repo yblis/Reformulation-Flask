@@ -63,8 +63,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
+            console.log(`${provider} API response:`, data);
             
             if (!response.ok) {
                 throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -75,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add new options
             if (data.models && Array.isArray(data.models)) {
+                console.log(`Found ${data.models.length} models for ${provider}:`, data.models);
                 data.models.forEach(model => {
                     const option = document.createElement('option');
                     option.value = model.id;
@@ -89,6 +92,21 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
             showAlert(error.message, 'danger', 5000);
+            
+            // Add direct API call for debugging
+            if (provider === 'groq') {
+                fetch('/api/models/groq')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Groq models response:', data);
+                        if (data.error) {
+                            console.error('Error loading groq models:', data.error);
+                        } else {
+                            console.log('Loaded models:', data.models);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching groq models:', error));
+            }
         } finally {
             if (button) {
                 button.disabled = false;
