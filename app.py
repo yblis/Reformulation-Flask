@@ -45,6 +45,30 @@ def index():
                          translation_prompt=preferences.translation_prompt,
                          email_prompt=preferences.email_prompt)
 
+@app.route('/api/status')
+def check_status():
+    url = request.args.get('url')
+    status = check_ollama_status(url)
+    return jsonify({
+        "status": "connected" if status else "disconnected"
+    })
+
+@app.route('/api/models')
+def get_models():
+    url = request.args.get('url', OLLAMA_URL)
+    try:
+        response = requests.get(f"{url}/api/tags")
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({
+                "error": "Failed to fetch models"
+            }), response.status_code
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
@@ -114,5 +138,3 @@ def update_email_prompt():
 
     EMAIL_PROMPT = preferences.email_prompt
     return jsonify({"status": "success"})
-
-# Keep the rest of the existing routes and functions unchanged...
