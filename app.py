@@ -69,6 +69,111 @@ def get_models():
             "error": str(e)
         }), 500
 
+@app.route('/api/reformulate', methods=['POST'])
+def reformulate():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    try:
+        prompt = f"""<|im_start|>system
+{SYSTEM_PROMPT}
+<|im_end|>
+<|im_start|>user
+Contexte: {data.get('context', '')}
+Texte à reformuler: {data.get('text')}
+Ton: {data.get('tone')}
+Format: {data.get('format')}
+Longueur: {data.get('length')}
+<|im_end|>
+<|im_start|>assistant"""
+
+        response = requests.post(
+            f'{OLLAMA_URL}/api/generate',
+            json={
+                "model": CURRENT_MODEL,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify({"text": result['response'].strip()})
+        else:
+            return jsonify({"error": "Error calling Ollama API"}), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/translate', methods=['POST'])
+def translate():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    try:
+        prompt = f"""<|im_start|>system
+{TRANSLATION_PROMPT.format(target_language=data.get('language', 'Anglais'))}
+<|im_end|>
+<|im_start|>user
+{data.get('text')}
+<|im_end|>
+<|im_start|>assistant"""
+
+        response = requests.post(
+            f'{OLLAMA_URL}/api/generate',
+            json={
+                "model": CURRENT_MODEL,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify({"text": result['response'].strip()})
+        else:
+            return jsonify({"error": "Error calling Ollama API"}), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/generate-email', methods=['POST'])
+def generate_email():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    try:
+        prompt = f"""<|im_start|>system
+{EMAIL_PROMPT}
+<|im_end|>
+<|im_start|>user
+Type d'email: {data.get('type')}
+Contenu et contexte: {data.get('content')}
+Signature: {data.get('sender')}
+<|im_end|>
+<|im_start|>assistant"""
+
+        response = requests.post(
+            f'{OLLAMA_URL}/api/generate',
+            json={
+                "model": CURRENT_MODEL,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify({"text": result['response'].strip()})
+        else:
+            return jsonify({"error": "Error calling Ollama API"}), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     global OLLAMA_URL, CURRENT_MODEL
