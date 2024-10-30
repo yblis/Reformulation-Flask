@@ -150,21 +150,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 // Get provider-specific settings
-                const providerConfig = document.getElementById(`${selectedProvider}Config`);
-                if (providerConfig) {
-                    const apiKeyInput = providerConfig.querySelector('input[type="password"]');
-                    const modelSelect = providerConfig.querySelector('select');
-
-                    if (selectedProvider === 'ollama') {
-                        config.settings = {
-                            url: document.getElementById('ollamaUrl').value.trim(),
-                            model: document.getElementById('modelSelect').value
-                        };
-                    } else {
-                        config.settings = {
-                            apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
-                            model: modelSelect ? modelSelect.value : ''
-                        };
+                if (selectedProvider === 'groq') {
+                    const groqKeyInput = document.getElementById('groqKey');
+                    const groqModelSelect = document.getElementById('groqModel');
+                    
+                    if (groqKeyInput && groqKeyInput.value.trim()) {
+                        config.settings.apiKey = groqKeyInput.value.trim();
+                    }
+                    if (groqModelSelect && groqModelSelect.value) {
+                        config.settings.model = groqModelSelect.value;
+                    }
+                } else if (selectedProvider === 'ollama') {
+                    config.settings = {
+                        url: document.getElementById('ollamaUrl').value.trim(),
+                        model: document.getElementById('modelSelect').value
+                    };
+                } else {
+                    const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
+                    const modelSelect = document.getElementById(`${selectedProvider}Model`);
+                    
+                    if (apiKeyInput && apiKeyInput.value.trim()) {
+                        config.settings.apiKey = apiKeyInput.value.trim();
+                    }
+                    if (modelSelect && modelSelect.value) {
+                        config.settings.model = modelSelect.value;
                     }
                 }
 
@@ -179,12 +188,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                // Save prompts
-                if (systemPrompt) {
-                    localStorage.setItem('systemPrompt', systemPrompt.value.trim());
-                }
-                if (translationPrompt) {
-                    localStorage.setItem('translationPrompt', translationPrompt.value.trim());
+                // Refresh models after saving settings if API key was provided
+                if (selectedProvider !== 'ollama' && config.settings.apiKey) {
+                    await loadProviderModels(selectedProvider);
                 }
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);

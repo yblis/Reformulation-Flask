@@ -199,16 +199,12 @@ def get_provider_models(provider):
                 if response.status_code != 200:
                     return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
                     
-                models = response.json()
-                return jsonify({
-                    "models": [
-                        {
-                            "id": model["id"],
-                            "name": model.get("name", model["id"])
-                        }
-                        for model in models["data"]
-                    ]
-                })
+                # Groq models list
+                models = [
+                    {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
+                    {"id": "llama2-70b-4096", "name": "LLaMA2 70B"}
+                ]
+                return jsonify({"models": models})
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             
@@ -338,10 +334,7 @@ Signature: {data.get('sender')}
 def update_settings():
     data = request.get_json()
     if data is None:
-        return jsonify({
-            "message": "Invalid request body",
-            "error": "INVALID_REQUEST"
-        }), 400
+        return jsonify({"error": "Invalid request"}), 400
 
     try:
         preferences = UserPreferences.get_or_create()
@@ -355,19 +348,23 @@ def update_settings():
         elif preferences.current_provider == 'openai':
             if api_key := settings.get('apiKey'):
                 preferences.openai_api_key = api_key
-            preferences.openai_model = settings.get('model', preferences.openai_model)
+            if model := settings.get('model'):
+                preferences.openai_model = model
         elif preferences.current_provider == 'groq':
             if api_key := settings.get('apiKey'):
                 preferences.groq_api_key = api_key
-            preferences.groq_model = settings.get('model', preferences.groq_model)
+            if model := settings.get('model'):
+                preferences.groq_model = model
         elif preferences.current_provider == 'anthropic':
             if api_key := settings.get('apiKey'):
                 preferences.anthropic_api_key = api_key
-            preferences.anthropic_model = settings.get('model', preferences.anthropic_model)
+            if model := settings.get('model'):
+                preferences.anthropic_model = model
         elif preferences.current_provider == 'gemini':
             if api_key := settings.get('apiKey'):
                 preferences.google_api_key = api_key
-            preferences.gemini_model = settings.get('model', preferences.gemini_model)
+            if model := settings.get('model'):
+                preferences.gemini_model = model
         
         db.session.commit()
         return jsonify({"status": "success"})
