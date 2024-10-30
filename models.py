@@ -10,6 +10,9 @@ class UserPreferences(db.Model):
     system_prompt = db.Column(db.Text, nullable=False)
     translation_prompt = db.Column(db.Text, nullable=False)
     email_prompt = db.Column(db.Text, nullable=False)
+    use_openai = db.Column(db.Boolean, default=False)
+    openai_api_key = db.Column(db.String(255))
+    openai_model = db.Column(db.String(100), default="gpt-3.5-turbo")
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
