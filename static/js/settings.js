@@ -113,11 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners for API key changes
     const apiKeyInputs = {
         'openai': document.getElementById('openaiKey'),
-        'groq': document.getElementById('groqKey')
+        'groq': document.getElementById('groqKey'),
         'anthropic': document.getElementById('anthropicKey'),
         'gemini': document.getElementById('geminiKey')
     };
-    
+
     Object.entries(apiKeyInputs).forEach(([provider, input]) => {
         if (input) {
             input.addEventListener('change', () => {
