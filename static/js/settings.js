@@ -41,26 +41,64 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    async function loadProviderModels(provider) {
+    async function loadProviderModels(provider, button = null) {
         try {
-            const response = await fetch(`/api/models/${provider}`);
+            // If a button was provided, update its state
+            if (button) {
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Chargement...';
+            }
+
+            // For Ollama, include the URL in the request
+            let url = `/api/models/${provider}`;
+            if (provider === 'ollama') {
+                const ollamaUrlInput = document.getElementById('ollamaUrl');
+                if (ollamaUrlInput) {
+                    url += `?url=${encodeURIComponent(ollamaUrlInput.value)}`;
+                }
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
             
-            const modelSelect = document.getElementById(`${provider}Model`);
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+            
+            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
             if (!modelSelect) return;
             
+            // Save current selection if any
+            const currentSelection = modelSelect.value;
+            
             modelSelect.innerHTML = '';
-            if (data.models) {
+            if (data.models && data.models.length > 0) {
                 data.models.forEach(model => {
                     const option = document.createElement('option');
-                    option.value = model.id || model.name;
-                    option.textContent = model.id || model.name;
+                    option.value = model.id;
+                    option.textContent = model.id;
                     modelSelect.appendChild(option);
                 });
+                
+                // Restore previous selection if it exists in new model list
+                if (currentSelection && [...modelSelect.options].some(opt => opt.value === currentSelection)) {
+                    modelSelect.value = currentSelection;
+                }
+                
+                showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
+            } else {
+                throw new Error('No models found');
             }
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
-            showAlert(`Error loading ${provider} models: ${error.message}`);
+            showAlert(`Error loading ${provider} models: ${error.message}`, 'danger', 5000);
+        } finally {
+            // Reset button state if one was provided
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'Rafraîchir les modèles';
+            }
         }
     }
 
@@ -85,38 +123,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     Object.entries(refreshButtons).forEach(([provider, button]) => {
         if (button) {
-            button.addEventListener('click', () => loadProviderModels(provider));
+            button.addEventListener('click', () => loadProviderModels(provider, button));
         }
     });
 
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
-            const selectedProvider = aiProvider.value;
-            const config = {
-                provider: selectedProvider,
-                settings: {}
-            };
-
-            // Get provider-specific settings
-            const providerConfig = document.getElementById(`${selectedProvider}Config`);
-            if (providerConfig) {
-                const apiKeyInput = providerConfig.querySelector('input[type="password"]');
-                const modelSelect = providerConfig.querySelector('select');
-
-                if (selectedProvider === 'ollama') {
-                    config.settings = {
-                        url: document.getElementById('ollamaUrl').value.trim(),
-                        model: document.getElementById('modelSelect').value
-                    };
-                } else {
-                    config.settings = {
-                        apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
-                        model: modelSelect ? modelSelect.value : ''
-                    };
-                }
-            }
-
             try {
+                const selectedProvider = aiProvider.value;
+                const config = {
+                    provider: selectedProvider,
+                    settings: {}
+                };
+
+                // Get provider-specific settings
+                const providerConfig = document.getElementById(`${selectedProvider}Config`);
+                if (providerConfig) {
+                    const apiKeyInput = providerConfig.querySelector('input[type="password"]');
+                    const modelSelect = providerConfig.querySelector('select');
+
+                    if (selectedProvider === 'ollama') {
+                        config.settings = {
+                            url: document.getElementById('ollamaUrl').value.trim(),
+                            model: document.getElementById('modelSelect').value
+                        };
+                    } else {
+                        config.settings = {
+                            apiKey: apiKeyInput ? apiKeyInput.value.trim() : '',
+                            model: modelSelect ? modelSelect.value : ''
+                        };
+                    }
+                }
+
                 const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -124,7 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to save settings');
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to save settings');
                 }
 
                 // Save prompts
@@ -138,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
             } catch (error) {
                 console.error('Error saving settings:', error);
-                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres');
+                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger', 5000);
             }
         });
     }
