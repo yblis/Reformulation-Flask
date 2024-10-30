@@ -5,9 +5,16 @@ from requests.exceptions import ConnectionError, Timeout
 from models import db, UserPreferences, ReformulationHistory
 import openai
 import asyncio
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+@app.template_filter('datetime')
+def format_datetime(value):
+    if not value:
+        return ''
+    return value.strftime('%d/%m/%Y %H:%M')
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
@@ -52,7 +59,7 @@ def index():
                          email_prompt=preferences.email_prompt,
                          use_openai=preferences.use_openai,
                          openai_model=preferences.openai_model,
-                         history=[h.to_dict() for h in history])
+                         history=history)
 
 @app.route('/api/status')
 def check_status():
