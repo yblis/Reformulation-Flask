@@ -6,32 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
 
-    // Load saved prompts and settings from localStorage
     function loadSavedSettings() {
         const savedProvider = localStorage.getItem('aiProvider') || 'ollama';
         aiProvider.value = savedProvider;
         showProviderConfig(savedProvider);
-
-        // Load provider-specific settings
-        if (ollamaUrl) {
-            ollamaUrl.value = localStorage.getItem('ollamaUrl') || 'http://localhost:11434';
-        }
-        
-        // Load prompts
-        if (systemPrompt) {
-            const savedSystemPrompt = localStorage.getItem('systemPrompt');
-            if (savedSystemPrompt) {
-                systemPrompt.value = savedSystemPrompt;
-            }
-        }
-        if (translationPrompt) {
-            const savedTranslationPrompt = localStorage.getItem('translationPrompt');
-            if (savedTranslationPrompt) {
-                translationPrompt.value = savedTranslationPrompt;
-            }
-        }
-
-        // Load models for the selected provider
         loadProviderModels(savedProvider);
     }
 
@@ -155,11 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Get provider-specific settings
                 if (selectedProvider === 'groq') {
                     const groqKeyInput = document.getElementById('groqKey');
-                    console.log('Saving Groq key:', groqKeyInput?.value ? 'Key present' : 'No key'); // Debug log
-                    
-                    if (groqKeyInput && groqKeyInput.value.trim()) {
-                        config.settings.apiKey = groqKeyInput.value.trim();
+                    if (!groqKeyInput || !groqKeyInput.value.trim()) {
+                        throw new Error('Groq API key is required');
                     }
+                    config.settings.apiKey = groqKeyInput.value.trim();
                 } else if (selectedProvider === 'ollama') {
                     config.settings = {
                         url: document.getElementById('ollamaUrl').value.trim(),
@@ -190,8 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                // Only refresh models if we have an API key
-                if (selectedProvider === 'groq' && config.settings.apiKey) {
+                // For Groq, wait a bit and refresh models after saving
+                if (selectedProvider === 'groq') {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Give time for backend to process
                     await loadProviderModels('groq');
                 }
 

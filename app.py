@@ -53,17 +53,33 @@ def get_provider_models(provider):
             return jsonify({"models": models})
                 
         elif provider == 'groq':
-            if not preferences.groq_api_key:
-                print("Groq API key missing")  # Debug log
-                return jsonify({"error": "Groq API key not configured"}), 401
+            try:
+                if not preferences.groq_api_key:
+                    return jsonify({"error": "Groq API key not configured"}), 401
+                    
+                headers = {
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                }
                 
-            # Return static list of supported Groq models
-            models = [
-                {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
-                {"id": "llama2-70b-4096", "name": "LLaMA2 70B"}
-            ]
-            print(f"Returning Groq models: {models}")  # Debug log
-            return jsonify({"models": models})
+                response = requests.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
+                    
+                models = response.json()
+                return jsonify({
+                    "models": [
+                        {"id": model["id"], "name": model.get("name", model["id"])}
+                        for model in models["data"]
+                    ]
+                })
+            except Exception as e:
+                print(f"Error fetching Groq models: {str(e)}")
+                return jsonify({"error": str(e)}), 500
             
         elif provider == 'gemini':
             models = [
@@ -154,9 +170,6 @@ def update_settings():
     except Exception as e:
         print(f"Error in update_settings: {str(e)}")  # Debug log
         return jsonify({"error": str(e)}), 500
-
-# Rest of the routes (reformulate, translate, generate-email) remain the same
-# Adding them back would make the file too long for the response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
