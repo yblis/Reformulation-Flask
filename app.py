@@ -14,7 +14,6 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 
-# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -163,7 +162,6 @@ def reformulate():
             response_data = response.json()
             reformulated_text = response_data['choices'][0]['message']['content']
             
-            # Save to history
             history = ReformulationHistory(
                 original_text=text,
                 context=context,
@@ -201,7 +199,6 @@ def reformulate():
             data = response.json()
             reformulated_text = data['response']
             
-            # Save to history
             history = ReformulationHistory(
                 original_text=text,
                 context=context,
@@ -380,11 +377,23 @@ def get_provider_models(provider):
             if not preferences.google_api_key:
                 return jsonify({"error": "Google API key not configured"}), 401
                 
-            models = [
-                {"id": "gemini-1.5-pro-001", "name": "Gemini 1.5 Pro"},
-                {"id": "gemini-1.5-flash-001", "name": "Gemini 1.5 Flash"}
-            ]
-            return jsonify({"models": models})
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                models = genai.list_models()
+                
+                gemini_models = []
+                for model in models:
+                    if "generateContent" in model.supported_generation_methods:
+                        model_id = model.name[7:]
+                        gemini_models.append({
+                            "id": model_id,
+                            "name": model.display_name
+                        })
+                
+                return jsonify({"models": gemini_models})
+                
+            except Exception as e:
+                return jsonify({"error": f"Failed to fetch Gemini models: {str(e)}"}), 500
                 
         elif provider == 'ollama':
             url = request.args.get('url', preferences.ollama_url)
