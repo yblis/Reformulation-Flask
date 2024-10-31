@@ -46,7 +46,7 @@ def check_status():
 @app.route('/api/models/<provider>')
 def get_provider_models(provider):
     preferences = UserPreferences.get_or_create()
-    print(f"Fetching models for provider: {provider}")  # Debug log
+    print(f"Fetching models for provider: {provider}")
     
     try:
         if provider == 'openai':
@@ -65,6 +65,9 @@ def get_provider_models(provider):
             })
                 
         elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+                
             models = [
                 {"id": "claude-3-haiku-20240307", "name": "Claude 3 Haiku"},
                 {"id": "claude-3-opus-20240229", "name": "Claude 3 Opus"},
@@ -73,40 +76,32 @@ def get_provider_models(provider):
             return jsonify({"models": models})
                 
         elif provider == 'groq':
-            try:
-                # Get API key from environment variable with default value
-                api_key = os.getenv("GROQ_API_KEY", preferences.groq_api_key)
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
                 
-                # Make the request exactly as shown
-                response = requests.get(
-                    "https://api.groq.com/openai/v1/models",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    }
-                )
-                
-                # Handle response exactly as shown
-                if response.status_code == 200:
-                    models = response.json()["data"]
-                    return jsonify({
-                        "models": [
-                            {
-                                "id": model["id"],
-                                "name": model["id"]
-                            }
-                            for model in models
-                        ]
-                    })
-                else:
-                    print("Erreur:", response.text)
-                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
-                    
-            except Exception as e:
-                print(f"Error: {e}")
-                return jsonify({"error": str(e)}), 500
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+            )
             
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            models = response.json().get("data", [])
+            return jsonify({
+                "models": [
+                    {"id": model["id"], "name": model["id"]}
+                    for model in models
+                ]
+            })
+                
         elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+                
             models = [
                 {"id": "gemini-1.5-pro-001", "name": "Gemini 1.5 Pro"},
                 {"id": "gemini-1.5-flash-001", "name": "Gemini 1.5 Flash"}
@@ -130,12 +125,11 @@ def get_provider_models(provider):
         return jsonify({"error": "Invalid provider"}), 400
         
     except Exception as e:
-        print(f"Error in get_provider_models: {str(e)}")  # Debug log
+        print(f"Error in get_provider_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def index():
-    """Main route to serve the index page"""
     preferences = UserPreferences.get_or_create()
     history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',

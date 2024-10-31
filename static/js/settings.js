@@ -41,16 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Check if API key is configured for providers that need it
-            if (provider !== 'ollama') {
-                const apiKeyInput = document.getElementById(`${provider}Key`);
-                if (!apiKeyInput || !apiKeyInput.value.trim()) {
-                    throw new Error(`${provider} API key not configured`);
-                }
-            }
-
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid server response format');
+            }
+            
             const data = await response.json();
             
             if (!response.ok) {
