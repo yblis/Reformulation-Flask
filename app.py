@@ -100,6 +100,22 @@ def translate():
             response_data = response.json()
             translated_text = response_data['choices'][0]['message']['content']
             return jsonify({"text": translated_text})
+
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+                
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = preferences.translation_prompt.format(target_language=target_language) + "\n\n" + text
+                response = model.generate_content(prompt)
+                
+                return jsonify({"text": response.text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
@@ -211,6 +227,40 @@ def reformulate():
             db.session.commit()
             
             return jsonify({"text": reformulated_text})
+
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+                
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = preferences.system_prompt
+                if context:
+                    prompt += f"\n\nContexte ou email reçu:\n{context}"
+                    
+                user_prompt = f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                full_prompt = prompt + "\n\n" + user_prompt
+                
+                response = model.generate_content(full_prompt)
+                reformulated_text = response.text
+                
+                history = ReformulationHistory(
+                    original_text=text,
+                    context=context,
+                    reformulated_text=reformulated_text,
+                    tone=tone,
+                    format=format,
+                    length=length
+                )
+                db.session.add(history)
+                db.session.commit()
+                
+                return jsonify({"text": reformulated_text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
@@ -287,6 +337,22 @@ def generate_email():
                 
             data = response.json()
             return jsonify({"text": data['response']})
+
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = f"{preferences.email_prompt}\n\nType d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                response = model.generate_content(prompt)
+                
+                return jsonify({"text": response.text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
