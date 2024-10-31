@@ -29,8 +29,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Get the correct model select element
-            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
-            if (!modelSelect) return;
+            let modelSelect;
+            if (provider === 'ollama') {
+                modelSelect = document.getElementById('modelSelect');
+            } else {
+                modelSelect = document.getElementById(`${provider}Model`);
+            }
+
+            if (!modelSelect) {
+                throw new Error(`Model select element not found for ${provider}`);
+            }
 
             // For Ollama, include the URL in the request
             let url = `/api/models/${provider}`;
@@ -44,20 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Invalid server response format');
+            if (!response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    throw new Error(data.error || `Failed to fetch ${provider} models`);
+                } else {
+                    throw new Error(`Server error: ${response.status}`);
+                }
             }
-            
+
             const data = await response.json();
             
-            if (!response.ok) {
-                throw new Error(data.error || `Failed to fetch ${provider} models`);
-            }
-            
             // Clear existing options
-            modelSelect.innerHTML = '';
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+            }
             
             // Add new options
             if (data.models && Array.isArray(data.models)) {
@@ -77,7 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Clear model options on error
             if (modelSelect) {
-                modelSelect.innerHTML = '';
+                while (modelSelect.firstChild) {
+                    modelSelect.removeChild(modelSelect.firstChild);
+                }
                 const option = document.createElement('option');
                 option.value = '';
                 option.textContent = error.message;
@@ -112,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Get provider-specific settings
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
-                const modelSelect = document.getElementById(`${selectedProvider}Model`);
+                const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
                 
                 if (selectedProvider !== 'ollama') {
                     if (!apiKeyInput || !apiKeyInput.value.trim()) {
@@ -122,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     config.settings = {
                         url: document.getElementById('ollamaUrl').value.trim(),
-                        model: document.getElementById('modelSelect').value
+                        model: modelSelect.value
                     };
                 }
 
