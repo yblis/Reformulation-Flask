@@ -44,25 +44,21 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
-            console.log(`${provider} API response:`, data);
             
-            if (!response.ok) {
-                throw new Error(data.error || `HTTP error! status: ${response.status}`);
-            }
-
             // Clear existing options
             modelSelect.innerHTML = '';
             
             // Add new options
             if (data.models && Array.isArray(data.models)) {
-                console.log(`Found ${data.models.length} models for ${provider}:`, data.models);
                 data.models.forEach(model => {
+                    if (model.id === "error") {
+                        throw new Error(model.name);
+                    }
                     const option = document.createElement('option');
                     option.value = model.id;
                     option.textContent = model.name || model.id;
                     modelSelect.appendChild(option);
                 });
-                
                 showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
             } else {
                 throw new Error('No models found');
@@ -161,8 +157,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         config.settings.model = modelSelect.value;
                     }
                 }
-
-                console.log('Sending config:', {...config, settings: {...config.settings, apiKey: '[REDACTED]'}});
 
                 const response = await fetch('/api/settings', {
                     method: 'POST',

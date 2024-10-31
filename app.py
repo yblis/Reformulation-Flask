@@ -67,19 +67,27 @@ def get_provider_models(provider):
                     headers=headers
                 )
                 
-                if response.status_code != 200:
-                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
-                    
                 models = response.json()
                 return jsonify({
                     "models": [
-                        {"id": model["id"], "name": model.get("name", model["id"])}
+                        {
+                            "id": model["id"],
+                            "name": model["name"] if "name" in model else model["id"],
+                        }
                         for model in models["data"]
                     ]
                 })
+
             except Exception as e:
-                print(f"Error fetching Groq models: {str(e)}")
-                return jsonify({"error": str(e)}), 500
+                print(f"Error: {e}")
+                return jsonify({
+                    "models": [
+                        {
+                            "id": "error",
+                            "name": "Could not fetch models from Groq, please update the API Key in the valves.",
+                        }
+                    ]
+                })
             
         elif provider == 'gemini':
             models = [
