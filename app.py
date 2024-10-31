@@ -22,248 +22,564 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
-@app.route('/api/models/openai')
-def get_openai_models():
-    try:
-        preferences = UserPreferences.get_or_create()
-        
-        api_key = preferences.openai_api_key
-        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
-        
-        if not api_key:
-            return jsonify({"error": "OpenAI API key not configured"}), 401
-            
-        client = OpenAI(api_key=api_key)
-        
-        try:
-            print("Requesting models from OpenAI API...")
-            models = client.models.list()
-            
-            # Filter for GPT models
-            gpt_models = [
-                {"id": model.id, "name": model.id}
-                for model in models
-                if "gpt" in model.id.lower()
-            ]
-            print(f"Successfully retrieved {len(gpt_models)} GPT models")
-            return jsonify({"models": gpt_models})
-            
-        except Exception as e:
-            print(f"OpenAI API error: {str(e)}")
-            if "401" in str(e):
-                return jsonify({"error": "Invalid OpenAI API key"}), 401
-            return jsonify({"error": str(e)}), 500
-            
-    except Exception as e:
-        print(f"Error in get_openai_models: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+@app.errorhandler(404)
+@app.errorhandler(500)
+def handle_error(error):
+    return jsonify({
+        "error": str(error),
+        "status": error.code
+    }), error.code
 
-@app.route('/api/settings', methods=['POST'])
-def save_settings():
+@app.route('/api/translate', methods=['POST'])
+def translate():
     try:
         data = request.get_json()
-        print("Received settings data:", {**data, 'settings': {
-            **data.get('settings', {}),
-            'apiKey': '***' if 'apiKey' in data.get('settings', {}) else None
-        }})
-        
         if not data:
             return jsonify({"error": "No data provided"}), 400
             
-        preferences = UserPreferences.get_or_create()
-        provider = data.get('provider')
-        settings = data.get('settings', {})
+        text = data.get('text')
+        target_language = data.get('language')
         
-        if provider == 'openai':
-            api_key = settings.get('apiKey')
-            if not api_key:
-                return jsonify({"error": "OpenAI API key is required"}), 400
+        if not text or not target_language:
+            return jsonify({"error": "Missing text or target language"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        if provider == 'ollama':
+            try:
+                response = requests.post(
+                    f"{preferences.ollama_url}/api/generate",
+                    json={
+                        "model": preferences.ollama_model,
+                        "prompt": preferences.translation_prompt.format(target_language=target_language) + "\n\n" + text,
+                        "stream": False
+                    },
+                    timeout=30
+                )
                 
-            print("Saving OpenAI API key to preferences...")
-            preferences.openai_api_key = api_key
-            
-            if 'model' in settings:
-                preferences.openai_model = settings['model']
-            
-            db.session.commit()
-            print("OpenAI settings saved successfully")
-            
-            # Test if key was saved
-            saved_key = preferences.openai_api_key
-            print(f"Verified saved key length: {len(saved_key) if saved_key else 0}")
-            
-            return jsonify({"message": "OpenAI settings saved successfully"})
-            
-        elif provider == 'anthropic':
-            api_key = settings.get('apiKey')
-            if not api_key:
-                return jsonify({"error": "Anthropic API key is required"}), 400
-            preferences.anthropic_api_key = api_key
-            if 'model' in settings:
-                preferences.anthropic_model = settings['model']
+                if response.status_code != 200:
+                    return jsonify({"error": "Ollama API error"}), response.status_code
+                    
+                data = response.json()
+                return jsonify({"text": data['response']})
+                
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": f"Connection error: {str(e)}"}), 500
                 
         elif provider == 'groq':
-            api_key = settings.get('apiKey')
-            if not api_key:
-                return jsonify({"error": "Groq API key is required"}), 400
-            preferences.groq_api_key = api_key
-            if 'model' in settings:
-                preferences.groq_model = settings['model']
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
                 
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": preferences.translation_prompt.format(target_language=target_language)
+                        },
+                        {
+                            "role": "user",
+                            "content": text
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            translated_text = response_data['choices'][0]['message']['content']
+            return jsonify({"text": translated_text})
+
         elif provider == 'gemini':
-            api_key = settings.get('apiKey')
-            if not api_key:
-                return jsonify({"error": "Google API key is required"}), 400
-            preferences.google_api_key = api_key
-            if 'model' in settings:
-                preferences.gemini_model = settings['model']
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
                 
-        elif provider == 'ollama':
-            if 'url' in settings:
-                preferences.ollama_url = settings['url']
-            if 'model' in settings:
-                preferences.ollama_model = settings['model']
-        
-        preferences.current_provider = provider
-        db.session.commit()
-        print(f"{provider} settings saved successfully")
-        
-        return jsonify({"message": "Settings saved successfully"})
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = preferences.translation_prompt.format(target_language=target_language) + "\n\n" + text
+                response = model.generate_content(prompt)
+                
+                return jsonify({"text": response.text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            headers = {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': preferences.anthropic_api_key
+            }
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=preferences.translation_prompt.format(target_language=target_language),
+                    messages=[{"role": "user", "content": text}],
+                    max_tokens=2000
+                )
+                return jsonify({"text": response.content[0].text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
+            
+        return jsonify({"error": "Unsupported provider"}), 400
         
     except Exception as e:
-        print(f"Error saving settings: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/reformulate', methods=['POST'])
+def reformulate():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        text = data.get('text')
+        context = data.get('context', '')
+        tone = data.get('tone')
+        format = data.get('format')
+        length = data.get('length')
+        
+        if not all([text, tone, format, length]):
+            return jsonify({"error": "Missing required parameters"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        if provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+                
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            reformulated_text = response_data['choices'][0]['message']['content']
+            
+            history = ReformulationHistory(
+                original_text=text,
+                context=context,
+                reformulated_text=reformulated_text,
+                tone=tone,
+                format=format,
+                length=length
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+            return jsonify({"text": reformulated_text})
+            
+        elif provider == 'ollama':
+            if not preferences.ollama_url:
+                return jsonify({"error": "Ollama URL not configured"}), 401
+                
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+                
+            response = requests.post(
+                f"{preferences.ollama_url}/api/generate",
+                json={
+                    "model": preferences.ollama_model,
+                    "prompt": f"{prompt}\n\nTon: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}",
+                    "stream": False
+                },
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": "Ollama API error"}), response.status_code
+                
+            data = response.json()
+            reformulated_text = data['response']
+            
+            history = ReformulationHistory(
+                original_text=text,
+                context=context,
+                reformulated_text=reformulated_text,
+                tone=tone,
+                format=format,
+                length=length
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+            return jsonify({"text": reformulated_text})
+
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = preferences.system_prompt
+                if context:
+                    prompt += f"\n\nContexte ou email reçu:\n{context}"
+                    
+                user_prompt = f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                full_prompt = prompt + "\n\n" + user_prompt
+                
+                response = model.generate_content(full_prompt)
+                reformulated_text = response.text
+                
+                history = ReformulationHistory(
+                    original_text=text,
+                    context=context,
+                    reformulated_text=reformulated_text,
+                    tone=tone,
+                    format=format,
+                    length=length
+                )
+                db.session.add(history)
+                db.session.commit()
+                
+                return jsonify({"text": reformulated_text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                    }],
+                    max_tokens=2000
+                )
+                reformulated_text = response.content[0].text
+
+                history = ReformulationHistory(
+                    original_text=text,
+                    context=context,
+                    reformulated_text=reformulated_text,
+                    tone=tone,
+                    format=format,
+                    length=length
+                )
+                db.session.add(history)
+                db.session.commit()
+
+                return jsonify({"text": reformulated_text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
+            
+        return jsonify({"error": "Unsupported provider"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/generate-email', methods=['POST'])
+def generate_email():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        email_type = data.get('type')
+        content = data.get('content')
+        sender = data.get('sender', '')
+        
+        if not all([email_type, content]):
+            return jsonify({"error": "Missing required parameters"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        if provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": preferences.email_prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Type d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            email_text = response_data['choices'][0]['message']['content']
+            return jsonify({"text": email_text})
+            
+        elif provider == 'ollama':
+            if not preferences.ollama_url:
+                return jsonify({"error": "Ollama URL not configured"}), 401
+                
+            response = requests.post(
+                f"{preferences.ollama_url}/api/generate",
+                json={
+                    "model": preferences.ollama_model,
+                    "prompt": f"{preferences.email_prompt}\n\nType d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}",
+                    "stream": False
+                },
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": "Ollama API error"}), response.status_code
+                
+            data = response.json()
+            return jsonify({"text": data['response']})
+
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
+
+            try:
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
+                
+                prompt = f"{preferences.email_prompt}\n\nType d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                response = model.generate_content(prompt)
+                
+                return jsonify({"text": response.text})
+                
+            except Exception as e:
+                return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=preferences.email_prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Type d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                    }],
+                    max_tokens=2000
+                )
+                return jsonify({"text": response.content[0].text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
+            
+        return jsonify({"error": "Unsupported provider"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/status')
+def check_status():
+    try:
+        preferences = UserPreferences.get_or_create()
+        url = request.args.get('url', preferences.ollama_url)
+        
+        if preferences.current_provider == 'ollama':
+            try:
+                response = requests.get(f"{url}/api/version", timeout=5)
+                if response.status_code == 200:
+                    return jsonify({"status": "connected"})
+            except requests.exceptions.RequestException as e:
+                return jsonify({"status": "disconnected", "error": str(e)})
+            return jsonify({"status": "disconnected"})
+        else:
+            return jsonify({"status": "connected"})
+            
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/anthropic')
 def get_anthropic_models():
     try:
         preferences = UserPreferences.get_or_create()
-        print("Fetching Anthropic models...")
         
-        api_key = preferences.anthropic_api_key
-        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
+        ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", preferences.anthropic_api_key)
         
-        if not api_key:
+        if not ANTHROPIC_API_KEY:
             return jsonify({"error": "Anthropic API key not configured"}), 401
-
-        # Static list of Claude models
+            
+        headers = {
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+            'x-api-key': ANTHROPIC_API_KEY
+        }
+        
         models = [
             {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
             {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
             {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"},
             {"id": "claude-3-5-sonnet-20241022", "name": "claude-3.5-sonnet"}
         ]
-        print(f"Retrieved {len(models)} Anthropic models")
+        
         return jsonify({"models": models})
-
+        
     except Exception as e:
         print(f"Error in get_anthropic_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/models/groq')
-def get_groq_models():
+@app.route('/api/models/<provider>')
+def get_provider_models(provider):
     try:
         preferences = UserPreferences.get_or_create()
-        print("Fetching Groq models...")
         
-        api_key = preferences.groq_api_key
-        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
-        
-        if not api_key:
-            return jsonify({"error": "Groq API key not configured"}), 401
-
-        try:
-            print("Requesting models from Groq API...")
-            response = requests.get(
-                "https://api.groq.com/openai/v1/models",
-                headers={"Authorization": f"Bearer {api_key}"}
-            )
-
-            if response.status_code != 200:
-                return jsonify({"error": response.text}), response.status_code
-
-            data = response.json()
+        if provider == 'openai':
+            if not preferences.openai_api_key:
+                return jsonify({"error": "OpenAI API key not configured"}), 401
+                
+            try:
+                client = OpenAI(api_key=preferences.openai_api_key)
+                models = client.models.list()
+                return jsonify({
+                    "models": [
+                        {"id": model.id, "name": model.id}
+                        for model in models
+                        if "gpt" in model.id
+                    ]
+                })
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+                
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+                
+            headers = {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': preferences.anthropic_api_key
+            }
+            
             models = [
-                {"id": model["id"], "name": model["id"]}
-                for model in data["data"]
+                {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
+                {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
+                {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"},
+                {"id": "claude-3-5-sonnet-20241022", "name": "claude-3.5-sonnet"}
             ]
-            print(f"Successfully retrieved {len(models)} Groq models")
+            
             return jsonify({"models": models})
+                
+        elif provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            try:
+                response = requests.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers={"Authorization": f"Bearer {preferences.groq_api_key}"}
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": response.text}), response.status_code
+                    
+                data = response.json()
+                return jsonify({
+                    "models": [{"id": model["id"], "name": model["id"]} 
+                        for model in data["data"]
+                    ]
+                })
+            except Exception as e:
+                return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
+                
+        elif provider == 'gemini':
+            if not preferences.google_api_key:
+                return jsonify({"error": "Google API key not configured"}), 401
             
-        except Exception as e:
-            print(f"Groq API error: {str(e)}")
-            if "401" in str(e):
-                return jsonify({"error": "Invalid Groq API key"}), 401
-            return jsonify({"error": f"API request failed: {str(e)}"}), 500
-
-    except Exception as e:
-        print(f"Error in get_groq_models: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/gemini')
-def get_gemini_models():
-    try:
-        preferences = UserPreferences.get_or_create()
-        print("Fetching Gemini models...")
-        
-        api_key = preferences.google_api_key
-        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
-        
-        if not api_key:
-            return jsonify({"error": "Google API key not configured"}), 401
-
-        # Static list of Gemini models
-        models = [
-            {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro"},
-            {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash"}
-        ]
-        print(f"Retrieved {len(models)} Gemini models")
-        return jsonify({"models": models})
-
-    except Exception as e:
-        print(f"Error in get_gemini_models: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/ollama')
-def get_ollama_models():
-    try:
-        preferences = UserPreferences.get_or_create()
-        print("Fetching Ollama models...")
-        url = request.args.get('url', preferences.ollama_url)
-        print(f"Using Ollama URL: {url}")
-
-        try:
-            print("Requesting models from Ollama API...")
-            response = requests.get(f"{url}/api/tags", timeout=5)
-            
-            if response.status_code != 200:
-                print("Failed to fetch Ollama models")
-                return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
-
-            data = response.json()
             models = [
-                {"id": model["name"], "name": model["name"]}
-                for model in data["models"]
+                {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro"},
+                {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash"}
             ]
-            print(f"Successfully retrieved {len(models)} Ollama models")
             return jsonify({"models": models})
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Ollama API error: {str(e)}")
-            return jsonify({"error": f"Connection error: {str(e)}"}), 500
-
+                
+        elif provider == 'ollama':
+            url = request.args.get('url', preferences.ollama_url)
+            try:
+                response = requests.get(f"{url}/api/tags")
+                
+                if response.status_code != 200:
+                    return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
+                    
+                data = response.json()
+                return jsonify({
+                    "models": [
+                        {"id": model["name"], "name": model["name"]}
+                        for model in data["models"]
+                    ]
+                })
+            except Exception as e:
+                return jsonify({"error": f"Failed to fetch Ollama models: {str(e)}"}), 500
+                
+        return jsonify({"error": "Unsupported provider"}), 400
+        
     except Exception as e:
-        print(f"Error in get_ollama_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/status')
-def get_status():
-    try:
-        url = request.args.get('url', preferences.ollama_url)
-        response = requests.get(f"{url}/api/tags", timeout=5)
-        return jsonify({"status": "connected" if response.status_code == 200 else "disconnected"})
-    except:
-        return jsonify({"status": "disconnected"})
 
 @app.route('/')
 def index():
@@ -274,6 +590,50 @@ def index():
                          translation_prompt=preferences.translation_prompt,
                          email_prompt=preferences.email_prompt,
                          history=[h.to_dict() for h in history])
+
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    try:
+        data = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid request: No JSON data"}), 400
+
+        preferences = UserPreferences.get_or_create()
+        preferences.current_provider = data.get('provider', 'ollama')
+        
+        settings = data.get('settings', {})
+        
+        if preferences.current_provider == 'groq':
+            api_key = settings.get('apiKey')
+            if not api_key:
+                return jsonify({"error": "Groq API key is required"}), 400
+                
+            preferences.groq_api_key = api_key
+            if model := settings.get('model'):
+                preferences.groq_model = model
+        elif preferences.current_provider == 'ollama':
+            preferences.ollama_url = settings.get('url', preferences.ollama_url)
+            preferences.ollama_model = settings.get('model', preferences.ollama_model)
+        elif preferences.current_provider == 'openai':
+            if api_key := settings.get('apiKey'):
+                preferences.openai_api_key = api_key
+            if model := settings.get('model'):
+                preferences.openai_model = model
+        elif preferences.current_provider == 'anthropic':
+            if api_key := settings.get('apiKey'):
+                preferences.anthropic_api_key = api_key
+            if model := settings.get('model'):
+                preferences.anthropic_model = model
+        elif preferences.current_provider == 'gemini':
+            if api_key := settings.get('apiKey'):
+                preferences.google_api_key = api_key
+            if model := settings.get('model'):
+                preferences.gemini_model = model
+            
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

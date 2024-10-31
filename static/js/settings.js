@@ -28,19 +28,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.textContent = 'Chargement...';
             }
 
-            console.log(`Fetching ${provider} models...`);
-
             // Get the correct model select element based on provider
-            modelSelect = provider === 'ollama' ? 
-                document.getElementById('modelSelect') : 
-                document.getElementById(`${provider}Model`);
+            if (provider === 'ollama') {
+                modelSelect = document.getElementById('modelSelect');
+            } else {
+                modelSelect = document.getElementById(`${provider}Model`);
+            }
 
             if (!modelSelect) {
                 throw new Error(`Model select element not found for ${provider}`);
             }
 
-            // Clear existing options
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+            // Clear existing options first
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+            }
+
+            // Add loading option
+            const loadingOption = document.createElement('option');
+            loadingOption.value = '';
+            loadingOption.textContent = 'Loading models...';
+            modelSelect.appendChild(loadingOption);
 
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
@@ -50,17 +58,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
-            if (!response.ok) {
-                const errorMsg = data.error || `Failed to fetch ${provider} models`;
-                console.error(`Error loading ${provider} models: ${errorMsg}`);
-                throw new Error(errorMsg);
+            // Clear the loading option
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
             }
 
-            // Clear options before adding new ones
-            modelSelect.innerHTML = '';
+            if (!response.ok) {
+                throw new Error(data.error || `Failed to fetch ${provider} models`);
+            }
 
             if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
                 throw new Error(`No models available for ${provider}`);
@@ -74,24 +83,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.appendChild(option);
             });
 
-            // Select saved model or first available
+            // Select the saved model if available
             const savedModel = localStorage.getItem(`${provider}Model`);
             if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
                 modelSelect.value = savedModel;
-            } else if (data.models.length > 0) {
-                modelSelect.value = data.models[0].id;
             }
 
-            console.log(`Successfully loaded ${data.models.length} models for ${provider}`);
             showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
 
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
             
             if (modelSelect) {
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
-                showAlert(error.message, 'danger', 5000);
+                // Clear any existing options
+                while (modelSelect.firstChild) {
+                    modelSelect.removeChild(modelSelect.firstChild);
+                }
+                
+                // Add error option
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = error.message;
+                modelSelect.appendChild(option);
             }
+            
+            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
@@ -119,45 +135,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     settings: {}
                 };
 
-                if (selectedProvider === 'openai') {
-                    const apiKey = document.getElementById('openaiKey').value.trim();
-                    console.log('OpenAI API key length:', apiKey.length);
-                    if (!apiKey) {
-                        throw new Error('OpenAI API key is required');
-                    }
-                    config.settings = {
-                        apiKey: apiKey
-                    };
-                    
-                    const modelSelect = document.getElementById('openaiModel');
-                    if (modelSelect && modelSelect.value) {
-                        config.settings.model = modelSelect.value;
-                    }
-                } else if (selectedProvider === 'ollama') {
+                // Get provider-specific settings
+                const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
+                const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
+
+                if (selectedProvider !== 'ollama' && (!apiKeyInput || !apiKeyInput.value.trim())) {
+                    throw new Error(`${selectedProvider} API key is required`);
+                }
+
+                if (selectedProvider === 'ollama') {
                     const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
                     if (!ollamaUrl) {
                         throw new Error('Ollama URL is required');
                     }
                     config.settings.url = ollamaUrl;
-                    
-                    const modelSelect = document.getElementById('modelSelect');
-                    if (modelSelect && modelSelect.value) {
-                        config.settings.model = modelSelect.value;
-                    }
                 } else {
-                    const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
-                    if (!apiKeyInput || !apiKeyInput.value.trim()) {
-                        throw new Error(`${selectedProvider} API key is required`);
-                    }
                     config.settings.apiKey = apiKeyInput.value.trim();
-                    
-                    const modelSelect = document.getElementById(`${selectedProvider}Model`);
-                    if (modelSelect && modelSelect.value) {
-                        config.settings.model = modelSelect.value;
-                    }
                 }
 
-                console.log(`Saving ${selectedProvider} settings...`);
+                if (modelSelect && modelSelect.value) {
+                    config.settings.model = modelSelect.value;
+                    localStorage.setItem(`${selectedProvider}Model`, modelSelect.value);
+                } else {
+                    throw new Error(`Please select a model for ${selectedProvider}`);
+                }
+
                 const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -165,11 +167,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();
+
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                console.log(`${selectedProvider} settings saved successfully`);
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
                 
                 // Refresh models after saving settings
