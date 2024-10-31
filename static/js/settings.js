@@ -41,9 +41,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            // Check if API key is configured for providers that need it
+            if (provider !== 'ollama') {
+                const apiKeyInput = document.getElementById(`${provider}Key`);
+                if (!apiKeyInput || !apiKeyInput.value.trim()) {
+                    throw new Error(`${provider} API key not configured`);
+                }
+            }
+
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || `Failed to fetch ${provider} models`);
+            }
             
             // Clear existing options
             modelSelect.innerHTML = '';
@@ -51,9 +63,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add new options
             if (data.models && Array.isArray(data.models)) {
                 data.models.forEach(model => {
-                    if (model.id === "error") {
-                        throw new Error(model.name);
-                    }
                     const option = document.createElement('option');
                     option.value = model.id;
                     option.textContent = model.name || model.id;
@@ -66,6 +75,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
             showAlert(error.message, 'danger', 5000);
+            
+            // Clear model options on error
+            if (modelSelect) {
+                modelSelect.innerHTML = '';
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = error.message;
+                modelSelect.appendChild(option);
+            }
         } finally {
             if (button) {
                 button.disabled = false;
@@ -84,39 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add event listeners for API key changes
-    const apiKeyInputs = {
-        'openai': document.getElementById('openaiKey'),
-        'groq': document.getElementById('groqKey'),
-        'anthropic': document.getElementById('anthropicKey'),
-        'gemini': document.getElementById('geminiKey')
-    };
-
-    Object.entries(apiKeyInputs).forEach(([provider, input]) => {
-        if (input) {
-            input.addEventListener('change', () => {
-                if (input.value.trim()) {
-                    loadProviderModels(provider);
-                }
-            });
-        }
-    });
-
-    // Add refresh button listeners for each provider
-    const refreshButtons = {
-        'ollama': document.getElementById('refreshModels'),
-        'openai': document.getElementById('refreshOpenaiModels'),
-        'groq': document.getElementById('refreshGroqModels'),
-        'anthropic': document.getElementById('refreshAnthropicModels'),
-        'gemini': document.getElementById('refreshGeminiModels')
-    };
-
-    Object.entries(refreshButtons).forEach(([provider, button]) => {
-        if (button) {
-            button.addEventListener('click', () => loadProviderModels(provider, button));
-        }
-    });
-
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             try {
@@ -127,35 +112,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 // Get provider-specific settings
-                if (selectedProvider === 'groq') {
-                    const groqKeyInput = document.getElementById('groqKey');
-                    if (!groqKeyInput || !groqKeyInput.value.trim()) {
-                        throw new Error('Groq API key is required');
+                const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
+                const modelSelect = document.getElementById(`${selectedProvider}Model`);
+                
+                if (selectedProvider !== 'ollama') {
+                    if (!apiKeyInput || !apiKeyInput.value.trim()) {
+                        throw new Error(`${selectedProvider} API key is required`);
                     }
-                    config.settings = {
-                        apiKey: groqKeyInput.value.trim()
-                    };
-                    
-                    // Log the configuration being sent (without the actual API key)
-                    console.log('Sending Groq config:', {
-                        provider: config.provider,
-                        settings: { apiKey: '[REDACTED]' }
-                    });
-                } else if (selectedProvider === 'ollama') {
+                    config.settings.apiKey = apiKeyInput.value.trim();
+                } else {
                     config.settings = {
                         url: document.getElementById('ollamaUrl').value.trim(),
                         model: document.getElementById('modelSelect').value
                     };
-                } else {
-                    const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
-                    const modelSelect = document.getElementById(`${selectedProvider}Model`);
-                    
-                    if (apiKeyInput && apiKeyInput.value.trim()) {
-                        config.settings.apiKey = apiKeyInput.value.trim();
-                    }
-                    if (modelSelect && modelSelect.value) {
-                        config.settings.model = modelSelect.value;
-                    }
+                }
+
+                if (modelSelect && modelSelect.value) {
+                    config.settings.model = modelSelect.value;
                 }
 
                 const response = await fetch('/api/settings', {
@@ -169,13 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                // For Groq, wait a bit and refresh models after saving
-                if (selectedProvider === 'groq' && config.settings.apiKey) {
-                    // Wait for backend to process
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await loadProviderModels('groq');
-                }
-
+                // Refresh models after saving settings
+                await loadProviderModels(selectedProvider);
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
             } catch (error) {
                 console.error('Error saving settings:', error);
@@ -183,6 +151,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Add event listeners for refresh buttons
+    const refreshButtons = {
+        'ollama': document.getElementById('refreshModels'),
+        'openai': document.getElementById('refreshOpenaiModels'),
+        'groq': document.getElementById('refreshGroqModels'),
+        'anthropic': document.getElementById('refreshAnthropicModels'),
+        'gemini': document.getElementById('refreshGeminiModels')
+    };
+
+    Object.entries(refreshButtons).forEach(([provider, button]) => {
+        if (button) {
+            button.addEventListener('click', () => loadProviderModels(provider, button));
+        }
+    });
 
     function showAlert(message, type = 'danger', duration = 5000) {
         const existingAlerts = document.querySelectorAll('.alert');
