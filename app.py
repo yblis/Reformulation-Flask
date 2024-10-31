@@ -47,8 +47,28 @@ def translate():
         preferences = UserPreferences.get_or_create()
         provider = preferences.current_provider
         
-        # Use the configured AI provider to translate
-        if provider == 'groq':
+        if provider == 'ollama':
+            try:
+                response = requests.post(
+                    f"{preferences.ollama_url}/api/generate",
+                    json={
+                        "model": preferences.ollama_model,
+                        "prompt": preferences.translation_prompt.format(target_language=target_language) + "\n\n" + text,
+                        "stream": False
+                    },
+                    timeout=30
+                )
+                
+                if response.status_code != 200:
+                    return jsonify({"error": "Ollama API error"}), response.status_code
+                    
+                data = response.json()
+                return jsonify({"text": data['response']})
+                
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": f"Connection error: {str(e)}"}), 500
+                
+        elif provider == 'groq':
             if not preferences.groq_api_key:
                 return jsonify({"error": "Groq API key not configured"}), 401
                 
@@ -85,7 +105,6 @@ def translate():
         return jsonify({"error": "Unsupported provider"}), 400
         
     except Exception as e:
-        print(f"Translation error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/status')
@@ -99,8 +118,8 @@ def check_status():
                 response = requests.get(f"{url}/api/version", timeout=5)
                 if response.status_code == 200:
                     return jsonify({"status": "connected"})
-            except:
-                pass
+            except requests.exceptions.RequestException as e:
+                return jsonify({"status": "disconnected", "error": str(e)})
             return jsonify({"status": "disconnected"})
         else:
             return jsonify({"status": "connected"})
@@ -118,15 +137,17 @@ def get_provider_models(provider):
                 return jsonify({"error": "OpenAI API key not configured"}), 401
                 
             client = OpenAI(api_key=preferences.openai_api_key)
-            models = client.models.list()
-            
-            return jsonify({
-                "models": [
-                    {"id": model.id, "name": model.id}
-                    for model in models
-                    if "gpt" in model.id
-                ]
-            })
+            try:
+                models = client.models.list()
+                return jsonify({
+                    "models": [
+                        {"id": model.id, "name": model.id}
+                        for model in models
+                        if "gpt" in model.id
+                    ]
+                })
+            except Exception as e:
+                return jsonify({"error": f"Failed to fetch OpenAI models: {str(e)}"}), 500
                 
         elif provider == 'anthropic':
             if not preferences.anthropic_api_key:
@@ -143,24 +164,28 @@ def get_provider_models(provider):
             if not preferences.groq_api_key:
                 return jsonify({"error": "Groq API key not configured"}), 401
                 
-            response = requests.get(
-                "https://api.groq.com/openai/v1/models",
-                headers={
-                    "Authorization": f"Bearer {preferences.groq_api_key}",
-                    "Content-Type": "application/json"
-                }
-            )
-            
-            if response.status_code != 200:
-                return jsonify({"error": response.text}), response.status_code
+            try:
+                response = requests.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers={
+                        "Authorization": f"Bearer {preferences.groq_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=10
+                )
                 
-            data = response.json()
-            return jsonify({
-                "models": [
-                    {"id": model["id"], "name": model["id"]}
-                    for model in data["data"]
-                ]
-            })
+                if response.status_code != 200:
+                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
+                    
+                data = response.json()
+                return jsonify({
+                    "models": [
+                        {"id": model["id"], "name": model["id"]}
+                        for model in data["data"]
+                    ]
+                })
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
                 
         elif provider == 'gemini':
             if not preferences.google_api_key:
@@ -178,11 +203,17 @@ def get_provider_models(provider):
                 response = requests.get(f"{url}/api/tags", timeout=5)
                 if response.status_code == 200:
                     data = response.json()
+                    if not data.get("models"):
+                        return jsonify({"error": "No models found in Ollama response"}), 404
                     return jsonify({
                         "models": [{"id": model["name"], "name": model["name"]} 
                                  for model in data.get("models", [])]
                     })
                 return jsonify({"error": f"Failed to fetch models: HTTP {response.status_code}"}), response.status_code
+            except requests.exceptions.ConnectionError:
+                return jsonify({"error": "Failed to connect to Ollama server"}), 503
+            except requests.exceptions.Timeout:
+                return jsonify({"error": "Connection to Ollama server timed out"}), 504
             except requests.exceptions.RequestException as e:
                 return jsonify({"error": f"Connection error: {str(e)}"}), 500
         
@@ -219,6 +250,8 @@ def update_settings():
                 return jsonify({"error": "Groq API key is required"}), 400
                 
             preferences.groq_api_key = api_key
+            if model := settings.get('model'):
+                preferences.groq_model = model
         elif preferences.current_provider == 'ollama':
             preferences.ollama_url = settings.get('url', preferences.ollama_url)
             preferences.ollama_model = settings.get('model', preferences.ollama_model)

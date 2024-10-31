@@ -20,15 +20,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadProviderModels(provider, button = null) {
+        let modelSelect;
+        
         try {
-            // Show loading state
             if (button) {
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
 
-            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
-            if (!modelSelect) return;
+            // Get the correct model select element based on provider
+            if (provider === 'ollama') {
+                modelSelect = document.getElementById('modelSelect');
+            } else {
+                modelSelect = document.getElementById(`${provider}Model`);
+            }
+
+            if (!modelSelect) {
+                throw new Error(`Model select element not found for ${provider}`);
+            }
+
+            // Clear existing options first
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+            }
+
+            // Add loading option
+            const loadingOption = document.createElement('option');
+            loadingOption.value = '';
+            loadingOption.textContent = 'Loading models...';
+            modelSelect.appendChild(loadingOption);
 
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
@@ -40,43 +60,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
-            let data;
-            
-            try {
-                data = await response.json();
-            } catch (e) {
-                throw new Error('Invalid server response format');
+            const data = await response.json();
+
+            // Clear the loading option
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
             }
 
             if (!response.ok) {
                 throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
 
-            // Clear existing options
-            modelSelect.innerHTML = '';
-            
-            if (data.models && Array.isArray(data.models)) {
-                data.models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.id;
-                    option.textContent = model.name || model.id;
-                    modelSelect.appendChild(option);
-                });
-                showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
-            } else {
-                throw new Error('No models found');
+            if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
+                throw new Error(`No models available for ${provider}`);
             }
+
+            // Add the models
+            data.models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.name || model.id;
+                modelSelect.appendChild(option);
+            });
+
+            // Select the saved model if available
+            const savedModel = localStorage.getItem(`${provider}Model`);
+            if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
+                modelSelect.value = savedModel;
+            }
+
+            showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
+
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
-            showAlert(error.message, 'danger', 5000);
             
             if (modelSelect) {
-                modelSelect.innerHTML = '';
+                // Clear any existing options
+                while (modelSelect.firstChild) {
+                    modelSelect.removeChild(modelSelect.firstChild);
+                }
+                
+                // Add error option
                 const option = document.createElement('option');
                 option.value = '';
                 option.textContent = error.message;
                 modelSelect.appendChild(option);
             }
+            
+            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
@@ -108,20 +139,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
                 const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
 
-                if (selectedProvider !== 'ollama') {
-                    if (!apiKeyInput || !apiKeyInput.value.trim()) {
-                        throw new Error(`${selectedProvider} API key is required`);
+                if (selectedProvider !== 'ollama' && (!apiKeyInput || !apiKeyInput.value.trim())) {
+                    throw new Error(`${selectedProvider} API key is required`);
+                }
+
+                if (selectedProvider === 'ollama') {
+                    const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
+                    if (!ollamaUrl) {
+                        throw new Error('Ollama URL is required');
                     }
-                    config.settings.apiKey = apiKeyInput.value.trim();
+                    config.settings.url = ollamaUrl;
                 } else {
-                    config.settings = {
-                        url: document.getElementById('ollamaUrl').value.trim(),
-                        model: modelSelect.value
-                    };
+                    config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
                 if (modelSelect && modelSelect.value) {
                     config.settings.model = modelSelect.value;
+                    localStorage.setItem(`${selectedProvider}Model`, modelSelect.value);
+                } else {
+                    throw new Error(`Please select a model for ${selectedProvider}`);
                 }
 
                 const response = await fetch('/api/settings', {
@@ -130,20 +166,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(config)
                 });
 
-                let data;
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    throw new Error('Invalid server response format');
-                }
+                const data = await response.json();
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
+                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                
                 // Refresh models after saving settings
                 await loadProviderModels(selectedProvider);
-                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                
             } catch (error) {
                 console.error('Error saving settings:', error);
                 showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger', 5000);
