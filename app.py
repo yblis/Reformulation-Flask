@@ -31,6 +31,63 @@ def handle_error(error):
         "status": error.code
     }), error.code
 
+@app.route('/api/translate', methods=['POST'])
+def translate():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        text = data.get('text')
+        target_language = data.get('language')
+        
+        if not text or not target_language:
+            return jsonify({"error": "Missing text or target language"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        # Use the configured AI provider to translate
+        if provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": preferences.translation_prompt.format(target_language=target_language)
+                        },
+                        {
+                            "role": "user",
+                            "content": text
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            translated_text = response_data['choices'][0]['message']['content']
+            return jsonify({"text": translated_text})
+            
+        return jsonify({"error": "Unsupported provider"}), 400
+        
+    except Exception as e:
+        print(f"Translation error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/status')
 def check_status():
     try:
@@ -155,7 +212,6 @@ def update_settings():
         preferences.current_provider = data.get('provider', 'ollama')
         
         settings = data.get('settings', {})
-        print(f"Received settings update for {preferences.current_provider}")
         
         if preferences.current_provider == 'groq':
             api_key = settings.get('apiKey')
@@ -163,7 +219,6 @@ def update_settings():
                 return jsonify({"error": "Groq API key is required"}), 400
                 
             preferences.groq_api_key = api_key
-            print("Groq API key updated")
         elif preferences.current_provider == 'ollama':
             preferences.ollama_url = settings.get('url', preferences.ollama_url)
             preferences.ollama_model = settings.get('model', preferences.ollama_model)
