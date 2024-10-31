@@ -136,7 +136,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!groqKeyInput || !groqKeyInput.value.trim()) {
                         throw new Error('Groq API key is required');
                     }
-                    config.settings.apiKey = groqKeyInput.value.trim();
+                    config.settings = {
+                        apiKey: groqKeyInput.value.trim()
+                    };
+                    
+                    // Log the configuration being sent (without the actual API key)
+                    console.log('Sending Groq config:', {
+                        provider: config.provider,
+                        settings: { apiKey: '[REDACTED]' }
+                    });
                 } else if (selectedProvider === 'ollama') {
                     config.settings = {
                         url: document.getElementById('ollamaUrl').value.trim(),
@@ -154,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                console.log('Sending config:', {...config, settings: {...config.settings, apiKey: '[REDACTED]'}}); // Debug log
+                console.log('Sending config:', {...config, settings: {...config.settings, apiKey: '[REDACTED]'}});
 
                 const response = await fetch('/api/settings', {
                     method: 'POST',
@@ -168,8 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // For Groq, wait a bit and refresh models after saving
-                if (selectedProvider === 'groq') {
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Give time for backend to process
+                if (selectedProvider === 'groq' && config.settings.apiKey) {
+                    // Wait for backend to process
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     await loadProviderModels('groq');
                 }
 

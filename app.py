@@ -130,15 +130,15 @@ def update_settings():
         preferences.current_provider = data.get('provider', 'ollama')
         
         settings = data.get('settings', {})
-        print(f"Updating settings for provider: {preferences.current_provider}")  # Debug log
+        print(f"Received settings update for {preferences.current_provider}")
         
         if preferences.current_provider == 'groq':
-            if api_key := settings.get('apiKey'):
-                print("Saving Groq API key")  # Debug log
-                preferences.groq_api_key = api_key
-                # Verify the key was saved
-                if not preferences.groq_api_key:
-                    raise Exception("Failed to save Groq API key")
+            api_key = settings.get('apiKey')
+            if not api_key:
+                return jsonify({"error": "Groq API key is required"}), 400
+                
+            preferences.groq_api_key = api_key
+            print("Groq API key updated")
         elif preferences.current_provider == 'ollama':
             preferences.ollama_url = settings.get('url', preferences.ollama_url)
             preferences.ollama_model = settings.get('model', preferences.ollama_model)
@@ -157,18 +157,11 @@ def update_settings():
                 preferences.google_api_key = api_key
             if model := settings.get('model'):
                 preferences.gemini_model = model
-
+            
         db.session.commit()
-        
-        # Verify the changes were saved
-        db.session.refresh(preferences)
-        if preferences.current_provider == 'groq':
-            if not preferences.groq_api_key:
-                raise Exception("Groq API key verification failed")
-        
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Error in update_settings: {str(e)}")  # Debug log
+        print(f"Error in update_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
