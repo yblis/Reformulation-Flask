@@ -456,6 +456,38 @@ def check_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/models/openai')
+def get_openai_models():
+    try:
+        preferences = UserPreferences.get_or_create()
+        if not preferences.openai_api_key:
+            return jsonify({"error": "OpenAI API key not configured"}), 401
+            
+        headers = {
+            "Authorization": f"Bearer {preferences.openai_api_key}"
+        }
+        
+        response = requests.get("https://api.openai.com/v1/models", headers=headers)
+        
+        if response.status_code != 200:
+            return jsonify({"error": response.text}), response.status_code
+            
+        data = response.json()
+        
+        gpt_models = []
+        for model in data["data"]:
+            if "gpt" in model["id"]:
+                gpt_models.append({
+                    "id": model["id"],
+                    "name": model["id"]
+                })
+                
+        return jsonify({"models": gpt_models})
+        
+    except Exception as e:
+        print(f"Error in get_openai_models: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/models/anthropic')
 def get_anthropic_models():
     try:
