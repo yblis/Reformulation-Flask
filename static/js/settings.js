@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!apiKey) {
                         throw new Error('OpenAI API key is required');
                     }
-                    console.log('Saving OpenAI settings...');
+                    console.log('Saving OpenAI settings with API key length:', apiKey.length);
                     config.settings.apiKey = apiKey;
                 } else if (selectedProvider === 'ollama') {
                     const ollamaUrl = document.getElementById('ollamaUrl').value.trim();

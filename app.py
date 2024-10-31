@@ -91,8 +91,9 @@ def save_settings():
                 print("OpenAI API key missing in request")
                 return jsonify({"error": "OpenAI API key is required"}), 400
                 
-            # Save API key to preferences
+            # Save API key to preferences and environment
             preferences.openai_api_key = api_key
+            os.environ['OPENAI_API_KEY'] = api_key
             print('OpenAI API key saved successfully')
             
             # Save model if provided
@@ -288,6 +289,15 @@ def get_ollama_models():
     except Exception as e:
         print(f"Error in get_ollama_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/status')
+def get_status():
+    try:
+        url = request.args.get('url', preferences.ollama_url)
+        response = requests.get(f"{url}/api/tags", timeout=5)
+        return jsonify({"status": "connected" if response.status_code == 200 else "disconnected"})
+    except:
+        return jsonify({"status": "disconnected"})
 
 @app.route('/')
 def index():
