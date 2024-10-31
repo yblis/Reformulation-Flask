@@ -456,6 +456,37 @@ def check_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/models/anthropic')
+def get_anthropic_models():
+    try:
+        preferences = UserPreferences.get_or_create()
+        if not preferences.anthropic_api_key:
+            return jsonify({"error": "Anthropic API key not configured"}), 401
+
+        anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+        if anthropic_api_key:
+            preferences.anthropic_api_key = anthropic_api_key
+            db.session.commit()
+
+        headers = {
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+            'x-api-key': preferences.anthropic_api_key
+        }
+
+        models = [
+            {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
+            {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
+            {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"},
+            {"id": "claude-3-5-sonnet-20241022", "name": "claude-3.5-sonnet"}
+        ]
+
+        return jsonify({"models": models})
+
+    except Exception as e:
+        print(f"Error in get_anthropic_models: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/models/<provider>')
 def get_provider_models(provider):
     try:
