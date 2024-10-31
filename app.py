@@ -406,10 +406,12 @@ def get_provider_models(provider):
                 return jsonify({"error": "Anthropic API key not configured"}), 401
                 
             models = [
-                {"id": "claude-3-haiku-20240307", "name": "Claude 3 Haiku"},
-                {"id": "claude-3-opus-20240229", "name": "Claude 3 Opus"},
-                {"id": "claude-3-sonnet-20240229", "name": "Claude 3 Sonnet"}
+                {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
+                {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
+                {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"},
+                {"id": "claude-3-5-sonnet-20241022", "name": "claude-3.5-sonnet"}
             ]
+            
             return jsonify({"models": models})
                 
         elif provider == 'groq':
@@ -419,15 +421,11 @@ def get_provider_models(provider):
             try:
                 response = requests.get(
                     "https://api.groq.com/openai/v1/models",
-                    headers={
-                        "Authorization": f"Bearer {preferences.groq_api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    timeout=10
+                    headers={"Authorization": f"Bearer {preferences.groq_api_key}"}
                 )
                 
                 if response.status_code != 200:
-                    return jsonify({"error": f"Groq API error: {response.text}"}), response.status_code
+                    return jsonify({"error": response.text}), response.status_code
                     
                 data = response.json()
                 return jsonify({
@@ -436,7 +434,7 @@ def get_provider_models(provider):
                         for model in data["data"]
                     ]
                 })
-            except requests.exceptions.RequestException as e:
+            except Exception as e:
                 return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
                 
         elif provider == 'gemini':
@@ -464,24 +462,22 @@ def get_provider_models(provider):
         elif provider == 'ollama':
             url = request.args.get('url', preferences.ollama_url)
             try:
-                response = requests.get(f"{url}/api/tags", timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    if not data.get("models"):
-                        return jsonify({"error": "No models found in Ollama response"}), 404
-                    return jsonify({
-                        "models": [{"id": model["name"], "name": model["name"]} 
-                                 for model in data.get("models", [])]
-                    })
-                return jsonify({"error": f"Failed to fetch models: HTTP {response.status_code}"}), response.status_code
-            except requests.exceptions.ConnectionError:
-                return jsonify({"error": "Failed to connect to Ollama server"}), 503
-            except requests.exceptions.Timeout:
-                return jsonify({"error": "Connection to Ollama server timed out"}), 504
-            except requests.exceptions.RequestException as e:
-                return jsonify({"error": f"Connection error: {str(e)}"}), 500
-        
-        return jsonify({"error": "Invalid provider"}), 400
+                response = requests.get(f"{url}/api/tags")
+                
+                if response.status_code != 200:
+                    return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
+                    
+                data = response.json()
+                return jsonify({
+                    "models": [
+                        {"id": model["name"], "name": model["name"]}
+                        for model in data["models"]
+                    ]
+                })
+            except Exception as e:
+                return jsonify({"error": f"Failed to fetch Ollama models: {str(e)}"}), 500
+                
+        return jsonify({"error": "Unsupported provider"}), 400
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
