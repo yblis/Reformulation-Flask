@@ -253,7 +253,7 @@ def reformulate():
         elif provider == 'gemini':
             if not preferences.google_api_key:
                 return jsonify({"error": "Google API key not configured"}), 401
-                
+
             try:
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model or "gemini-1.5-flash")
@@ -465,8 +465,8 @@ def get_provider_models(provider):
             if not preferences.openai_api_key:
                 return jsonify({"error": "OpenAI API key not configured"}), 401
                 
-            client = OpenAI(api_key=preferences.openai_api_key)
             try:
+                client = OpenAI(api_key=preferences.openai_api_key)
                 models = client.models.list()
                 return jsonify({
                     "models": [
@@ -476,7 +476,7 @@ def get_provider_models(provider):
                     ]
                 })
             except Exception as e:
-                return jsonify({"error": f"Failed to fetch OpenAI models: {str(e)}"}), 500
+                return jsonify({"error": str(e)}), 500
                 
         elif provider == 'anthropic':
             if not preferences.anthropic_api_key:
@@ -512,8 +512,7 @@ def get_provider_models(provider):
                     
                 data = response.json()
                 return jsonify({
-                    "models": [
-                        {"id": model["id"], "name": model["id"]}
+                    "models": [{"id": model["id"], "name": model["id"]} 
                         for model in data["data"]
                     ]
                 })
