@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Rest of the existing code...
     // Elements for reformulation
     const contextText = document.getElementById('contextText');
     const inputText = document.getElementById('inputText');
@@ -53,10 +52,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastStatus = 'unknown';
     
     async function checkOllamaStatus() {
-        const savedUrl = localStorage.getItem('ollamaUrl');
         try {
+            const savedUrl = localStorage.getItem('ollamaUrl');
             const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
             const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Status check failed');
+            }
+            
             const data = await response.json();
             if (data.status !== lastStatus) {
                 lastStatus = data.status;
@@ -210,6 +214,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Rest of the existing code...
 });

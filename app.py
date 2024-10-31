@@ -23,6 +23,26 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
+@app.route('/api/status')
+def check_status():
+    try:
+        preferences = UserPreferences.get_or_create()
+        url = request.args.get('url', preferences.ollama_url)
+        
+        if preferences.current_provider == 'ollama':
+            try:
+                response = requests.get(f"{url}/api/version", timeout=5)
+                if response.status_code == 200:
+                    return jsonify({"status": "connected"})
+            except:
+                pass
+            return jsonify({"status": "disconnected"})
+        else:
+            return jsonify({"status": "connected"})
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/models/<provider>')
 def get_provider_models(provider):
     preferences = UserPreferences.get_or_create()
