@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.textContent = 'Chargement...';
             }
 
+            console.log(`Fetching ${provider} models...`);
+
             // Get the correct model select element based on provider
             modelSelect = provider === 'ollama' ? 
                 document.getElementById('modelSelect') : 
@@ -48,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
@@ -89,12 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (modelSelect) {
                 modelSelect.innerHTML = '<option value="">Error loading models</option>';
-                
-                // Show appropriate error message
-                const errorMsg = error.message.includes('API key') ? 
-                    `Please configure ${provider} API key first` : 
-                    error.message;
-                showAlert(errorMsg, 'danger', 5000);
+                showAlert(error.message, 'danger', 5000);
             }
         } finally {
             if (button) {
@@ -125,33 +121,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (selectedProvider === 'openai') {
                     const apiKey = document.getElementById('openaiKey').value.trim();
+                    console.log('OpenAI API key length:', apiKey.length);
                     if (!apiKey) {
                         throw new Error('OpenAI API key is required');
                     }
-                    console.log('Saving OpenAI settings with API key length:', apiKey.length);
-                    config.settings.apiKey = apiKey;
+                    config.settings = {
+                        apiKey: apiKey
+                    };
+                    
+                    const modelSelect = document.getElementById('openaiModel');
+                    if (modelSelect && modelSelect.value) {
+                        config.settings.model = modelSelect.value;
+                    }
                 } else if (selectedProvider === 'ollama') {
                     const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
                     if (!ollamaUrl) {
                         throw new Error('Ollama URL is required');
                     }
                     config.settings.url = ollamaUrl;
+                    
+                    const modelSelect = document.getElementById('modelSelect');
+                    if (modelSelect && modelSelect.value) {
+                        config.settings.model = modelSelect.value;
+                    }
                 } else {
                     const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
                     if (!apiKeyInput || !apiKeyInput.value.trim()) {
                         throw new Error(`${selectedProvider} API key is required`);
                     }
                     config.settings.apiKey = apiKeyInput.value.trim();
-                }
-
-                // Get model selection
-                const modelSelect = selectedProvider === 'ollama' ?
-                    document.getElementById('modelSelect') :
-                    document.getElementById(`${selectedProvider}Model`);
-
-                if (modelSelect && modelSelect.value) {
-                    config.settings.model = modelSelect.value;
-                    localStorage.setItem(`${selectedProvider}Model`, modelSelect.value);
+                    
+                    const modelSelect = document.getElementById(`${selectedProvider}Model`);
+                    if (modelSelect && modelSelect.value) {
+                        config.settings.model = modelSelect.value;
+                    }
                 }
 
                 console.log(`Saving ${selectedProvider} settings...`);

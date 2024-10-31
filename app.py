@@ -26,24 +26,14 @@ with app.app_context():
 def get_openai_models():
     try:
         preferences = UserPreferences.get_or_create()
-        print("Fetching OpenAI models...")
         
-        # First check environment variable
-        api_key = os.getenv('OPENAI_API_KEY')
-        print("OpenAI API key source: environment" if api_key else "OpenAI API key not found in environment")
+        api_key = preferences.openai_api_key
+        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
         
-        # If not in environment, use from preferences
         if not api_key:
-            api_key = preferences.openai_api_key
-            print("Using OpenAI API key from database")
-            
-        if not api_key:
-            print("No OpenAI API key configured")
             return jsonify({"error": "OpenAI API key not configured"}), 401
             
-        # Initialize client
         client = OpenAI(api_key=api_key)
-        print("OpenAI client initialized")
         
         try:
             print("Requesting models from OpenAI API...")
@@ -56,15 +46,13 @@ def get_openai_models():
                 if "gpt" in model.id.lower()
             ]
             print(f"Successfully retrieved {len(gpt_models)} GPT models")
-            
             return jsonify({"models": gpt_models})
             
         except Exception as e:
-            error_message = str(e)
-            print(f"OpenAI API error: {error_message}")
-            if "401" in error_message:
+            print(f"OpenAI API error: {str(e)}")
+            if "401" in str(e):
                 return jsonify({"error": "Invalid OpenAI API key"}), 401
-            return jsonify({"error": f"API request failed: {error_message}"}), 500
+            return jsonify({"error": str(e)}), 500
             
     except Exception as e:
         print(f"Error in get_openai_models: {str(e)}")
@@ -73,37 +61,36 @@ def get_openai_models():
 @app.route('/api/settings', methods=['POST'])
 def save_settings():
     try:
-        print("Received settings update request")
         data = request.get_json()
+        print("Received settings data:", {**data, 'settings': {
+            **data.get('settings', {}),
+            'apiKey': '***' if 'apiKey' in data.get('settings', {}) else None
+        }})
+        
         if not data:
-            print("No data provided in request")
             return jsonify({"error": "No data provided"}), 400
             
         preferences = UserPreferences.get_or_create()
         provider = data.get('provider')
         settings = data.get('settings', {})
         
-        print(f"Processing settings for provider: {provider}")
-        
         if provider == 'openai':
             api_key = settings.get('apiKey')
             if not api_key:
-                print("OpenAI API key missing in request")
                 return jsonify({"error": "OpenAI API key is required"}), 400
                 
-            # Save API key to preferences and environment
+            print("Saving OpenAI API key to preferences...")
             preferences.openai_api_key = api_key
-            os.environ['OPENAI_API_KEY'] = api_key
-            print('OpenAI API key saved successfully')
             
-            # Save model if provided
             if 'model' in settings:
                 preferences.openai_model = settings['model']
-                print(f"OpenAI model updated to: {settings['model']}")
             
-            # Commit changes
             db.session.commit()
-            print("Database changes committed successfully")
+            print("OpenAI settings saved successfully")
+            
+            # Test if key was saved
+            saved_key = preferences.openai_api_key
+            print(f"Verified saved key length: {len(saved_key) if saved_key else 0}")
             
             return jsonify({"message": "OpenAI settings saved successfully"})
             
@@ -153,17 +140,10 @@ def get_anthropic_models():
         preferences = UserPreferences.get_or_create()
         print("Fetching Anthropic models...")
         
-        # First check environment variable
-        api_key = os.getenv('ANTHROPIC_API_KEY')
-        print("Anthropic API key source: environment" if api_key else "Anthropic API key not found in environment")
+        api_key = preferences.anthropic_api_key
+        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
         
-        # If not in environment, use from preferences
         if not api_key:
-            api_key = preferences.anthropic_api_key
-            print("Using Anthropic API key from database")
-            
-        if not api_key:
-            print("No Anthropic API key configured")
             return jsonify({"error": "Anthropic API key not configured"}), 401
 
         # Static list of Claude models
@@ -186,17 +166,10 @@ def get_groq_models():
         preferences = UserPreferences.get_or_create()
         print("Fetching Groq models...")
         
-        # First check environment variable
-        api_key = os.getenv('GROQ_API_KEY')
-        print("Groq API key source: environment" if api_key else "Groq API key not found in environment")
+        api_key = preferences.groq_api_key
+        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
         
-        # If not in environment, use from preferences
         if not api_key:
-            api_key = preferences.groq_api_key
-            print("Using Groq API key from database")
-            
-        if not api_key:
-            print("No Groq API key configured")
             return jsonify({"error": "Groq API key not configured"}), 401
 
         try:
@@ -233,17 +206,10 @@ def get_gemini_models():
         preferences = UserPreferences.get_or_create()
         print("Fetching Gemini models...")
         
-        # First check environment variable
-        api_key = os.getenv('GOOGLE_API_KEY')
-        print("Google API key source: environment" if api_key else "Google API key not found in environment")
+        api_key = preferences.google_api_key
+        print(f"Retrieved API key from preferences (length: {len(api_key) if api_key else 0})")
         
-        # If not in environment, use from preferences
         if not api_key:
-            api_key = preferences.google_api_key
-            print("Using Google API key from database")
-            
-        if not api_key:
-            print("No Google API key configured")
             return jsonify({"error": "Google API key not configured"}), 401
 
         # Static list of Gemini models
