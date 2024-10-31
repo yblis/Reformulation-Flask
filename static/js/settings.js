@@ -68,7 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (!response.ok) {
-                throw new Error(data.error || `Failed to fetch ${provider} models`);
+                const errorMsg = data.error || `Failed to fetch ${provider} models`;
+                console.error(`Error loading ${provider} models: ${errorMsg}`);
+                throw new Error(errorMsg);
             }
 
             if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
@@ -87,8 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const savedModel = localStorage.getItem(`${provider}Model`);
             if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
                 modelSelect.value = savedModel;
+            } else if (data.models.length > 0) {
+                // Select the first model if no saved model
+                modelSelect.value = data.models[0].id;
             }
 
+            console.log(`Successfully loaded ${data.models.length} models for ${provider}`);
             showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
 
         } catch (error) {
@@ -103,11 +109,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add error option
                 const option = document.createElement('option');
                 option.value = '';
-                option.textContent = error.message;
+                option.textContent = 'Error loading models';
                 modelSelect.appendChild(option);
+
+                // Show detailed error message to user
+                const errorMsg = error.message.includes('API key') ? 
+                    `Please configure ${provider} API key first` : 
+                    error.message;
+                showAlert(errorMsg, 'danger', 5000);
             }
-            
-            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
@@ -150,14 +160,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     config.settings.url = ollamaUrl;
                 } else {
-                    config.settings.apiKey = apiKeyInput.value.trim();
+                    const apiKey = apiKeyInput.value.trim();
+                    console.log(`Saving ${selectedProvider} settings with API key ${apiKey ? '(provided)' : '(empty)'}`);
+                    config.settings.apiKey = apiKey;
                 }
 
                 if (modelSelect && modelSelect.value) {
                     config.settings.model = modelSelect.value;
                     localStorage.setItem(`${selectedProvider}Model`, modelSelect.value);
-                } else {
-                    throw new Error(`Please select a model for ${selectedProvider}`);
                 }
 
                 const response = await fetch('/api/settings', {
