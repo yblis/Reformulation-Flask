@@ -107,6 +107,195 @@ def translate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/reformulate', methods=['POST'])
+def reformulate():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        text = data.get('text')
+        context = data.get('context', '')
+        tone = data.get('tone')
+        format = data.get('format')
+        length = data.get('length')
+        
+        if not all([text, tone, format, length]):
+            return jsonify({"error": "Missing required parameters"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        if provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+                
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            reformulated_text = response_data['choices'][0]['message']['content']
+            
+            # Save to history
+            history = ReformulationHistory(
+                original_text=text,
+                context=context,
+                reformulated_text=reformulated_text,
+                tone=tone,
+                format=format,
+                length=length
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+            return jsonify({"text": reformulated_text})
+            
+        elif provider == 'ollama':
+            if not preferences.ollama_url:
+                return jsonify({"error": "Ollama URL not configured"}), 401
+                
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+                
+            response = requests.post(
+                f"{preferences.ollama_url}/api/generate",
+                json={
+                    "model": preferences.ollama_model,
+                    "prompt": f"{prompt}\n\nTon: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}",
+                    "stream": False
+                },
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": "Ollama API error"}), response.status_code
+                
+            data = response.json()
+            reformulated_text = data['response']
+            
+            # Save to history
+            history = ReformulationHistory(
+                original_text=text,
+                context=context,
+                reformulated_text=reformulated_text,
+                tone=tone,
+                format=format,
+                length=length
+            )
+            db.session.add(history)
+            db.session.commit()
+            
+            return jsonify({"text": reformulated_text})
+            
+        return jsonify({"error": "Unsupported provider"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/generate-email', methods=['POST'])
+def generate_email():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        email_type = data.get('type')
+        content = data.get('content')
+        sender = data.get('sender', '')
+        
+        if not all([email_type, content]):
+            return jsonify({"error": "Missing required parameters"}), 400
+            
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        if provider == 'groq':
+            if not preferences.groq_api_key:
+                return jsonify({"error": "Groq API key not configured"}), 401
+                
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {preferences.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": preferences.groq_model or "mixtral-8x7b-32768",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": preferences.email_prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Type d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            response_data = response.json()
+            email_text = response_data['choices'][0]['message']['content']
+            return jsonify({"text": email_text})
+            
+        elif provider == 'ollama':
+            if not preferences.ollama_url:
+                return jsonify({"error": "Ollama URL not configured"}), 401
+                
+            response = requests.post(
+                f"{preferences.ollama_url}/api/generate",
+                json={
+                    "model": preferences.ollama_model,
+                    "prompt": f"{preferences.email_prompt}\n\nType d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}",
+                    "stream": False
+                },
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": "Ollama API error"}), response.status_code
+                
+            data = response.json()
+            return jsonify({"text": data['response']})
+            
+        return jsonify({"error": "Unsupported provider"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/status')
 def check_status():
     try:
