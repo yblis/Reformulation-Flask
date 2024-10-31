@@ -23,6 +23,14 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
+@app.errorhandler(404)
+@app.errorhandler(500)
+def handle_error(error):
+    return jsonify({
+        "error": str(error),
+        "status": error.code
+    }), error.code
+
 @app.route('/api/status')
 def check_status():
     try:
@@ -45,10 +53,9 @@ def check_status():
 
 @app.route('/api/models/<provider>')
 def get_provider_models(provider):
-    preferences = UserPreferences.get_or_create()
-    print(f"Fetching models for provider: {provider}")
-    
     try:
+        preferences = UserPreferences.get_or_create()
+        
         if provider == 'openai':
             if not preferences.openai_api_key:
                 return jsonify({"error": "OpenAI API key not configured"}), 401
@@ -90,11 +97,11 @@ def get_provider_models(provider):
             if response.status_code != 200:
                 return jsonify({"error": response.text}), response.status_code
                 
-            models = response.json().get("data", [])
+            data = response.json()
             return jsonify({
                 "models": [
                     {"id": model["id"], "name": model["id"]}
-                    for model in models
+                    for model in data["data"]
                 ]
             })
                 
@@ -125,7 +132,6 @@ def get_provider_models(provider):
         return jsonify({"error": "Invalid provider"}), 400
         
     except Exception as e:
-        print(f"Error in get_provider_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/')
@@ -140,11 +146,11 @@ def index():
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
-    data = request.get_json()
-    if data is None:
-        return jsonify({"error": "Invalid request"}), 400
-
     try:
+        data = request.get_json()
+        if data is None:
+            return jsonify({"error": "Invalid request: No JSON data"}), 400
+
         preferences = UserPreferences.get_or_create()
         preferences.current_provider = data.get('provider', 'ollama')
         
@@ -180,7 +186,6 @@ def update_settings():
         db.session.commit()
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Error in update_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

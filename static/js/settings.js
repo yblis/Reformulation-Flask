@@ -23,24 +23,13 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Show loading state
             if (button) {
-                const originalText = button.textContent;
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
 
-            // Get the correct model select element
-            let modelSelect;
-            if (provider === 'ollama') {
-                modelSelect = document.getElementById('modelSelect');
-            } else {
-                modelSelect = document.getElementById(`${provider}Model`);
-            }
+            const modelSelect = document.getElementById(`${provider}Model`) || document.getElementById('modelSelect');
+            if (!modelSelect) return;
 
-            if (!modelSelect) {
-                throw new Error(`Model select element not found for ${provider}`);
-            }
-
-            // For Ollama, include the URL in the request
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
                 const ollamaUrlInput = document.getElementById('ollamaUrl');
@@ -51,25 +40,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
+            let data;
             
-            if (!response.ok) {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const data = await response.json();
-                    throw new Error(data.error || `Failed to fetch ${provider} models`);
-                } else {
-                    throw new Error(`Server error: ${response.status}`);
-                }
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error('Invalid server response format');
             }
 
-            const data = await response.json();
-            
-            // Clear existing options
-            while (modelSelect.firstChild) {
-                modelSelect.removeChild(modelSelect.firstChild);
+            if (!response.ok) {
+                throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
+
+            // Clear existing options
+            modelSelect.innerHTML = '';
             
-            // Add new options
             if (data.models && Array.isArray(data.models)) {
                 data.models.forEach(model => {
                     const option = document.createElement('option');
@@ -85,11 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`Error loading ${provider} models:`, error);
             showAlert(error.message, 'danger', 5000);
             
-            // Clear model options on error
             if (modelSelect) {
-                while (modelSelect.firstChild) {
-                    modelSelect.removeChild(modelSelect.firstChild);
-                }
+                modelSelect.innerHTML = '';
                 const option = document.createElement('option');
                 option.value = '';
                 option.textContent = error.message;
@@ -125,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Get provider-specific settings
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
                 const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
-                
+
                 if (selectedProvider !== 'ollama') {
                     if (!apiKeyInput || !apiKeyInput.value.trim()) {
                         throw new Error(`${selectedProvider} API key is required`);
@@ -148,8 +130,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(config)
                 });
 
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    throw new Error('Invalid server response format');
+                }
+
                 if (!response.ok) {
-                    const data = await response.json();
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
