@@ -116,6 +116,28 @@ def translate():
                 
             except Exception as e:
                 return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            headers = {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': preferences.anthropic_api_key
+            }
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=preferences.translation_prompt.format(target_language=target_language),
+                    messages=[{"role": "user", "content": text}],
+                    max_tokens=2000
+                )
+                return jsonify({"text": response.content[0].text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
@@ -261,6 +283,42 @@ def reformulate():
                 
             except Exception as e:
                 return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            prompt = preferences.system_prompt
+            if context:
+                prompt += f"\n\nContexte ou email reçu:\n{context}"
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Ton: {tone}\nFormat: {format}\nLongueur: {length}\n\nTexte à reformuler:\n{text}"
+                    }],
+                    max_tokens=2000
+                )
+                reformulated_text = response.content[0].text
+
+                history = ReformulationHistory(
+                    original_text=text,
+                    context=context,
+                    reformulated_text=reformulated_text,
+                    tone=tone,
+                    format=format,
+                    length=length
+                )
+                db.session.add(history)
+                db.session.commit()
+
+                return jsonify({"text": reformulated_text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
@@ -353,6 +411,25 @@ def generate_email():
                 
             except Exception as e:
                 return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+
+        elif provider == 'anthropic':
+            if not preferences.anthropic_api_key:
+                return jsonify({"error": "Anthropic API key not configured"}), 401
+
+            try:
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                response = client.messages.create(
+                    model=preferences.anthropic_model or "claude-3-haiku-20240307",
+                    system=preferences.email_prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Type d'email: {email_type}\n\nContenu et contexte:\n{content}\n\nSignature: {sender}"
+                    }],
+                    max_tokens=2000
+                )
+                return jsonify({"text": response.content[0].text})
+            except Exception as e:
+                return jsonify({"error": f"Anthropic API error: {str(e)}"}), 500
             
         return jsonify({"error": "Unsupported provider"}), 400
         
@@ -405,6 +482,12 @@ def get_provider_models(provider):
             if not preferences.anthropic_api_key:
                 return jsonify({"error": "Anthropic API key not configured"}), 401
                 
+            headers = {
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+                'x-api-key': preferences.anthropic_api_key
+            }
+            
             models = [
                 {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
                 {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
@@ -440,24 +523,12 @@ def get_provider_models(provider):
         elif provider == 'gemini':
             if not preferences.google_api_key:
                 return jsonify({"error": "Google API key not configured"}), 401
-                
-            try:
-                genai.configure(api_key=preferences.google_api_key)
-                models = genai.list_models()
-                
-                gemini_models = []
-                for model in models:
-                    if "generateContent" in model.supported_generation_methods:
-                        model_id = model.name[7:]
-                        gemini_models.append({
-                            "id": model_id,
-                            "name": model.display_name
-                        })
-                
-                return jsonify({"models": gemini_models})
-                
-            except Exception as e:
-                return jsonify({"error": f"Failed to fetch Gemini models: {str(e)}"}), 500
+            
+            models = [
+                {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro"},
+                {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash"}
+            ]
+            return jsonify({"models": models})
                 
         elif provider == 'ollama':
             url = request.args.get('url', preferences.ollama_url)
