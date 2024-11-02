@@ -22,47 +22,105 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
-@app.errorhandler(404)
-@app.errorhandler(500)
-def handle_error(error):
-    return jsonify({"error": str(error), "status": error.code}), error.code
+def fetch_openai_models(api_key):
+    try:
+        if not api_key:
+            raise ValueError("OpenAI API key not configured")
+            
+        headers = {
+            "Authorization": f"Bearer {api_key}"
+        }
+        
+        response = requests.get("https://api.openai.com/v1/models", headers=headers)
+        if response.status_code != 200:
+            raise ValueError(response.json().get('error', {}).get('message', 'Failed to fetch OpenAI models'))
+            
+        data = response.json()
+        return [
+            {"id": model["id"], "name": model["id"]}
+            for model in data["data"]
+            if "gpt" in model["id"]
+        ]
+    except Exception as e:
+        raise ValueError(f"OpenAI API error: {str(e)}")
+
+def fetch_anthropic_models(api_key):
+    try:
+        if not api_key:
+            raise ValueError("Anthropic API key not configured")
+
+        return [
+            {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
+            {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
+            {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"}
+        ]
+    except Exception as e:
+        raise ValueError(f"Anthropic API error: {str(e)}")
+
+def fetch_groq_models(api_key):
+    try:
+        if not api_key:
+            raise ValueError("Groq API key not configured")
+
+        response = requests.get(
+            "https://api.groq.com/openai/v1/models",
+            headers={"Authorization": f"Bearer {api_key}"}
+        )
+        
+        if response.status_code != 200:
+            raise ValueError(response.json().get('error', {}).get('message', 'Failed to fetch Groq models'))
+
+        data = response.json()
+        return [
+            {"id": model["id"], "name": model["id"]}
+            for model in data["data"]
+        ]
+    except Exception as e:
+        raise ValueError(f"Groq API error: {str(e)}")
+
+def fetch_gemini_models(api_key):
+    try:
+        if not api_key:
+            raise ValueError("Google API key not configured")
+
+        return [
+            {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro"},
+            {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash"}
+        ]
+    except Exception as e:
+        raise ValueError(f"Google API error: {str(e)}")
+
+def fetch_ollama_models(url):
+    try:
+        if not url:
+            raise ValueError("Ollama URL not configured")
+            
+        response = requests.get(f"{url}/api/tags")
+        if response.status_code != 200:
+            raise ValueError("Failed to fetch Ollama models")
+            
+        data = response.json()
+        return [
+            {"id": model["name"], "name": model["name"]}
+            for model in data["models"]
+        ]
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Connection error: {str(e)}")
+    except Exception as e:
+        raise ValueError(f"Failed to fetch Ollama models: {str(e)}")
 
 @app.route('/api/models/openai')
 def get_openai_models():
     try:
         preferences = UserPreferences.get_or_create()
-        
-        # Use API key from preferences or environment
         api_key = os.getenv('OPENAI_API_KEY', preferences.openai_api_key)
-        if not api_key:
-            return jsonify({"error": "OpenAI API key not configured"}), 401
-            
-        # Use the exact headers format
-        headers = {
-            "Authorization": f"Bearer {api_key}"
-        }
         
-        # Make request to OpenAI API
-        response = requests.get("https://api.openai.com/v1/models", headers=headers)
+        models = fetch_openai_models(api_key)
+        return jsonify({"models": models})
         
-        if response.status_code != 200:
-            return jsonify({"error": response.text}), response.status_code
-            
-        data = response.json()
-        gpt_models = []
-        
-        # Filter only GPT models
-        for model in data["data"]:
-            if "gpt" in model["id"]:
-                gpt_models.append({
-                    "id": model["id"],
-                    "name": model["id"]
-                })
-                
-        return jsonify({"models": gpt_models})
-        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
-        print(f"Error in get_openai_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/anthropic')
@@ -70,19 +128,13 @@ def get_anthropic_models():
     try:
         preferences = UserPreferences.get_or_create()
         api_key = os.getenv('ANTHROPIC_API_KEY', preferences.anthropic_api_key)
-        if not api_key:
-            return jsonify({"error": "Anthropic API key not configured"}), 401
-
-        models = [
-            {"id": "claude-3-haiku-20240307", "name": "claude-3-haiku"},
-            {"id": "claude-3-opus-20240229", "name": "claude-3-opus"},
-            {"id": "claude-3-sonnet-20240229", "name": "claude-3-sonnet"}
-        ]
-
+        
+        models = fetch_anthropic_models(api_key)
         return jsonify({"models": models})
-
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
-        print(f"Error in get_anthropic_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/groq')
@@ -90,27 +142,13 @@ def get_groq_models():
     try:
         preferences = UserPreferences.get_or_create()
         api_key = os.getenv('GROQ_API_KEY', preferences.groq_api_key)
-        if not api_key:
-            return jsonify({"error": "Groq API key not configured"}), 401
-
-        response = requests.get(
-            "https://api.groq.com/openai/v1/models",
-            headers={"Authorization": f"Bearer {api_key}"}
-        )
-
-        if response.status_code != 200:
-            return jsonify({"error": response.text}), response.status_code
-
-        data = response.json()
-        return jsonify({
-            "models": [{
-                "id": model["id"],
-                "name": model["id"]
-            } for model in data["data"]]
-        })
-
+        
+        models = fetch_groq_models(api_key)
+        return jsonify({"models": models})
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
-        print(f"Error in get_groq_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/gemini')
@@ -118,17 +156,13 @@ def get_gemini_models():
     try:
         preferences = UserPreferences.get_or_create()
         api_key = os.getenv('GOOGLE_API_KEY', preferences.google_api_key)
-        if not api_key:
-            return jsonify({"error": "Google API key not configured"}), 401
-
-        models = [
-            {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro"},
-            {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash"}
-        ]
+        
+        models = fetch_gemini_models(api_key)
         return jsonify({"models": models})
-
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
-        print(f"Error in get_gemini_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/ollama')
@@ -137,21 +171,11 @@ def get_ollama_models():
         preferences = UserPreferences.get_or_create()
         url = request.args.get('url', preferences.ollama_url)
         
-        try:
-            response = requests.get(f"{url}/api/tags")
-            if response.status_code != 200:
-                return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
-
-            data = response.json()
-            return jsonify({
-                "models": [{
-                    "id": model["name"],
-                    "name": model["name"]
-                } for model in data["models"]]
-            })
-        except requests.exceptions.RequestException as e:
-            return jsonify({"error": f"Failed to fetch Ollama models: {str(e)}"}), 500
-
+        models = fetch_ollama_models(url)
+        return jsonify({"models": models})
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
