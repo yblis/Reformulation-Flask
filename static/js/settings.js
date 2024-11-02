@@ -8,11 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadSavedSettings() {
         const savedProvider = localStorage.getItem('aiProvider') || 'ollama';
-        if (aiProvider) {
-            aiProvider.value = savedProvider;
-            showProviderConfig(savedProvider);
-            loadProviderModels(savedProvider);
-        }
+        aiProvider.value = savedProvider;
+        showProviderConfig(savedProvider);
+        loadProviderModels(savedProvider);
     }
 
     function showProviderConfig(provider) {
@@ -23,26 +21,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProviderModels(provider, button = null) {
         let modelSelect;
-        let originalButtonText = '';
         
         try {
             if (button) {
-                originalButtonText = button.textContent;
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
 
             // Get the correct model select element based on provider
-            modelSelect = provider === 'ollama' ? 
-                document.getElementById('modelSelect') : 
-                document.getElementById(`${provider}Model`);
+            if (provider === 'ollama') {
+                modelSelect = document.getElementById('modelSelect');
+            } else {
+                modelSelect = document.getElementById(`${provider}Model`);
+            }
 
             if (!modelSelect) {
                 throw new Error(`Model select element not found for ${provider}`);
             }
 
-            // Clear existing options
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+            // Clear existing options first
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+            }
+
+            // Add loading option
+            const loadingOption = document.createElement('option');
+            loadingOption.value = '';
+            loadingOption.textContent = 'Loading models...';
+            modelSelect.appendChild(loadingOption);
 
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
@@ -52,19 +58,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
+
+            // Clear the loading option
+            while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+            }
 
             if (!response.ok) {
                 throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
 
-            if (!data.models || !Array.isArray(data.models)) {
+            if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
                 throw new Error(`No models available for ${provider}`);
             }
 
-            // Clear and add new options
-            modelSelect.innerHTML = '';
+            // Add the models
             data.models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model.id;
@@ -72,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.appendChild(option);
             });
 
-            // Select saved model if available
+            // Select the saved model if available
             const savedModel = localStorage.getItem(`${provider}Model`);
             if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
                 modelSelect.value = savedModel;
@@ -84,19 +95,28 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`Error loading ${provider} models:`, error);
             
             if (modelSelect) {
-                modelSelect.innerHTML = `<option value="">${error.message}</option>`;
+                // Clear any existing options
+                while (modelSelect.firstChild) {
+                    modelSelect.removeChild(modelSelect.firstChild);
+                }
+                
+                // Add error option
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = error.message;
+                modelSelect.appendChild(option);
             }
             
             showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
-                button.textContent = originalButtonText;
+                button.textContent = 'Rafraîchir les modèles';
             }
         }
     }
 
-    // Event listeners for provider selection
+    // Event listeners
     if (aiProvider) {
         aiProvider.addEventListener('change', function() {
             const selectedProvider = this.value;
@@ -106,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Save configuration
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             try {
@@ -118,8 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Get provider-specific settings
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
-                const modelSelect = document.getElementById(`${selectedProvider}Model`) || 
-                                  document.getElementById('modelSelect');
+                const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
 
                 if (selectedProvider !== 'ollama' && (!apiKeyInput || !apiKeyInput.value.trim())) {
                     throw new Error(`${selectedProvider} API key is required`);
@@ -156,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
                 
-                // Refresh models after saving
+                // Refresh models after saving settings
                 await loadProviderModels(selectedProvider);
                 
             } catch (error) {
@@ -166,16 +184,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Refresh buttons event listeners
-    const providers = ['ollama', 'openai', 'groq', 'anthropic', 'gemini'];
-    providers.forEach(provider => {
-        const button = document.getElementById(`refresh${provider.charAt(0).toUpperCase() + provider.slice(1)}Models`);
+    // Add event listeners for refresh buttons
+    const refreshButtons = {
+        'ollama': document.getElementById('refreshModels'),
+        'openai': document.getElementById('refreshOpenaiModels'),
+        'groq': document.getElementById('refreshGroqModels'),
+        'anthropic': document.getElementById('refreshAnthropicModels'),
+        'gemini': document.getElementById('refreshGeminiModels')
+    };
+
+    Object.entries(refreshButtons).forEach(([provider, button]) => {
         if (button) {
             button.addEventListener('click', () => loadProviderModels(provider, button));
         }
     });
 
-    // Alert display function
     function showAlert(message, type = 'danger', duration = 5000) {
         const existingAlerts = document.querySelectorAll('.alert');
         existingAlerts.forEach(alert => alert.remove());
