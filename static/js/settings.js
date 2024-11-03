@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google API key handling
+                // Google API key
                 const googleKey = document.getElementById('googleKey');
                 if (googleKey) {
                     googleKey.value = data.settings.google_api_key || '';
@@ -239,8 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
         'ollama': document.getElementById('refreshModels'),
         'openai': document.getElementById('refreshOpenaiModels'),
         'groq': document.getElementById('refreshGroqModels'),
-        'anthropic': document.getElementById('refreshAnthropicModels'),
-        'gemini': document.getElementById('refreshGeminiModels')
+        'gemini': document.getElementById('refreshGeminiModels'),
+        'anthropic': document.getElementById('refreshAnthropicModels')
     };
 
     Object.entries(refreshButtons).forEach(([provider, button]) => {

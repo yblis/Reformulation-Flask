@@ -37,16 +37,13 @@ def reload_env_config():
     # Update preferences with environment variables
     preferences.ollama_url = os.getenv('OLLAMA_URL', preferences.ollama_url)
     preferences.openai_api_key = os.getenv('OPENAI_API_KEY',
-                                         preferences.openai_api_key)
+                                           preferences.openai_api_key)
     preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY',
-                                           preferences.anthropic_api_key)
+                                              preferences.anthropic_api_key)
+    preferences.google_api_key = os.getenv('GOOGLE_API_KEY',
+                                           preferences.google_api_key)
     preferences.groq_api_key = os.getenv('GROQ_API_KEY',
-                                      preferences.groq_api_key)
-
-    # Get Google API key from environment if available
-    google_api_key = os.getenv('GOOGLE_API_KEY')
-    if google_api_key:
-        preferences.google_api_key = google_api_key
+                                         preferences.groq_api_key)
 
     # Save changes to database
     db.session.commit()
@@ -68,16 +65,16 @@ def handle_error(error):
 def get_settings():
     try:
         preferences = reload_env_config()
-        
+
         # Force reload environment variables
         load_dotenv(override=True)
-        
+
         # Get Google API key from environment if available
         google_api_key = os.getenv('GOOGLE_API_KEY')
         if google_api_key:
             preferences.google_api_key = google_api_key
             db.session.commit()
-            
+
         return jsonify({
             "provider": preferences.current_provider,
             "settings": {
@@ -134,16 +131,16 @@ def get_gemini_models():
             filtered_models = [{
                 "id": model.name,
                 "name": model.display_name
-            } for model in models
-                             if 'gemini' in model.name]
+            } for model in models if 'gemini' in model.name]
 
             return jsonify({"models": filtered_models})
 
         except Exception as e:
-            print(f"Erreur lors de la récupération des modèles Gemini : {str(e)}")
-            return jsonify({
-                "error": f"Erreur de l'API Gemini : {str(e)}"
-            }), 500
+            print(
+                f"Erreur lors de la récupération des modèles Gemini : {str(e)}"
+            )
+            return jsonify({"error":
+                            f"Erreur de l'API Gemini : {str(e)}"}), 500
 
     except Exception as e:
         print(f"Erreur dans get_gemini_models : {str(e)}")
@@ -189,10 +186,10 @@ def get_anthropic_models():
 
         except Exception as e:
             print(
-                f"Erreur lors de la récupération des modèles Anthropic : {str(e)}")
-            return jsonify({
-                "error": f"Erreur de l'API Anthropic : {str(e)}"
-            }), 500
+                f"Erreur lors de la récupération des modèles Anthropic : {str(e)}"
+            )
+            return jsonify({"error":
+                            f"Erreur de l'API Anthropic : {str(e)}"}), 500
 
     except Exception as e:
         print(f"Erreur dans get_anthropic_models : {str(e)}")
@@ -208,10 +205,10 @@ def get_groq_models():
 
         try:
             response = requests.get("https://api.groq.com/openai/v1/models",
-                                 headers={
-                                     "Authorization":
-                                     f"Bearer {preferences.groq_api_key}"
-                                 })
+                                    headers={
+                                        "Authorization":
+                                        f"Bearer {preferences.groq_api_key}"
+                                    })
 
             if response.status_code != 200:
                 return jsonify({"error": response.text}), response.status_code
@@ -225,9 +222,8 @@ def get_groq_models():
             })
 
         except Exception as e:
-            return jsonify({
-                "error": f"Failed to fetch Groq models: {str(e)}"
-            }), 500
+            return jsonify({"error":
+                            f"Failed to fetch Groq models: {str(e)}"}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -252,10 +248,11 @@ def get_openai_models():
             return jsonify({"models": filtered_models})
 
         except Exception as e:
-            print(f"Erreur lors de la récupération des modèles OpenAI : {str(e)}")
-            return jsonify({
-                "error": f"Erreur de l'API OpenAI : {str(e)}"
-            }), 500
+            print(
+                f"Erreur lors de la récupération des modèles OpenAI : {str(e)}"
+            )
+            return jsonify({"error":
+                            f"Erreur de l'API OpenAI : {str(e)}"}), 500
 
     except Exception as e:
         print(f"Erreur dans get_openai_models : {str(e)}")
@@ -275,9 +272,8 @@ def get_ollama_models():
             response = requests.get(f"{url}/api/tags", timeout=5)
 
             if response.status_code != 200:
-                return jsonify({
-                    "error": "Failed to fetch Ollama models"
-                }), response.status_code
+                return jsonify({"error": "Failed to fetch Ollama models"
+                                }), response.status_code
 
             data = response.json()
             models = [{
@@ -288,9 +284,8 @@ def get_ollama_models():
 
         except requests.exceptions.RequestException as e:
             print(f"Error in get_ollama_models: {str(e)}")
-            return jsonify({
-                "error": f"Ollama connection error: {str(e)}"
-            }), 500
+            return jsonify({"error":
+                            f"Ollama connection error: {str(e)}"}), 500
 
     except Exception as e:
         print(f"Error in get_ollama_models: {str(e)}")
@@ -303,10 +298,10 @@ def index():
     history = ReformulationHistory.query.order_by(
         ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',
-                         system_prompt=preferences.system_prompt,
-                         translation_prompt=preferences.translation_prompt,
-                         email_prompt=preferences.email_prompt,
-                         history=[h.to_dict() for h in history])
+                           system_prompt=preferences.system_prompt,
+                           translation_prompt=preferences.translation_prompt,
+                           email_prompt=preferences.email_prompt,
+                           history=[h.to_dict() for h in history])
 
 
 @app.route('/api/settings', methods=['POST'])
@@ -362,24 +357,24 @@ def reformulate():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-            
+
         preferences = reload_env_config()
         provider = preferences.current_provider
-        
+
         text = data.get('text')
         context = data.get('context', '')
         tone = data.get('tone', 'Professional')
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
-        
+
         if not text:
             return jsonify({"error": "No text provided"}), 400
-            
+
         formatted_prompt = f"Context: {context}\nText: {text}\nTone: {tone}\nFormat: {format}\nLength: {length}"
-        
+
         try:
             response_text = None
-            
+
             if provider == 'ollama':
                 response = requests.post(
                     f"{preferences.ollama_url}/api/generate",
@@ -388,8 +383,7 @@ def reformulate():
                         'prompt': formatted_prompt,
                         'system': preferences.system_prompt,
                         'stream': False
-                    }
-                )
+                    })
                 if response.status_code == 200:
                     response_text = response.json().get('response', '')
 
@@ -397,11 +391,13 @@ def reformulate():
                 client = OpenAI(api_key=preferences.openai_api_key)
                 response = client.chat.completions.create(
                     model=preferences.openai_model,
-                    messages=[
-                        {"role": "system", "content": preferences.system_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.system_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'anthropic':
@@ -409,27 +405,32 @@ def reformulate():
                 message = client.messages.create(
                     model=preferences.anthropic_model,
                     system=preferences.system_prompt,
-                    messages=[{"role": "user", "content": formatted_prompt}]
-                )
+                    messages=[{
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = message.content[0].text
 
             elif provider == 'groq':
                 client = OpenAI(api_key=preferences.groq_api_key,
-                             base_url="https://api.groq.com/openai/v1")
+                                base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
-                    messages=[
-                        {"role": "system", "content": preferences.system_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.system_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'gemini':
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    genai.types.Content(preferences.system_prompt, role="user"),
+                    genai.types.Content(preferences.system_prompt,
+                                        role="user"),
                     genai.types.Content(formatted_prompt, role="user")
                 ])
                 response_text = response.text
@@ -437,21 +438,20 @@ def reformulate():
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            history = ReformulationHistory(
-                original_text=text,
-                context=context,
-                reformulated_text=response_text,
-                tone=tone,
-                format=format,
-                length=length
-            )
+            history = ReformulationHistory(original_text=text,
+                                           context=context,
+                                           reformulated_text=response_text,
+                                           tone=tone,
+                                           format=format,
+                                           length=length)
             db.session.add(history)
             db.session.commit()
 
             return jsonify({"text": response_text})
 
         except Exception as e:
-            return jsonify({"error": f"Error reformulating text: {str(e)}"}), 500
+            return jsonify({"error":
+                            f"Error reformulating text: {str(e)}"}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -463,32 +463,35 @@ def translate():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-            
+
         preferences = reload_env_config()
         provider = preferences.current_provider
-        
+
         text = data.get('text')
         target_language = data.get('language')
-        
+
         if not all([text, target_language]):
             return jsonify({"error": "Missing required fields"}), 400
-            
+
         formatted_prompt = f"Translate this text to {target_language}: {text}"
-        
+
         try:
             response_text = None
-            
+
             if provider == 'ollama':
                 response = requests.post(
                     f"{preferences.ollama_url}/api/generate",
                     json={
-                        'model': preferences.ollama_model,
-                        'prompt': formatted_prompt,
-                        'system': preferences.translation_prompt.format(
+                        'model':
+                        preferences.ollama_model,
+                        'prompt':
+                        formatted_prompt,
+                        'system':
+                        preferences.translation_prompt.format(
                             target_language=target_language),
-                        'stream': False
-                    }
-                )
+                        'stream':
+                        False
+                    })
                 if response.status_code == 200:
                     response_text = response.json().get('response', '')
 
@@ -496,18 +499,16 @@ def translate():
                 client = OpenAI(api_key=preferences.openai_api_key)
                 response = client.chat.completions.create(
                     model=preferences.openai_model,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": preferences.translation_prompt.format(
-                                target_language=target_language)
-                        },
-                        {
-                            "role": "user",
-                            "content": formatted_prompt
-                        }
-                    ]
-                )
+                    messages=[{
+                        "role":
+                        "system",
+                        "content":
+                        preferences.translation_prompt.format(
+                            target_language=target_language)
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'anthropic':
@@ -519,37 +520,33 @@ def translate():
                     messages=[{
                         "role": "user",
                         "content": formatted_prompt
-                    }]
-                )
+                    }])
                 response_text = message.content[0].text
 
             elif provider == 'groq':
                 client = OpenAI(api_key=preferences.groq_api_key,
-                             base_url="https://api.groq.com/openai/v1")
+                                base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": preferences.translation_prompt.format(
-                                target_language=target_language)
-                        },
-                        {
-                            "role": "user",
-                            "content": formatted_prompt
-                        }
-                    ]
-                )
+                    messages=[{
+                        "role":
+                        "system",
+                        "content":
+                        preferences.translation_prompt.format(
+                            target_language=target_language)
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'gemini':
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    genai.types.Content(
-                        preferences.translation_prompt.format(
-                            target_language=target_language),
-                        role="user"),
+                    genai.types.Content(preferences.translation_prompt.format(
+                        target_language=target_language),
+                                        role="user"),
                     genai.types.Content(formatted_prompt, role="user")
                 ])
                 response_text = response.text
@@ -572,21 +569,21 @@ def generate_email():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-            
+
         preferences = reload_env_config()
         provider = preferences.current_provider
-        
+
         email_type = data.get('type')
         content = data.get('content')
         sender = data.get('sender')
-        
+
         if not all([email_type, content]):
             return jsonify({"error": "Missing required fields"}), 400
-            
+
         formatted_prompt = f"Type d'email: {email_type}\nContenu: {content}"
         if sender:
             formatted_prompt += f"\nSignature: {sender}"
-            
+
         try:
             response_text = None
 
@@ -598,8 +595,7 @@ def generate_email():
                         'prompt': formatted_prompt,
                         'system': preferences.email_prompt,
                         'stream': False
-                    }
-                )
+                    })
                 if response.status_code == 200:
                     response_text = response.json().get('response', '')
 
@@ -607,11 +603,13 @@ def generate_email():
                 client = OpenAI(api_key=preferences.openai_api_key)
                 response = client.chat.completions.create(
                     model=preferences.openai_model,
-                    messages=[
-                        {"role": "system", "content": preferences.email_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.email_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'anthropic':
@@ -619,20 +617,24 @@ def generate_email():
                 message = client.messages.create(
                     model=preferences.anthropic_model,
                     system=preferences.email_prompt,
-                    messages=[{"role": "user", "content": formatted_prompt}]
-                )
+                    messages=[{
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = message.content[0].text
 
             elif provider == 'groq':
                 client = OpenAI(api_key=preferences.groq_api_key,
-                             base_url="https://api.groq.com/openai/v1")
+                                base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
-                    messages=[
-                        {"role": "system", "content": preferences.email_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.email_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
                 response_text = response.choices[0].message.content
 
             elif provider == 'gemini':
