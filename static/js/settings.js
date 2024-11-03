@@ -40,10 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google
+                // Google (ensure this exists)
                 const googleKey = document.getElementById('googleKey');
-                if (googleKey && data.settings.google_api_key) {
-                    googleKey.value = data.settings.google_api_key;
+                if (googleKey) {
+                    googleKey.value = data.settings.google_api_key || '';
+                    console.log('Setting Google API key:', googleKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
                 // Groq
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
-            showAlert(error.message || 'Failed to load settings', 'danger');
+            showAlert(error.message || 'Failed to load settings', 'danger', 5000);
         }
     }
 
@@ -138,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.value = savedModel;
             }
 
-            showAlert(`Models refreshed successfully for ${provider}`, 'success');
+            showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
 
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
@@ -156,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.appendChild(option);
             }
             
-            showAlert(error.message, 'danger');
+            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
@@ -221,14 +222,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                showAlert('Configuration sauvegardée avec succès', 'success');
+                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
                 
                 // Refresh models after saving settings
                 await loadProviderModels(selectedProvider);
                 
             } catch (error) {
                 console.error('Error saving settings:', error);
-                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger');
+                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger', 5000);
             }
         });
     }
