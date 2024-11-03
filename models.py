@@ -5,40 +5,52 @@ from dotenv import load_dotenv
 
 db = SQLAlchemy()
 
+
 class UserPreferences(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
+
     # Current AI Provider
-    current_provider = db.Column(db.String(50), nullable=False, default="ollama")
-    
+    current_provider = db.Column(db.String(50),
+                                 nullable=False,
+                                 default="ollama")
+
     # Ollama Settings
-    ollama_url = db.Column(db.String(255), nullable=False, default="http://localhost:11434")
-    ollama_model = db.Column(db.String(100), nullable=False, default="qwen2.5:3b")
-    
+    ollama_url = db.Column(db.String(255),
+                           nullable=False,
+                           default="http://localhost:11434")
+    ollama_model = db.Column(db.String(100),
+                             nullable=False,
+                             default="qwen2.5:3b")
+
     # OpenAI Settings
     openai_api_key = db.Column(db.String(255))
     openai_model = db.Column(db.String(100))
-    
+
     # Groq Settings
     groq_api_key = db.Column(db.String(255))
     groq_model = db.Column(db.String(100))
-    
+
     # Anthropic Settings
     anthropic_api_key = db.Column(db.String(255))
     anthropic_model = db.Column(db.String(100))
-    
+
     # Google Gemini Settings
     google_api_key = db.Column(db.String(255))
     gemini_model = db.Column(db.String(100))
-    
+
     # Prompts
     system_prompt = db.Column(db.Text, nullable=False)
     translation_prompt = db.Column(db.Text, nullable=False)
     email_prompt = db.Column(db.Text, nullable=False)
-    
+
     # Timestamps
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime,
+                           nullable=False,
+                           default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,
+                           nullable=False,
+                           default=datetime.utcnow,
+                           onupdate=datetime.utcnow)
 
     @staticmethod
     def get_or_create():
@@ -46,27 +58,30 @@ class UserPreferences(db.Model):
         if not pref:
             # Load API keys from environment during initial creation
             google_api_key = os.getenv('GOOGLE_API_KEY', '')
-            
+
             pref = UserPreferences(
                 ollama_url=os.getenv('OLLAMA_URL', 'http://localhost:11434'),
                 openai_api_key=os.getenv('OPENAI_API_KEY', ''),
                 anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 google_api_key=google_api_key,  # Set Google API key explicitly
-                system_prompt="""Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
+                system_prompt=
+                """Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
 Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation.""",
-                translation_prompt="""Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
-                email_prompt="""Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
+                translation_prompt=
+                """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
+                email_prompt=
+                """Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
             )
             db.session.add(pref)
             db.session.commit()
         else:
             # Force update environment variables
             load_dotenv(override=True)
-            
+
             # Update API keys from environment if they exist
-            if os.getenv('OLLAMA_URL'): 
+            if os.getenv('OLLAMA_URL'):
                 pref.ollama_url = os.getenv('OLLAMA_URL')
             if os.getenv('OPENAI_API_KEY'):
                 pref.openai_api_key = os.getenv('OPENAI_API_KEY')
@@ -74,14 +89,12 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
                 pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
             if os.getenv('GROQ_API_KEY'):
                 pref.groq_api_key = os.getenv('GROQ_API_KEY')
-                
-            # Explicitly update Google API key
-            google_api_key = os.getenv('GOOGLE_API_KEY')
-            if google_api_key:
-                pref.google_api_key = google_api_key
-                
+            if os.getenv('GOOGLE_API_KEY'):
+                pref.google_api_key = os.getenv('GOOGLE_API_KEY')
+
             db.session.commit()
         return pref
+
 
 class ReformulationHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,7 +104,9 @@ class ReformulationHistory(db.Model):
     tone = db.Column(db.String(50), nullable=False)
     format = db.Column(db.String(50), nullable=False)
     length = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime,
+                           nullable=False,
+                           default=datetime.utcnow)
 
     def to_dict(self):
         return {
