@@ -47,7 +47,7 @@ class UserPreferences(db.Model):
                 ollama_url=os.getenv('OLLAMA_URL', 'http://localhost:11434'),
                 openai_api_key=os.getenv('OPENAI_API_KEY', ''),
                 anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
-                google_api_key=os.getenv('GOOGLE_API_KEY', ''),
+                google_api_key=os.getenv('GOOGLE_API_KEY', ''),  # Add Google API key
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 system_prompt="""Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
@@ -65,7 +65,7 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
                 pref.openai_api_key = os.getenv('OPENAI_API_KEY')
             if os.getenv('ANTHROPIC_API_KEY'):
                 pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-            if os.getenv('GOOGLE_API_KEY'):
+            if os.getenv('GOOGLE_API_KEY'):  # Add Google API key update
                 pref.google_api_key = os.getenv('GOOGLE_API_KEY')
             if os.getenv('GROQ_API_KEY'):
                 pref.groq_api_key = os.getenv('GROQ_API_KEY')
