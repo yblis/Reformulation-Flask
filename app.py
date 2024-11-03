@@ -56,6 +56,24 @@ def handle_error(error):
         "status": error.code
     }), error.code
 
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    try:
+        preferences = reload_env_config()
+        return jsonify({
+            "provider": preferences.current_provider,
+            "settings": {
+                "ollama_url": preferences.ollama_url,
+                "openai_api_key": preferences.openai_api_key,
+                "anthropic_api_key": preferences.anthropic_api_key,
+                "google_api_key": preferences.google_api_key,
+                "groq_api_key": preferences.groq_api_key
+            }
+        })
+    except Exception as e:
+        print(f"Error in get_settings: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/status')
 def check_status():
     try:

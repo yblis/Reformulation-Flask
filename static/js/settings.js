@@ -6,11 +6,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
 
-    function loadSavedSettings() {
-        const savedProvider = localStorage.getItem('aiProvider') || 'ollama';
-        aiProvider.value = savedProvider;
-        showProviderConfig(savedProvider);
-        loadProviderModels(savedProvider);
+    async function loadSavedSettings() {
+        try {
+            // Fetch current settings from backend
+            const response = await fetch('/api/settings');
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to load settings');
+            }
+
+            // Update provider dropdown
+            const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
+            aiProvider.value = savedProvider;
+            
+            // Update API keys and URLs
+            if (data.settings) {
+                // Ollama URL
+                const ollamaUrl = document.getElementById('ollamaUrl');
+                if (ollamaUrl && data.settings.ollama_url) {
+                    ollamaUrl.value = data.settings.ollama_url;
+                }
+                
+                // OpenAI
+                const openaiKey = document.getElementById('openaiKey');
+                if (openaiKey && data.settings.openai_api_key) {
+                    openaiKey.value = data.settings.openai_api_key;
+                }
+                
+                // Anthropic
+                const anthropicKey = document.getElementById('anthropicKey');
+                if (anthropicKey && data.settings.anthropic_api_key) {
+                    anthropicKey.value = data.settings.anthropic_api_key;
+                }
+                
+                // Google
+                const googleKey = document.getElementById('googleKey');
+                if (googleKey && data.settings.google_api_key) {
+                    googleKey.value = data.settings.google_api_key;
+                }
+                
+                // Groq
+                const groqKey = document.getElementById('groqKey');
+                if (groqKey && data.settings.groq_api_key) {
+                    groqKey.value = data.settings.groq_api_key;
+                }
+            }
+            
+            // Show correct provider config and load models
+            showProviderConfig(savedProvider);
+            loadProviderModels(savedProvider);
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            showAlert(error.message || 'Failed to load settings', 'danger', 5000);
+        }
     }
 
     function showProviderConfig(provider) {
@@ -53,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
                 const ollamaUrlInput = document.getElementById('ollamaUrl');
-                if (ollamaUrlInput) {
+                if (ollamaUrlInput && ollamaUrlInput.value) {
                     url += `?url=${encodeURIComponent(ollamaUrlInput.value)}`;
                 }
             }
