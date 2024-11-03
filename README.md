@@ -32,6 +32,7 @@ pip install -r requirements.txt
 
 2. Configure environment variables in `.env`:
 ```bash
+OLLAMA_URL=your_ollama_url
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 GOOGLE_API_KEY=your_google_key
