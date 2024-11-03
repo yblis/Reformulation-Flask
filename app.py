@@ -162,26 +162,29 @@ def get_anthropic_models():
 @app.route('/api/models/groq')
 def get_groq_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
-        headers = {
-            'Authorization': f'Bearer {preferences.groq_api_key}'
-        }
-        
-        # Return static list of supported models
-        models = [
-            {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
-            {"id": "llama2-70b-4096", "name": "LLaMA2 70B"},
-            {"id": "gemma-7b-it", "name": "Gemma 7B"},
-            {"id": "llama2-70b", "name": "LLaMA2 70B Base"}
-        ]
-        
-        return jsonify({"models": models})
-        
+        try:
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {preferences.groq_api_key}"}
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            data = response.json()
+            return jsonify({
+                "models": [{"id": model["id"], "name": model["id"]} 
+                    for model in data["data"]
+                ]
+            })
+        except Exception as e:
+            return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"error": f"Groq API error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/models/openai')
 def get_openai_models():
