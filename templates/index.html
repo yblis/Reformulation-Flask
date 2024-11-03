@@ -71,11 +71,11 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Options de reformulation</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
-                            <i class="bi bi-chevron-up"></i>
+                            <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
                     
-                    <div class="collapse show" id="optionsCollapse">
+                    <div class="collapse" id="optionsCollapse">
                         <!-- Tone Options -->
                         <div class="mb-4">
                             <h6 class="mb-2">Ton</h6>
@@ -387,33 +387,55 @@
             <!-- Prompts Configuration -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système:</label>
-                        <textarea id="systemPrompt" class="form-control" rows="8">{{ system_prompt }}</textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Configuration du Prompt</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#promptConfigCollapse" aria-expanded="false" aria-controls="promptConfigCollapse">
+                            <i class="bi bi-chevron-down"></i> <!-- Icône vers le bas pour indiquer l'état -->
+                        </button>
+                    </div>
+                    <div class="collapse" id="promptConfigCollapse">
+                        <div class="mb-4">
+                            <label class="form-label">Prompt système:</label>
+                            <textarea id="systemPrompt" class="form-control" rows="8">{{ system_prompt }}</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt de Traduction</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système pour la traduction:</label>
-                        <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="translationPromptCollapse">
+                        <div class="mb-4">
+                            <label class="form-label">Prompt système pour la traduction:</label>
+                            <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt de Génération d'Email</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système pour la génération d'email:</label>
-                        <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="emailPromptCollapse">
+                        <div class="mb-4">
+                            <label class="form-label">Prompt système pour la génération d'email:</label>
+                            <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
+
 
             <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
         </div>
