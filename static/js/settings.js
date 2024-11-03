@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google (ensure this exists)
-                const googleKey = document.getElementById('googleKey');
-                if (googleKey) {
-                    googleKey.value = data.settings.google_api_key || '';
-                    console.log('Setting Google API key:', googleKey.value ? '[HIDDEN]' : 'not set');
+                // Gemini (ensure this exists)
+                const geminiKey = document.getElementById('geminiKey');
+                if (geminiKey) {
+                    geminiKey.value = data.settings.google_api_key || '';
+                    console.log('Setting Gemini API key:', geminiKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
                 // Groq
