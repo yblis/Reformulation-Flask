@@ -166,18 +166,21 @@ def get_groq_models():
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
+        # Use the exact headers
         headers = {
             'Authorization': f'Bearer {preferences.groq_api_key}',
             'Content-Type': 'application/json'
         }
         
-        # Return the list of supported Groq models
+        # Use this exact list of models as static list
         models = [
             {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
             {"id": "llama2-70b-4096", "name": "LLaMA2 70B"},
-            {"id": "gemma-7b-it", "name": "Gemma 7B"}
+            {"id": "gemma-7b-it", "name": "Gemma 7B"},
+            {"id": "llama2-70b", "name": "LLaMA2 70B Base"}
         ]
         
+        # Return models directly without API validation
         return jsonify({"models": models})
             
     except Exception as e:
