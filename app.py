@@ -27,22 +27,22 @@ with app.app_context():
     preferences = UserPreferences.get_or_create()
 
 def reload_env_config():
-    # Reload environment variables
+    # Force reload environment variables
     load_dotenv(override=True)
     
-    # Update preferences with new env vars
+    # Get current preferences
     preferences = UserPreferences.get_or_create()
-    if os.getenv('OLLAMA_URL'): 
-        preferences.ollama_url = os.getenv('OLLAMA_URL')
-    if os.getenv('OPENAI_API_KEY'):
-        preferences.openai_api_key = os.getenv('OPENAI_API_KEY')
-    if os.getenv('ANTHROPIC_API_KEY'):
-        preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-    if os.getenv('GOOGLE_API_KEY'):
-        preferences.google_api_key = os.getenv('GOOGLE_API_KEY')
-    if os.getenv('GROQ_API_KEY'):
-        preferences.groq_api_key = os.getenv('GROQ_API_KEY')
+    
+    # Update preferences with environment variables
+    preferences.ollama_url = os.getenv('OLLAMA_URL', preferences.ollama_url)
+    preferences.openai_api_key = os.getenv('OPENAI_API_KEY', preferences.openai_api_key)
+    preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', preferences.anthropic_api_key)
+    preferences.google_api_key = os.getenv('GOOGLE_API_KEY', preferences.google_api_key)
+    preferences.groq_api_key = os.getenv('GROQ_API_KEY', preferences.groq_api_key)
+    
+    # Save changes to database
     db.session.commit()
+    return preferences
 
 @app.before_request
 def before_request():
@@ -59,7 +59,7 @@ def handle_error(error):
 @app.route('/api/status')
 def check_status():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         provider = preferences.current_provider
         
         # Always return connected if not using Ollama
@@ -86,7 +86,7 @@ def check_status():
 @app.route('/api/models/gemini')
 def get_gemini_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         if not preferences.google_api_key:
             return jsonify({"error": "Google API key not configured"}), 401
             
@@ -114,7 +114,7 @@ def get_gemini_models():
 @app.route('/api/models/anthropic')
 def get_anthropic_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         if not preferences.anthropic_api_key:
             return jsonify({"error": "Anthropic API key not configured"}), 401
             
@@ -144,7 +144,7 @@ def get_anthropic_models():
 @app.route('/api/models/groq')
 def get_groq_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
@@ -169,7 +169,7 @@ def get_groq_models():
 @app.route('/api/models/openai')
 def get_openai_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         if not preferences.openai_api_key:
             return jsonify({"error": "OpenAI API key not configured"}), 401
             
@@ -197,7 +197,7 @@ def get_openai_models():
 @app.route('/api/models/ollama')
 def get_ollama_models():
     try:
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         url = request.args.get('url', preferences.ollama_url)
         
         if not url:
@@ -223,7 +223,7 @@ def get_ollama_models():
 
 @app.route('/')
 def index():
-    preferences = UserPreferences.get_or_create()
+    preferences = reload_env_config()
     history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
     return render_template('index.html',
                          system_prompt=preferences.system_prompt,
@@ -238,7 +238,7 @@ def update_settings():
         if data is None:
             return jsonify({"error": "Invalid request: No JSON data"}), 400
             
-        preferences = UserPreferences.get_or_create()
+        preferences = reload_env_config()
         provider = data.get('provider', 'ollama')
         settings = data.get('settings', {})
         
