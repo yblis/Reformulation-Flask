@@ -70,13 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadProviderModels(provider, button = null) {
-        const modelSelect = document.getElementById(provider === 'ollama' ? 'modelSelect' : `${provider}Model`);
-        if (!modelSelect) {
-            console.error(`Model select element not found for ${provider}`);
-            return;
-        }
-
         try {
+            const modelSelect = document.getElementById(provider === 'ollama' ? 'modelSelect' : `${provider}Model`);
+            if (!modelSelect) {
+                throw new Error(`Model select element not found for ${provider}`);
+            }
+
             if (button) {
                 button.disabled = true;
                 button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
@@ -93,7 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            console.log(`Fetching ${provider} models...`);
+            const apiKeyInput = document.getElementById(`${provider}Key`);
+            if (provider !== 'ollama' && (!apiKeyInput?.value)) {
+                throw new Error(`Please configure ${provider} API key first`);
+            }
+
             const response = await fetch(url);
             const data = await response.json();
 
@@ -124,8 +127,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
-            modelSelect.innerHTML = `<option value="">${error.message}</option>`;
-            showAlert(error.message, 'danger', 5000);
+            if (error.message.includes('API key')) {
+                showAlert(`Please configure ${provider} API key first`, 'warning', 5000);
+            } else {
+                showAlert(error.message, 'danger', 5000);
+            }
+            
+            const modelSelect = document.getElementById(provider === 'ollama' ? 'modelSelect' : `${provider}Model`);
+            if (modelSelect) {
+                modelSelect.innerHTML = `<option value="">${error.message}</option>`;
+            }
         } finally {
             if (button) {
                 button.disabled = false;
@@ -157,10 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
                 const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
 
-                if (selectedProvider !== 'ollama' && (!apiKeyInput || !apiKeyInput.value.trim())) {
-                    throw new Error(`${selectedProvider} API key is required`);
-                }
-
                 if (selectedProvider === 'ollama') {
                     const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
                     if (!ollamaUrl) {
@@ -168,6 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     config.settings.url = ollamaUrl;
                 } else {
+                    if (!apiKeyInput?.value.trim()) {
+                        throw new Error(`${selectedProvider} API key is required`);
+                    }
                     config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
