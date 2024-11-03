@@ -166,23 +166,23 @@ def get_groq_models():
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
-        try:
-            # Return the list of supported Groq models
-            models = [
-                {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
-                {"id": "llama2-70b-4096", "name": "LLaMA2 70B"},
-                {"id": "gemma-7b-it", "name": "Gemma 7B"}
-            ]
-            
-            return jsonify({"models": models})
-            
-        except Exception as e:
-            print(f"Error in get_groq_models: {str(e)}")
-            return jsonify({"error": f"Groq API error: {str(e)}"}), 500
+        headers = {
+            'Authorization': f'Bearer {preferences.groq_api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Return the list of supported Groq models
+        models = [
+            {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
+            {"id": "llama2-70b-4096", "name": "LLaMA2 70B"},
+            {"id": "gemma-7b-it", "name": "Gemma 7B"}
+        ]
+        
+        return jsonify({"models": models})
             
     except Exception as e:
         print(f"Error in get_groq_models: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Groq API error: {str(e)}"}), 500
 
 @app.route('/api/models/openai')
 def get_openai_models():
