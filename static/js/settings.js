@@ -40,10 +40,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Gemini (ensure this exists)
+                // Gemini
                 const geminiKey = document.getElementById('geminiKey');
-                if (geminiKey) {
-                    geminiKey.value = data.settings.google_api_key || '';
+                if (geminiKey && data.settings.google_api_key) {
+                    geminiKey.value = data.settings.google_api_key;
                     console.log('Setting Gemini API key:', geminiKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show correct provider config and load models
             showProviderConfig(savedProvider);
-            loadProviderModels(savedProvider);
+            await loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
@@ -71,9 +71,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProviderModels(provider, button = null) {
         let modelSelect;
+        let originalButtonText = '';
         
         try {
             if (button) {
+                originalButtonText = button.textContent;
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
@@ -90,15 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Clear existing options first
-            while (modelSelect.firstChild) {
-                modelSelect.removeChild(modelSelect.firstChild);
-            }
-
-            // Add loading option
-            const loadingOption = document.createElement('option');
-            loadingOption.value = '';
-            loadingOption.textContent = 'Loading models...';
-            modelSelect.appendChild(loadingOption);
+            modelSelect.innerHTML = '<option value="">Loading models...</option>';
 
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
@@ -112,11 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(url);
             const data = await response.json();
 
-            // Clear the loading option
-            while (modelSelect.firstChild) {
-                modelSelect.removeChild(modelSelect.firstChild);
-            }
-
             if (!response.ok) {
                 throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
@@ -125,7 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`No models available for ${provider}`);
             }
 
-            // Add the models
+            // Clear and add the models
+            modelSelect.innerHTML = '';
             data.models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model.id;
@@ -145,33 +135,24 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`Error loading ${provider} models:`, error);
             
             if (modelSelect) {
-                // Clear any existing options
-                while (modelSelect.firstChild) {
-                    modelSelect.removeChild(modelSelect.firstChild);
-                }
-                
-                // Add error option
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = error.message;
-                modelSelect.appendChild(option);
+                modelSelect.innerHTML = `<option value="">${error.message}</option>`;
             }
             
             showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
-                button.textContent = 'Rafraîchir les modèles';
+                button.textContent = originalButtonText;
             }
         }
     }
 
     // Event listeners
     if (aiProvider) {
-        aiProvider.addEventListener('change', function() {
+        aiProvider.addEventListener('change', async function() {
             const selectedProvider = this.value;
             showProviderConfig(selectedProvider);
-            loadProviderModels(selectedProvider);
+            await loadProviderModels(selectedProvider);
             localStorage.setItem('aiProvider', selectedProvider);
         });
     }
@@ -245,7 +226,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     Object.entries(refreshButtons).forEach(([provider, button]) => {
         if (button) {
-            button.addEventListener('click', () => loadProviderModels(provider, button));
+            button.addEventListener('click', async () => {
+                try {
+                    await loadProviderModels(provider, button);
+                } catch (error) {
+                    console.error(`Error refreshing ${provider} models:`, error);
+                    showAlert(`Failed to refresh ${provider} models: ${error.message}`, 'danger', 5000);
+                }
+            });
         }
     });
 
