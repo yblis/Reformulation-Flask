@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google API key handling (add debug logging)
+                // Google API key handling
                 const googleKey = document.getElementById('googleKey');
                 if (googleKey) {
-                    console.log('Google API key from settings:', data.settings.google_api_key ? 'Present' : 'Missing');
                     googleKey.value = data.settings.google_api_key || '';
+                    console.log('Loading Google API key:', data.settings.google_api_key ? 'Found' : 'Not found');
                 }
                 
                 // Groq
