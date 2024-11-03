@@ -34,6 +34,33 @@ def handle_error(error):
         "status": error.code
     }), error.code
 
+@app.route('/api/status')
+def check_status():
+    try:
+        preferences = UserPreferences.get_or_create()
+        provider = preferences.current_provider
+        
+        # Always return connected if not using Ollama
+        if provider != 'ollama':
+            return jsonify({"status": "connected"})
+            
+        url = request.args.get('url', preferences.ollama_url)
+        if not url:
+            return jsonify({"status": "disconnected"})
+            
+        try:
+            response = requests.get(f"{url}/api/version", timeout=5)
+            if response.status_code == 200:
+                return jsonify({"status": "connected"})
+            return jsonify({"status": "disconnected"})
+            
+        except requests.exceptions.RequestException:
+            return jsonify({"status": "disconnected"})
+            
+    except Exception as e:
+        print(f"Error checking status: {str(e)}")
+        return jsonify({"status": "disconnected"})
+
 @app.route('/api/models/gemini')
 def get_gemini_models():
     try:
