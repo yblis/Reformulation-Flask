@@ -126,8 +126,7 @@ def get_gemini_models():
             filtered_models = [{
                 "id": model.name,
                 "name": model.display_name
-            } for model in models
-                             if 'gemini' in model.name]
+            } for model in models if 'gemini' in model.name]
 
             return jsonify({"models": filtered_models})
 
@@ -183,8 +182,7 @@ def get_anthropic_models():
             return jsonify({"models": models})
 
         except Exception as e:
-            print(
-                f"Erreur lors de la récupération des modèles Anthropic : {str(e)}")
+            print(f"Erreur lors de la récupération des modèles Anthropic : {str(e)}")
             return jsonify({
                 "error": f"Erreur de l'API Anthropic : {str(e)}"
             }), 500
@@ -429,8 +427,8 @@ def reformulate():
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    genai.types.Content(preferences.system_prompt, role="user"),
-                    genai.types.Content(formatted_prompt, role="user")
+                    {"role": "user", "parts": [preferences.system_prompt]},
+                    {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
 
@@ -471,10 +469,11 @@ def translate():
         text = data.get('text')
         target_language = data.get('language')
         
-        if not all([text, target_language]):
-            return jsonify({"error": "Missing required fields"}), 400
+        if not text or not target_language:
+            return jsonify({"error": "Text and target language are required"}), 400
             
-        formatted_prompt = f"Translate this text to {target_language}: {text}"
+        translation_prompt = preferences.translation_prompt.format(target_language=target_language)
+        formatted_prompt = f"Text: {text}"
         
         try:
             response_text = None
@@ -485,8 +484,7 @@ def translate():
                     json={
                         'model': preferences.ollama_model,
                         'prompt': formatted_prompt,
-                        'system': preferences.translation_prompt.format(
-                            target_language=target_language),
+                        'system': translation_prompt,
                         'stream': False
                     }
                 )
@@ -498,15 +496,8 @@ def translate():
                 response = client.chat.completions.create(
                     model=preferences.openai_model,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": preferences.translation_prompt.format(
-                                target_language=target_language)
-                        },
-                        {
-                            "role": "user",
-                            "content": formatted_prompt
-                        }
+                        {"role": "system", "content": translation_prompt},
+                        {"role": "user", "content": formatted_prompt}
                     ]
                 )
                 response_text = response.choices[0].message.content
@@ -515,12 +506,8 @@ def translate():
                 client = Anthropic(api_key=preferences.anthropic_api_key)
                 message = client.messages.create(
                     model=preferences.anthropic_model,
-                    system=preferences.translation_prompt.format(
-                        target_language=target_language),
-                    messages=[{
-                        "role": "user",
-                        "content": formatted_prompt
-                    }]
+                    system=translation_prompt,
+                    messages=[{"role": "user", "content": formatted_prompt}]
                 )
                 response_text = message.content[0].text
 
@@ -530,15 +517,8 @@ def translate():
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": preferences.translation_prompt.format(
-                                target_language=target_language)
-                        },
-                        {
-                            "role": "user",
-                            "content": formatted_prompt
-                        }
+                        {"role": "system", "content": translation_prompt},
+                        {"role": "user", "content": formatted_prompt}
                     ]
                 )
                 response_text = response.choices[0].message.content
@@ -547,11 +527,8 @@ def translate():
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    genai.types.Content(
-                        preferences.translation_prompt.format(
-                            target_language=target_language),
-                        role="user"),
-                    genai.types.Content(formatted_prompt, role="user")
+                    {"role": "user", "parts": [translation_prompt]},
+                    {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
 
@@ -561,7 +538,7 @@ def translate():
             return jsonify({"text": response_text})
 
         except Exception as e:
-            return jsonify({"error": f"Error translating text: {str(e)}"}), 500
+            return jsonify({"error": f"Translation error: {str(e)}"}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -573,24 +550,22 @@ def generate_email():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
-            
+
         preferences = reload_env_config()
         provider = preferences.current_provider
-        
+
         email_type = data.get('type')
         content = data.get('content')
-        sender = data.get('sender')
+        sender = data.get('sender', '')
+
+        if not email_type or not content:
+            return jsonify({"error": "Email type and content are required"}), 400
+
+        formatted_prompt = f"Type: {email_type}\nContent: {content}\nSignature: {sender}"
         
-        if not all([email_type, content]):
-            return jsonify({"error": "Missing required fields"}), 400
-            
-        formatted_prompt = f"Type d'email: {email_type}\nContenu: {content}"
-        if sender:
-            formatted_prompt += f"\nSignature: {sender}"
-            
         try:
             response_text = None
-
+            
             if provider == 'ollama':
                 response = requests.post(
                     f"{preferences.ollama_url}/api/generate",
@@ -640,8 +615,8 @@ def generate_email():
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    genai.types.Content(preferences.email_prompt, role="user"),
-                    genai.types.Content(formatted_prompt, role="user")
+                    {"role": "user", "parts": [preferences.email_prompt]},
+                    {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
 
@@ -655,7 +630,3 @@ def generate_email():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
