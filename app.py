@@ -162,17 +162,15 @@ def get_anthropic_models():
 @app.route('/api/models/groq')
 def get_groq_models():
     try:
-        preferences = reload_env_config()
+        preferences = UserPreferences.get_or_create()
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
-        # Use the exact headers
         headers = {
-            'Authorization': f'Bearer {preferences.groq_api_key}',
-            'Content-Type': 'application/json'
+            'Authorization': f'Bearer {preferences.groq_api_key}'
         }
         
-        # Use this exact list of models as static list
+        # Return static list of supported models
         models = [
             {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
             {"id": "llama2-70b-4096", "name": "LLaMA2 70B"},
@@ -180,11 +178,9 @@ def get_groq_models():
             {"id": "llama2-70b", "name": "LLaMA2 70B Base"}
         ]
         
-        # Return models directly without API validation
         return jsonify({"models": models})
-            
+        
     except Exception as e:
-        print(f"Error in get_groq_models: {str(e)}")
         return jsonify({"error": f"Groq API error: {str(e)}"}), 500
 
 @app.route('/api/models/openai')
