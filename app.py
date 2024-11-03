@@ -71,20 +71,21 @@ def get_settings():
         
         # Force reload environment variables
         load_dotenv(override=True)
-        
-        # Get Google API key from environment if available
         google_api_key = os.getenv('GOOGLE_API_KEY')
+        
+        # If environment variable exists, update preferences
         if google_api_key:
             preferences.google_api_key = google_api_key
             db.session.commit()
-            
+        
+        # Return settings including google_api_key
         return jsonify({
             "provider": preferences.current_provider,
             "settings": {
                 "ollama_url": preferences.ollama_url,
                 "openai_api_key": preferences.openai_api_key,
                 "anthropic_api_key": preferences.anthropic_api_key,
-                "google_api_key": preferences.google_api_key,
+                "google_api_key": preferences.google_api_key or google_api_key,  # Try both sources
                 "groq_api_key": preferences.groq_api_key
             }
         })
