@@ -26,6 +26,28 @@ with app.app_context():
     db.create_all()
     preferences = UserPreferences.get_or_create()
 
+def reload_env_config():
+    # Reload environment variables
+    load_dotenv(override=True)
+    
+    # Update preferences with new env vars
+    preferences = UserPreferences.get_or_create()
+    if os.getenv('OLLAMA_URL'): 
+        preferences.ollama_url = os.getenv('OLLAMA_URL')
+    if os.getenv('OPENAI_API_KEY'):
+        preferences.openai_api_key = os.getenv('OPENAI_API_KEY')
+    if os.getenv('ANTHROPIC_API_KEY'):
+        preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+    if os.getenv('GOOGLE_API_KEY'):
+        preferences.google_api_key = os.getenv('GOOGLE_API_KEY')
+    if os.getenv('GROQ_API_KEY'):
+        preferences.groq_api_key = os.getenv('GROQ_API_KEY')
+    db.session.commit()
+
+@app.before_request
+def before_request():
+    reload_env_config()
+
 @app.errorhandler(404)
 @app.errorhandler(500)
 def handle_error(error):
@@ -65,13 +87,6 @@ def check_status():
 def get_gemini_models():
     try:
         preferences = UserPreferences.get_or_create()
-        
-        # Check if API key is set in environment
-        google_api_key = os.getenv('GOOGLE_API_KEY')
-        if google_api_key:
-            preferences.google_api_key = google_api_key
-            db.session.commit()
-            
         if not preferences.google_api_key:
             return jsonify({"error": "Google API key not configured"}), 401
             
@@ -100,17 +115,11 @@ def get_gemini_models():
 def get_anthropic_models():
     try:
         preferences = UserPreferences.get_or_create()
-        
-        # Check if API key is set in environment
-        anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-        if anthropic_api_key:
-            preferences.anthropic_api_key = anthropic_api_key
-            db.session.commit()
-            
         if not preferences.anthropic_api_key:
             return jsonify({"error": "Anthropic API key not configured"}), 401
             
         try:
+            # Validate the API key by creating a client
             client = Anthropic(api_key=preferences.anthropic_api_key)
             
             # Return the list of supported Claude models
@@ -136,13 +145,6 @@ def get_anthropic_models():
 def get_groq_models():
     try:
         preferences = UserPreferences.get_or_create()
-        
-        # Check if API key is set in environment
-        groq_api_key = os.getenv('GROQ_API_KEY')
-        if groq_api_key:
-            preferences.groq_api_key = groq_api_key
-            db.session.commit()
-            
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
             
@@ -168,17 +170,11 @@ def get_groq_models():
 def get_openai_models():
     try:
         preferences = UserPreferences.get_or_create()
-        
-        # Check if API key is set in environment
-        openai_api_key = os.getenv('OPENAI_API_KEY')
-        if openai_api_key:
-            preferences.openai_api_key = openai_api_key
-            db.session.commit()
-            
         if not preferences.openai_api_key:
             return jsonify({"error": "OpenAI API key not configured"}), 401
             
         try:
+            # Validate the API key by creating a client
             client = OpenAI(api_key=preferences.openai_api_key)
             
             # Return the list of supported GPT models
@@ -208,7 +204,7 @@ def get_ollama_models():
             return jsonify({"error": "Ollama URL not configured"}), 401
             
         try:
-            response = requests.get(f"{url}/api/tags")
+            response = requests.get(f"{url}/api/tags", timeout=5)
             
             if response.status_code != 200:
                 return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
