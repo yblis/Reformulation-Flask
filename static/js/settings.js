@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google API key
+                // Google (ensure this exists)
                 const googleKey = document.getElementById('googleKey');
                 if (googleKey) {
                     googleKey.value = data.settings.google_api_key || '';
-                    console.log('Loading Google API key:', data.settings.google_api_key ? 'Found' : 'Not found');
+                    console.log('Setting Google API key:', googleKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
                 // Groq
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show correct provider config and load models
             showProviderConfig(savedProvider);
-            await loadProviderModels(savedProvider);
+            loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
@@ -239,8 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
         'ollama': document.getElementById('refreshModels'),
         'openai': document.getElementById('refreshOpenaiModels'),
         'groq': document.getElementById('refreshGroqModels'),
-        'gemini': document.getElementById('refreshGeminiModels'),
-        'anthropic': document.getElementById('refreshAnthropicModels')
+        'anthropic': document.getElementById('refreshAnthropicModels'),
+        'gemini': document.getElementById('refreshGeminiModels')
     };
 
     Object.entries(refreshButtons).forEach(([provider, button]) => {
