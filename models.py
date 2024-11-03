@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
 
 db = SQLAlchemy()
 
@@ -43,6 +44,11 @@ class UserPreferences(db.Model):
         pref = UserPreferences.query.first()
         if not pref:
             pref = UserPreferences(
+                ollama_url=os.getenv('OLLAMA_URL', 'http://localhost:11434'),
+                openai_api_key=os.getenv('OPENAI_API_KEY', ''),
+                anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
+                google_api_key=os.getenv('GOOGLE_API_KEY', ''),
+                groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 system_prompt="""Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
 Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation.""",
@@ -50,6 +56,19 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
                 email_prompt="""Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
             )
             db.session.add(pref)
+            db.session.commit()
+        else:
+            # Update with env vars if they exist
+            if os.getenv('OLLAMA_URL'): 
+                pref.ollama_url = os.getenv('OLLAMA_URL')
+            if os.getenv('OPENAI_API_KEY'):
+                pref.openai_api_key = os.getenv('OPENAI_API_KEY')
+            if os.getenv('ANTHROPIC_API_KEY'):
+                pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+            if os.getenv('GOOGLE_API_KEY'):
+                pref.google_api_key = os.getenv('GOOGLE_API_KEY')
+            if os.getenv('GROQ_API_KEY'):
+                pref.groq_api_key = os.getenv('GROQ_API_KEY')
             db.session.commit()
         return pref
 

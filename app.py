@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
 import os
+from dotenv import load_dotenv
 from requests.exceptions import ConnectionError, Timeout
 from models import db, UserPreferences, ReformulationHistory
 import openai
@@ -9,6 +10,9 @@ from openai import OpenAI
 import anthropic
 from anthropic import Anthropic
 import google.generativeai as genai
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
