@@ -246,3 +246,19 @@ h5 {
 .pull-to-refresh {
     animation: pull-to-refresh 1s ease-in-out;
 }
+
+/* Floating alert styling */
+.floating-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 300px;
+    opacity: 0.9;
+    transition: opacity 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.floating-alert:hover {
+    opacity: 1;
+}

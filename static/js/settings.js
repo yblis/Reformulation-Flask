@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
-            showAlert(error.message || 'Failed to load settings', 'danger', 5000);
+            showAlert(error.message || 'Failed to load settings', 'danger');
         }
     }
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.value = savedModel;
             }
 
-            showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
+            showAlert(`Models refreshed successfully for ${provider}`, 'success');
 
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.appendChild(option);
             }
             
-            showAlert(error.message, 'danger', 5000);
+            showAlert(error.message, 'danger');
         } finally {
             if (button) {
                 button.disabled = false;
@@ -221,14 +221,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
-                showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                showAlert('Configuration sauvegardée avec succès', 'success');
                 
                 // Refresh models after saving settings
                 await loadProviderModels(selectedProvider);
                 
             } catch (error) {
                 console.error('Error saving settings:', error);
-                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger', 5000);
+                showAlert(error.message || 'Erreur lors de la sauvegarde des paramètres', 'danger');
             }
         });
     }
@@ -249,20 +249,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function showAlert(message, type = 'danger', duration = 5000) {
-        const existingAlerts = document.querySelectorAll('.alert');
+        const existingAlerts = document.querySelectorAll('.floating-alert');
         existingAlerts.forEach(alert => alert.remove());
 
         const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
         alert.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        const container = document.querySelector('#config');
-        if (container) {
-            container.insertBefore(alert, container.firstChild);
-        }
+        document.body.appendChild(alert);
 
         if (duration) {
             setTimeout(() => {
