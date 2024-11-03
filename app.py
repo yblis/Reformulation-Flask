@@ -39,11 +39,14 @@ def reload_env_config():
     preferences.openai_api_key = os.getenv('OPENAI_API_KEY',
                                          preferences.openai_api_key)
     preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY',
-                                            preferences.anthropic_api_key)
-    preferences.google_api_key = os.getenv('GOOGLE_API_KEY',
-                                         preferences.google_api_key)
+                                           preferences.anthropic_api_key)
     preferences.groq_api_key = os.getenv('GROQ_API_KEY',
-                                       preferences.groq_api_key)
+                                      preferences.groq_api_key)
+
+    # Get Google API key from environment if available
+    google_api_key = os.getenv('GOOGLE_API_KEY')
+    if google_api_key:
+        preferences.google_api_key = google_api_key
 
     # Save changes to database
     db.session.commit()
@@ -65,6 +68,16 @@ def handle_error(error):
 def get_settings():
     try:
         preferences = reload_env_config()
+        
+        # Force reload environment variables
+        load_dotenv(override=True)
+        
+        # Get Google API key from environment if available
+        google_api_key = os.getenv('GOOGLE_API_KEY')
+        if google_api_key:
+            preferences.google_api_key = google_api_key
+            db.session.commit()
+            
         return jsonify({
             "provider": preferences.current_provider,
             "settings": {
@@ -116,13 +129,8 @@ def get_gemini_models():
             return jsonify({"error": "Clé API Google non configurée"}), 401
 
         try:
-            # Configurer la clé API
             genai.configure(api_key=preferences.google_api_key)
-
-            # Récupérer la liste des modèles disponibles
             models = genai.list_models()
-
-            # Filtrer et formater les modèles selon vos besoins
             filtered_models = [{
                 "id": model.name,
                 "name": model.display_name
@@ -150,10 +158,7 @@ def get_anthropic_models():
             return jsonify({"error": "Clé API Anthropic non configurée"}), 401
 
         try:
-            # Initialiser le client Anthropic avec la clé API
             client = Anthropic(api_key=preferences.anthropic_api_key)
-
-            # Liste des modèles disponibles (mise à jour manuellement)
             models = [{
                 "id": "claude-3.5-sonnet-20241022",
                 "name": "Claude 3.5 Sonnet"
@@ -236,14 +241,9 @@ def get_openai_models():
             return jsonify({"error": "Clé API OpenAI non configurée"}), 401
 
         try:
-            # Initialiser le client OpenAI avec la clé API
             client = OpenAI(api_key=preferences.openai_api_key)
-
-            # Récupérer la liste des modèles disponibles
             response = client.models.list()
             models = response.data
-
-            # Filtrer et formater les modèles selon vos besoins
             filtered_models = [{
                 "id": model.id,
                 "name": model.id
@@ -437,7 +437,6 @@ def reformulate():
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            # Save to history
             history = ReformulationHistory(
                 original_text=text,
                 context=context,

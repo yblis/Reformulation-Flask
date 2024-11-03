@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
                 
-                // Google (ensure this exists)
+                // Google API key handling
                 const googleKey = document.getElementById('googleKey');
                 if (googleKey) {
                     googleKey.value = data.settings.google_api_key || '';
-                    console.log('Setting Google API key:', googleKey.value ? '[HIDDEN]' : 'not set');
+                    console.log('Loading Google API key:', data.settings.google_api_key ? 'Found' : 'Not found');
                 }
                 
                 // Groq
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show correct provider config and load models
             showProviderConfig(savedProvider);
-            loadProviderModels(savedProvider);
+            await loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
