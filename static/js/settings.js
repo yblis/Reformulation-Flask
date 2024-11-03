@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update API keys and URLs
             if (data.settings) {
+                // Google API key (moved to top)
+                const googleKey = document.getElementById('googleKey');
+                if (googleKey) {
+                    googleKey.value = data.settings.google_api_key || '';
+                }
+                
                 // Ollama URL
                 const ollamaUrl = document.getElementById('ollamaUrl');
                 if (ollamaUrl && data.settings.ollama_url) {
@@ -38,13 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const anthropicKey = document.getElementById('anthropicKey');
                 if (anthropicKey && data.settings.anthropic_api_key) {
                     anthropicKey.value = data.settings.anthropic_api_key;
-                }
-                
-                // Google API key
-                const googleKey = document.getElementById('googleKey');
-                if (googleKey) {
-                    googleKey.value = data.settings.google_api_key || '';
-                    console.log('Loading Google API key:', data.settings.google_api_key ? 'Found' : 'Not found');
                 }
                 
                 // Groq
@@ -108,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
