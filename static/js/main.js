@@ -52,37 +52,39 @@ document.addEventListener('DOMContentLoaded', function() {
             const reformulationTab = document.getElementById('reformulation-tab');
             if (!reformulationTab) return;
 
+            // Show reformulation tab
             const tab = new bootstrap.Tab(reformulationTab);
             tab.show();
-            
+
+            // Set context if available
             if (contextText && this.dataset.context !== undefined) {
                 contextText.value = this.dataset.context || '';
                 updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
             }
-            
+
+            // Set input text
             if (inputText && this.dataset.text !== undefined) {
                 inputText.value = this.dataset.text || '';
                 updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
             }
-            
-            // Set the formatting options
-            function setActiveButton(groupId, value) {
+
+            // Set formatting options
+            const setActiveButton = (groupId, value) => {
                 const buttons = document.querySelectorAll(`#${groupId} .btn`);
-                if (!buttons.length) return;
-                
                 buttons.forEach(btn => {
+                    btn.classList.remove('active');
                     if (btn.dataset.value === value) {
                         btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
                     }
                 });
-            }
+            };
 
+            // Set tone, format and length options
             if (this.dataset.tone) setActiveButton('toneGroup', this.dataset.tone);
             if (this.dataset.format) setActiveButton('formatGroup', this.dataset.format);
             if (this.dataset.length) setActiveButton('lengthGroup', this.dataset.length);
-            
+
+            // Clear output
             if (outputText) {
                 outputText.value = '';
                 updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
@@ -171,9 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
             statusMessage.remove();
         }
     }
-
-    checkOllamaStatus();
-    setInterval(checkOllamaStatus, 30000);
 
     function setupTagGroup(groupId) {
         const group = document.getElementById(groupId);
@@ -313,4 +312,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, duration);
         }
     }
+
+    // Initial status check
+    checkOllamaStatus();
+    setInterval(checkOllamaStatus, 30000);
 });
