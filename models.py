@@ -57,43 +57,39 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
             )
             db.session.add(pref)
             db.session.commit()
+        else:
+            # Update with env vars if they exist
+            if os.getenv('OLLAMA_URL'): 
+                pref.ollama_url = os.getenv('OLLAMA_URL')
+            if os.getenv('OPENAI_API_KEY'):
+                pref.openai_api_key = os.getenv('OPENAI_API_KEY')
+            if os.getenv('ANTHROPIC_API_KEY'):
+                pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+            if os.getenv('GOOGLE_API_KEY'):
+                pref.google_api_key = os.getenv('GOOGLE_API_KEY')
+            if os.getenv('GROQ_API_KEY'):
+                pref.groq_api_key = os.getenv('GROQ_API_KEY')
+            db.session.commit()
         return pref
 
 class ReformulationHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(20), nullable=False, default='reformulation')  # 'reformulation', 'translation', 'email'
     original_text = db.Column(db.Text, nullable=False)
-    reformulated_text = db.Column(db.Text, nullable=False)
     context = db.Column(db.Text)
-    
-    # Fields for reformulation
-    tone = db.Column(db.String(50))
-    format = db.Column(db.String(50))
-    length = db.Column(db.String(50))
-    
-    # Fields for translation
-    target_language = db.Column(db.String(50))
-    
-    # Fields for email
-    email_type = db.Column(db.String(100))
-    sender_name = db.Column(db.String(100))
-    email_subject = db.Column(db.String(255))
-    
+    reformulated_text = db.Column(db.Text, nullable=False)
+    tone = db.Column(db.String(50), nullable=False)
+    format = db.Column(db.String(50), nullable=False)
+    length = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def to_dict(self):
         return {
             'id': self.id,
-            'type': self.type,
             'original_text': self.original_text,
-            'reformulated_text': self.reformulated_text,
             'context': self.context,
+            'reformulated_text': self.reformulated_text,
             'tone': self.tone,
             'format': self.format,
             'length': self.length,
-            'target_language': self.target_language,
-            'email_type': self.email_type,
-            'sender_name': self.sender_name,
-            'email_subject': self.email_subject,
             'created_at': self.created_at.isoformat()
         }

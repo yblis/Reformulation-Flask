@@ -51,26 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 translationOutput.value = `Erreur: ${data.error}`;
             } else {
                 translationOutput.value = data.text;
-                // Update statistics
-                updateTextStats(data.text, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
-
-                // Save to history
-                try {
-                    await fetch('/api/history', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            type: 'translation',
-                            original_text: text,
-                            reformulated_text: data.text,
-                            target_language: getSelectedLanguage()
-                        })
-                    });
-                } catch (error) {
-                    console.error('Error saving to history:', error);
-                }
             }
         } catch (error) {
             translationOutput.value = `Erreur: ${error.message}`;
@@ -80,28 +60,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    copyTranslation.addEventListener('click', async function() {
-        const text = translationOutput.value;
-        if (!text) return;
-
-        try {
-            await navigator.clipboard.writeText(text);
-            const originalText = copyTranslation.textContent;
-            copyTranslation.textContent = 'Copié!';
-            setTimeout(() => {
-                copyTranslation.textContent = originalText;
-            }, 2000);
-        } catch (err) {
-            console.error('Erreur lors de la copie:', err);
-        }
+    copyTranslation.addEventListener('click', function() {
+        translationOutput.select();
+        document.execCommand('copy');
     });
 
     if (clearTranslation) {
         clearTranslation.addEventListener('click', () => {
             translationInput.value = '';
             translationOutput.value = '';
-            updateTextStats('', 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
-            updateTextStats('', 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
         });
     }
 });

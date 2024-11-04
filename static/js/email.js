@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyEmail = document.getElementById('copyEmail');
     const copyEmailSubject = document.getElementById('copyEmailSubject');
     const clearEmail = document.getElementById('clearEmail');
+    const emailPrompt = document.getElementById('emailPrompt');
+
+    // Load saved email prompt from localStorage
+    if (emailPrompt) {
+        const savedEmailPrompt = localStorage.getItem('emailPrompt');
+        if (savedEmailPrompt) {
+            emailPrompt.value = savedEmailPrompt;
+        }
+    }
 
     if (generateEmail) {
         generateEmail.classList.add('requires-ollama');
@@ -44,38 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Split the response into subject and body
                     const lines = data.text.split('\n');
                     const subjectLine = lines.find(line => line.toLowerCase().startsWith('objet:'));
-                    let subject = '';
-                    let body = '';
                     
                     if (subjectLine) {
-                        subject = subjectLine.substring(6).trim();
-                        body = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
-                        emailSubject.value = subject;
-                        emailOutput.value = body;
+                        emailSubject.value = subjectLine.substring(6).trim();
+                        emailOutput.value = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
                     } else {
                         emailSubject.value = "";
                         emailOutput.value = data.text;
-                        body = data.text;
-                    }
-
-                    // Save to history
-                    try {
-                        await fetch('/api/history', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                type: 'email',
-                                original_text: content,
-                                reformulated_text: body,
-                                email_type: type,
-                                sender_name: sender,
-                                email_subject: subject
-                            })
-                        });
-                    } catch (error) {
-                        console.error('Error saving to history:', error);
                     }
                 } else {
                     emailOutput.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
@@ -97,10 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 await navigator.clipboard.writeText(text);
-                const originalText = copyEmail.innerHTML;
-                copyEmail.innerHTML = '<i class="bi bi-check"></i> Copié!';
+                const originalText = copyEmail.textContent;
+                copyEmail.textContent = 'Copié!';
                 setTimeout(() => {
-                    copyEmail.innerHTML = originalText;
+                    copyEmail.textContent = originalText;
                 }, 2000);
             } catch (err) {
                 console.error('Erreur lors de la copie:', err);
@@ -115,10 +99,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 await navigator.clipboard.writeText(text);
-                const originalText = copyEmailSubject.innerHTML;
-                copyEmailSubject.innerHTML = '<i class="bi bi-check"></i> Copié!';
+                const originalText = copyEmailSubject.textContent;
+                copyEmailSubject.textContent = 'Copié!';
                 setTimeout(() => {
-                    copyEmailSubject.innerHTML = originalText;
+                    copyEmailSubject.textContent = originalText;
                 }, 2000);
             } catch (err) {
                 console.error('Erreur lors de la copie:', err);
@@ -133,17 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
             emailSender.value = '';
             emailSubject.value = '';
             emailOutput.value = '';
-            // Update statistics
-            updateTextStats('', 'emailContentCharCount', 'emailContentWordCount', 'emailContentParaCount');
         });
-    }
-
-    // Update text statistics on input
-    if (emailContent) {
-        emailContent.addEventListener('input', () => {
-            updateTextStats(emailContent.value, 'emailContentCharCount', 'emailContentWordCount', 'emailContentParaCount');
-        });
-        // Initial count
-        updateTextStats(emailContent.value, 'emailContentCharCount', 'emailContentWordCount', 'emailContentParaCount');
     }
 });

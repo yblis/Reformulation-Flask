@@ -33,19 +33,203 @@
 
     <!-- Tab content -->
     <div class="tab-content">
-        <!-- Previous tabs content remains the same -->
-        {% include 'tabs/reformulation.html' %}
-        {% include 'tabs/translation.html' %}
-        {% include 'tabs/email.html' %}
-        
+        <!-- Reformulation Tab -->
+        <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
+            <!-- Context Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Contexte / Email reçu:</h5>
+                    <textarea id="contextText" class="form-control" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Entre ton texte à reformuler:</h5>
+                    <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Options de reformulation</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="collapse show" id="optionsCollapse">
+                        <!-- Tone Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Ton</h6>
+                            <div class="btn-group" role="group" id="toneGroup">
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                            </div>
+                        </div>
+
+                        <!-- Format Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Format</h6>
+                            <div class="btn-group" role="group" id="formatGroup">
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                            </div>
+                        </div>
+
+                        <!-- Length Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-2">Longueur</h6>
+                            <div class="btn-group" role="group" id="lengthGroup">
+                                <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
+
+            <!-- Output Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Réponse:</h5>
+                    <textarea id="outputText" class="form-control mb-3" rows="6" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="outputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="outputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="outputParaCount">0</span></small>
+                        </div>
+                    </div>
+                    <div class="btn-group w-100">
+                        <button id="copyBtn" class="btn btn-success">Copier</button>
+                        <button id="clearBtn" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Translation Tab -->
+        <div class="tab-pane fade" id="translation" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Texte à traduire:</h5>
+                    <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">Traduire vers:</h5>
+                    <div class="btn-group" role="group" id="targetLanguageGroup">
+                        <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
+                        <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
+                    </div>
+
+                    <button id="translateText" class="btn btn-success w-100 my-4">Traduire</button>
+
+                    <h5 class="mb-3">Traduction:</h5>
+                    <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group w-100">
+                        <button id="copyTranslation" class="btn btn-success">Copier</button>
+                        <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Generator Tab -->
+        <div class="tab-pane fade" id="email" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Type d'email:</h5>
+                    <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
+                    
+                    <h5 class="mb-3">Contenu et contexte:</h5>
+                    <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="emailContentCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="emailContentWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="emailContentParaCount">0</span></small>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Prénom NOM:</h5>
+                    <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
+                    
+                    <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
+                    
+                    <div class="mb-4 d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-2">Objet généré:</h5>
+                            <input type="text" id="emailSubject" class="form-control" readonly>
+                        </div>
+                        <button id="copyEmailSubject" class="btn btn-success align-self-end" style="height: 38px;">Copier</button>
+                    </div>
+
+                    <h5 class="mb-3">Email généré:</h5>
+                    <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">Caractères: <span id="emailOutputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="emailOutputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="emailOutputParaCount">0</span></small>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group w-100">
+                        <button id="copyEmail" class="btn btn-success">Copier</button>
+                        <button id="clearEmail" class="btn btn-success">Effacer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- History Tab -->
         <div class="tab-pane fade" id="history" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Historique des reformulations</h5>
-                <button id="resetHistory" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Effacer l'historique
-                </button>
-            </div>
             <div class="accordion" id="historyAccordion">
                 {% for item in history %}
                 <div class="accordion-item mb-3">
@@ -80,33 +264,21 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-secondary">{{ item.type }}</span>
-                                {% if item.tone %}
                                 <span class="badge bg-secondary">{{ item.tone }}</span>
-                                {% endif %}
-                                {% if item.format %}
                                 <span class="badge bg-secondary">{{ item.format }}</span>
-                                {% endif %}
-                                {% if item.length %}
                                 <span class="badge bg-secondary">{{ item.length }}</span>
-                                {% endif %}
-                                {% if item.target_language %}
-                                <span class="badge bg-secondary">{{ item.target_language }}</span>
-                                {% endif %}
                             </div>
                             <div class="btn-group">
                                 <button class="btn btn-success btn-sm copy-history" data-text="{{ item.reformulated_text }}">
-                                    <i class="bi bi-clipboard"></i> Copier
+                                    Copier
                                 </button>
                                 <button class="btn btn-success btn-sm reuse-history" 
-                                        data-type="{{ item.type }}"
+                                        data-original="{{ item.original_text }}"
                                         data-context="{{ item.context }}"
-                                        data-text="{{ item.original_text }}"
                                         data-tone="{{ item.tone }}"
                                         data-format="{{ item.format }}"
-                                        data-length="{{ item.length }}"
-                                        data-target-language="{{ item.target_language }}">
-                                    <i class="bi bi-arrow-clockwise"></i> Réutiliser
+                                        data-length="{{ item.length }}">
+                                    Réutiliser
                                 </button>
                             </div>
                         </div>
@@ -117,7 +289,139 @@
         </div>
 
         <!-- Configuration Tab -->
-        {% include 'tabs/config.html' %}
+        <div class="tab-pane fade" id="config" role="tabpanel">
+            <!-- Provider Selection -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Sélection du Fournisseur d'IA</h5>
+                    <select id="aiProvider" class="form-select">
+                        <option value="ollama">Ollama</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="groq">Groq</option>
+                        <option value="anthropic">Anthropic</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ollama Config -->
+            <div id="ollamaConfig" class="provider-config card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration Ollama</h5>
+                    <div class="mb-4">
+                        <label class="form-label">URL d'Ollama:</label>
+                        <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Modèle:</label>
+                        <select id="modelSelect" class="form-select"></select>
+                    </div>
+                    <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+            </div>
+
+            <!-- OpenAI Config -->
+            <div id="openaiConfig" class="provider-config card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration OpenAI</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API OpenAI:</label>
+                        <input type="password" id="openaiKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="openaiModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+            </div>
+
+            <!-- Groq Config -->
+            <div id="groqConfig" class="provider-config card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration Groq</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Groq:</label>
+                        <input type="password" id="groqKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="groqModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+            </div>
+
+            <!-- Anthropic Config -->
+            <div id="anthropicConfig" class="provider-config card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration Anthropic</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Anthropic:</label>
+                        <input type="password" id="anthropicKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="anthropicModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+            </div>
+
+            <!-- Google Gemini Config -->
+            <div id="geminiConfig" class="provider-config card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration Google Gemini</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Google:</label>
+                        <input type="password" id="geminiKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="geminiModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+            </div>
+
+            <!-- Prompts Configuration -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration du Prompt</h5>
+                    <div class="mb-4">
+                        <label class="form-label">Prompt système:</label>
+                        <textarea id="systemPrompt" class="form-control" rows="8">{{ system_prompt }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration du Prompt de Traduction</h5>
+                    <div class="mb-4">
+                        <label class="form-label">Prompt système pour la traduction:</label>
+                        <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Configuration du Prompt de Génération d'Email</h5>
+                    <div class="mb-4">
+                        <label class="form-label">Prompt système pour la génération d'email:</label>
+                        <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
+        </div>
     </div>
 </div>
+
+{% include 'translation_modal.html' %}
+{% include 'prompt_modal.html' %}
+{% include 'settings_modal.html' %}
+
 {% endblock %}
