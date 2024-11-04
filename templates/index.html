@@ -42,64 +42,197 @@
                     🗑️ Effacer l'historique
                 </button>
             </div>
-            <div class="accordion" id="historyAccordion">
-                {% for item in history %}
-                <div class="accordion-item mb-3">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#history-{{ item.id }}">
-                            <div class="d-flex justify-content-between w-100 me-3">
-                                <div class="text-truncate">{{ item.original_text[:50] }}...</div>
-                                <small class="text-muted ms-2">{{ item.created_at }}</small>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="history-{{ item.id }}" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            {% if item.context %}
-                            <div class="mb-3">
-                                <h6>Contexte:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.context }}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <div class="mb-3">
-                                <h6>Texte original:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.original_text }}</div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <h6>Texte reformulé:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.reformulated_text }}</div>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-secondary">{{ item.tone }}</span>
-                                <span class="badge bg-secondary">{{ item.format }}</span>
-                                <span class="badge bg-secondary">{{ item.length }}</span>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-success btn-sm copy-history" data-text="{{ item.reformulated_text }}">
-                                    📋 Copier
+
+            <!-- History tabs -->
+            <ul class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#reformulation-history" type="button">
+                        Reformulations
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#translation-history" type="button">
+                        Traductions
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#email-history" type="button">
+                        Emails
+                    </button>
+                </li>
+            </ul>
+
+            <!-- History content -->
+            <div class="tab-content">
+                <!-- Reformulation History -->
+                <div class="tab-pane fade show active" id="reformulation-history" role="tabpanel">
+                    <div class="accordion" id="reformulationHistoryAccordion">
+                        {% for item in reformulation_history %}
+                        <div class="accordion-item mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reformulation-{{ item.id }}">
+                                    <div class="d-flex justify-content-between w-100 me-3">
+                                        <div class="text-truncate">{{ item.original_text[:50] }}...</div>
+                                        <small class="text-muted ms-2">{{ item.created_at }}</small>
+                                    </div>
                                 </button>
-                                <button class="btn btn-success btn-sm reuse-history" 
-                                    data-context="{{ item.context }}"
-                                    data-text="{{ item.original_text }}"
-                                    data-tone="{{ item.tone }}"
-                                    data-format="{{ item.format }}"
-                                    data-length="{{ item.length }}">
-                                    🔄 Réutiliser
-                                </button>
+                            </h2>
+                            <div id="reformulation-{{ item.id }}" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    {% if item.context %}
+                                    <div class="mb-3">
+                                        <h6>Contexte:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.context }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="mb-3">
+                                        <h6>Texte original:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.original_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Texte reformulé:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.reformulated_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mb-3">
+                                        <span class="badge bg-secondary">{{ item.tone }}</span>
+                                        <span class="badge bg-secondary">{{ item.format }}</span>
+                                        <span class="badge bg-secondary">{{ item.length }}</span>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-success btn-sm copy-history" data-text="{{ item.reformulated_text }}">
+                                            📋 Copier
+                                        </button>
+                                        <button class="btn btn-success btn-sm reuse-history" 
+                                            data-context="{{ item.context }}"
+                                            data-text="{{ item.original_text }}"
+                                            data-tone="{{ item.tone }}"
+                                            data-format="{{ item.format }}"
+                                            data-length="{{ item.length }}">
+                                            🔄 Réutiliser
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
+
+                <!-- Translation History -->
+                <div class="tab-pane fade" id="translation-history" role="tabpanel">
+                    <div class="accordion" id="translationHistoryAccordion">
+                        {% for item in translation_history %}
+                        <div class="accordion-item mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#translation-{{ item.id }}">
+                                    <div class="d-flex justify-content-between w-100 me-3">
+                                        <div class="text-truncate">{{ item.original_text[:50] }}...</div>
+                                        <small class="text-muted ms-2">{{ item.created_at }}</small>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="translation-{{ item.id }}" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <h6>Texte original:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.original_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Traduction ({{ item.target_language }}):</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.translated_text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-success btn-sm copy-translation-history" data-text="{{ item.translated_text }}">
+                                            📋 Copier
+                                        </button>
+                                        <button class="btn btn-success btn-sm reuse-translation" 
+                                            data-text="{{ item.original_text }}"
+                                            data-language="{{ item.target_language }}">
+                                            🔄 Réutiliser
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Email History -->
+                <div class="tab-pane fade" id="email-history" role="tabpanel">
+                    <div class="accordion" id="emailHistoryAccordion">
+                        {% for item in email_history %}
+                        <div class="accordion-item mb-3">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#email-{{ item.id }}">
+                                    <div class="d-flex justify-content-between w-100 me-3">
+                                        <div class="text-truncate">{{ item.generated_subject }}</div>
+                                        <small class="text-muted ms-2">{{ item.created_at }}</small>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="email-{{ item.id }}" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <h6>Type:</h6>
+                                        <span class="badge bg-secondary">{{ item.email_type }}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Contenu original:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.content }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Objet généré:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.generated_subject }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Email généré:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.generated_email }}</div>
+                                        </div>
+                                    </div>
+                                    {% if item.sender %}
+                                    <div class="mb-3">
+                                        <h6>Signature:</h6>
+                                        <div class="card">
+                                            <div class="card-body">{{ item.sender }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="btn-group">
+                                        <button class="btn btn-success btn-sm copy-email-history" data-subject="{{ item.generated_subject }}" data-email="{{ item.generated_email }}">
+                                            📋 Copier
+                                        </button>
+                                        <button class="btn btn-success btn-sm reuse-email" 
+                                            data-type="{{ item.email_type }}"
+                                            data-content="{{ item.content }}"
+                                            data-sender="{{ item.sender }}">
+                                            🔄 Réutiliser
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
-        
+
         <!-- Other tabs content remains the same -->
     </div>
 </div>

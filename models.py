@@ -57,19 +57,6 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
             )
             db.session.add(pref)
             db.session.commit()
-        else:
-            # Update with env vars if they exist
-            if os.getenv('OLLAMA_URL'): 
-                pref.ollama_url = os.getenv('OLLAMA_URL')
-            if os.getenv('OPENAI_API_KEY'):
-                pref.openai_api_key = os.getenv('OPENAI_API_KEY')
-            if os.getenv('ANTHROPIC_API_KEY'):
-                pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-            if os.getenv('GOOGLE_API_KEY'):
-                pref.google_api_key = os.getenv('GOOGLE_API_KEY')
-            if os.getenv('GROQ_API_KEY'):
-                pref.groq_api_key = os.getenv('GROQ_API_KEY')
-            db.session.commit()
         return pref
 
 class ReformulationHistory(db.Model):
@@ -91,5 +78,41 @@ class ReformulationHistory(db.Model):
             'tone': self.tone,
             'format': self.format,
             'length': self.length,
+            'created_at': self.created_at.isoformat()
+        }
+
+class TranslationHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    original_text = db.Column(db.Text, nullable=False)
+    translated_text = db.Column(db.Text, nullable=False)
+    target_language = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'original_text': self.original_text,
+            'translated_text': self.translated_text,
+            'target_language': self.target_language,
+            'created_at': self.created_at.isoformat()
+        }
+
+class EmailHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email_type = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    sender = db.Column(db.String(255))
+    generated_subject = db.Column(db.String(255), nullable=False)
+    generated_email = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email_type': self.email_type,
+            'content': self.content,
+            'sender': self.sender,
+            'generated_subject': self.generated_subject,
+            'generated_email': self.generated_email,
             'created_at': self.created_at.isoformat()
         }

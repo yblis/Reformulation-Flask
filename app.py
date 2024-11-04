@@ -4,7 +4,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from requests.exceptions import ConnectionError, Timeout
-from models import db, UserPreferences, ReformulationHistory
+from models import db, UserPreferences, ReformulationHistory, TranslationHistory, EmailHistory
 import openai
 from openai import OpenAI
 import anthropic
@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///reformulator.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -40,10 +40,31 @@ def reload_env_config():
 def before_request():
     reload_env_config()
 
-@app.errorhandler(404)
-@app.errorhandler(500)
-def handle_error(error):
-    return jsonify({"error": str(error), "status": error.code}), error.code
+@app.route('/')
+def index():
+    preferences = reload_env_config()
+    reformulation_history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
+    translation_history = TranslationHistory.query.order_by(TranslationHistory.created_at.desc()).limit(10).all()
+    email_history = EmailHistory.query.order_by(EmailHistory.created_at.desc()).limit(10).all()
+    return render_template('index.html',
+                         system_prompt=preferences.system_prompt,
+                         translation_prompt=preferences.translation_prompt,
+                         email_prompt=preferences.email_prompt,
+                         reformulation_history=[h.to_dict() for h in reformulation_history],
+                         translation_history=[h.to_dict() for h in translation_history],
+                         email_history=[h.to_dict() for h in email_history])
+
+@app.route('/api/history/reset', methods=['POST'])
+def reset_history():
+    try:
+        ReformulationHistory.query.delete()
+        TranslationHistory.query.delete()
+        EmailHistory.query.delete()
+        db.session.commit()
+        return jsonify({"status": "success", "message": "History cleared successfully"})
+    except Exception as e:
+        print(f"Error resetting history: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/settings', methods=['GET'])
 def get_settings():
@@ -62,160 +83,6 @@ def get_settings():
     except Exception as e:
         print(f"Error in get_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/status')
-def check_status():
-    try:
-        preferences = reload_env_config()
-        provider = preferences.current_provider
-        if provider != 'ollama':
-            return jsonify({"status": "connected"})
-        url = request.args.get('url', preferences.ollama_url)
-        if not url:
-            return jsonify({"status": "disconnected"})
-        try:
-            response = requests.get(f"{url}/api/version", timeout=5)
-            if response.status_code == 200:
-                return jsonify({"status": "connected"})
-            return jsonify({"status": "disconnected"})
-        except requests.exceptions.RequestException:
-            return jsonify({"status": "disconnected"})
-    except Exception as e:
-        print(f"Error checking status: {str(e)}")
-        return jsonify({"status": "disconnected"})
-
-@app.route('/api/models/gemini')
-def get_gemini_models():
-    try:
-        preferences = reload_env_config()
-        if not preferences.google_api_key:
-            return jsonify({"error": "Clé API Google non configurée"}), 401
-        try:
-            genai.configure(api_key=preferences.google_api_key)
-            models = genai.list_models()
-            filtered_models = [{
-                "id": model.name,
-                "name": model.display_name
-            } for model in models if 'gemini' in model.name]
-            return jsonify({"models": filtered_models})
-        except Exception as e:
-            print(f"Erreur lors de la récupération des modèles Gemini : {str(e)}")
-            return jsonify({"error": f"Erreur de l'API Gemini : {str(e)}"}), 500
-    except Exception as e:
-        print(f"Erreur dans get_gemini_models : {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/anthropic')
-def get_anthropic_models():
-    try:
-        preferences = reload_env_config()
-        if not preferences.anthropic_api_key:
-            return jsonify({"error": "Clé API Anthropic non configurée"}), 401
-        try:
-            client = Anthropic(api_key=preferences.anthropic_api_key)
-            models = [{
-                "id": "claude-3.5-sonnet-20241022",
-                "name": "Claude 3.5 Sonnet"
-            }, {
-                "id": "claude-3.5-haiku-20241022",
-                "name": "Claude 3.5 Haiku"
-            }, {
-                "id": "claude-3-opus-20240229",
-                "name": "Claude 3 Opus"
-            }, {
-                "id": "claude-3-sonnet-20240229",
-                "name": "Claude 3 Sonnet"
-            }, {
-                "id": "claude-3-haiku-20240307",
-                "name": "Claude 3 Haiku"
-            }, {
-                "id": "claude-2.1",
-                "name": "Claude 2.1"
-            }, {
-                "id": "claude-2.0",
-                "name": "Claude 2.0"
-            }, {
-                "id": "claude-instant-1.2",
-                "name": "Claude Instant 1.2"
-            }]
-            return jsonify({"models": models})
-        except Exception as e:
-            print(f"Erreur lors de la récupération des modèles Anthropic : {str(e)}")
-            return jsonify({"error": f"Erreur de l'API Anthropic : {str(e)}"}), 500
-    except Exception as e:
-        print(f"Erreur dans get_anthropic_models : {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/groq')
-def get_groq_models():
-    try:
-        preferences = reload_env_config()
-        if not preferences.groq_api_key:
-            return jsonify({"error": "Groq API key not configured"}), 401
-        try:
-            response = requests.get("https://api.groq.com/openai/v1/models",
-                                 headers={"Authorization": f"Bearer {preferences.groq_api_key}"})
-            if response.status_code != 200:
-                return jsonify({"error": response.text}), response.status_code
-            data = response.json()
-            return jsonify({"models": [{"id": model["id"], "name": model["id"]} for model in data["data"]]})
-        except Exception as e:
-            return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/openai')
-def get_openai_models():
-    try:
-        preferences = reload_env_config()
-        if not preferences.openai_api_key:
-            return jsonify({"error": "Clé API OpenAI non configurée"}), 401
-        try:
-            client = OpenAI(api_key=preferences.openai_api_key)
-            response = client.models.list()
-            models = response.data
-            filtered_models = [{
-                "id": model.id,
-                "name": model.id
-            } for model in models if 'gpt' in model.id]
-            return jsonify({"models": filtered_models})
-        except Exception as e:
-            print(f"Erreur lors de la récupération des modèles OpenAI : {str(e)}")
-            return jsonify({"error": f"Erreur de l'API OpenAI : {str(e)}"}), 500
-    except Exception as e:
-        print(f"Erreur dans get_openai_models : {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/models/ollama')
-def get_ollama_models():
-    try:
-        preferences = reload_env_config()
-        url = request.args.get('url', preferences.ollama_url)
-        if not url:
-            return jsonify({"error": "Ollama URL not configured"}), 401
-        try:
-            response = requests.get(f"{url}/api/tags", timeout=5)
-            if response.status_code != 200:
-                return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
-            data = response.json()
-            models = [{"id": model["name"], "name": model["name"]} for model in data["models"]]
-            return jsonify({"models": models})
-        except requests.exceptions.RequestException as e:
-            print(f"Error in get_ollama_models: {str(e)}")
-            return jsonify({"error": f"Ollama connection error: {str(e)}"}), 500
-    except Exception as e:
-        print(f"Error in get_ollama_models: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/')
-def index():
-    preferences = reload_env_config()
-    history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).limit(10).all()
-    return render_template('index.html',
-                         system_prompt=preferences.system_prompt,
-                         translation_prompt=preferences.translation_prompt,
-                         email_prompt=preferences.email_prompt,
-                         history=[h.to_dict() for h in history])
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
@@ -264,6 +131,7 @@ def reformulate():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
+
         preferences = reload_env_config()
         provider = preferences.current_provider
         text = data.get('text')
@@ -271,9 +139,12 @@ def reformulate():
         tone = data.get('tone', 'Professional')
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
+
         if not text:
             return jsonify({"error": "No text provided"}), 400
+
         formatted_prompt = f"Context: {context}\nText: {text}\nTone: {tone}\nFormat: {format}\nLength: {length}"
+        
         try:
             response_text = None
             if provider == 'ollama':
@@ -325,8 +196,11 @@ def reformulate():
                     {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
+
             if not response_text:
                 raise Exception(f"No response from {provider}")
+
+            # Save to history
             history = ReformulationHistory(
                 original_text=text,
                 context=context,
@@ -337,6 +211,7 @@ def reformulate():
             )
             db.session.add(history)
             db.session.commit()
+
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Error reformulating text: {str(e)}"}), 500
@@ -349,14 +224,18 @@ def translate():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
+
         preferences = reload_env_config()
         provider = preferences.current_provider
         text = data.get('text')
         target_language = data.get('language')
+
         if not text or not target_language:
             return jsonify({"error": "Text and target language are required"}), 400
+
         translation_prompt = preferences.translation_prompt.format(target_language=target_language)
         formatted_prompt = f"Text: {text}"
+
         try:
             response_text = None
             if provider == 'ollama':
@@ -408,8 +287,19 @@ def translate():
                     {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
+
             if not response_text:
                 raise Exception(f"No response from {provider}")
+
+            # Save to translation history
+            history = TranslationHistory(
+                original_text=text,
+                translated_text=response_text,
+                target_language=target_language
+            )
+            db.session.add(history)
+            db.session.commit()
+
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Translation error: {str(e)}"}), 500
@@ -422,14 +312,18 @@ def generate_email():
         data = request.get_json()
         if not data:
             return jsonify({"error": "No data provided"}), 400
+
         preferences = reload_env_config()
         provider = preferences.current_provider
         email_type = data.get('type')
         content = data.get('content')
         sender = data.get('sender', '')
+
         if not email_type or not content:
             return jsonify({"error": "Email type and content are required"}), 400
+
         formatted_prompt = f"Type: {email_type}\nContent: {content}\nSignature: {sender}"
+
         try:
             response_text = None
             if provider == 'ollama':
@@ -481,20 +375,32 @@ def generate_email():
                     {"role": "user", "parts": [formatted_prompt]}
                 ])
                 response_text = response.text
+
             if not response_text:
                 raise Exception(f"No response from {provider}")
+
+            # Extract subject from response
+            lines = response_text.split('\n')
+            subject_line = next((line for line in lines if line.lower().startswith('objet:')), '')
+            subject = subject_line[6:].strip() if subject_line else ''
+            body = '\n'.join(line for line in lines if not line.lower().startswith('objet:')).strip()
+
+            # Save to email history
+            history = EmailHistory(
+                email_type=email_type,
+                content=content,
+                sender=sender,
+                generated_subject=subject,
+                generated_email=body
+            )
+            db.session.add(history)
+            db.session.commit()
+
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Error generating email: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/history/reset', methods=['POST'])
-def reset_history():
-    try:
-        ReformulationHistory.query.delete()
-        db.session.commit()
-        return jsonify({"status": "success", "message": "History cleared successfully"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
