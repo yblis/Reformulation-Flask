@@ -269,9 +269,9 @@
                                     <span class="badge bg-secondary">{{ item.format }}</span>
                                     <span class="badge bg-secondary">{{ item.length }}</span>
                                 </div>
-                                <button class="btn btn-success btn-sm reuse-history" data-id="{{ item.id }}" 
-                                        data-context="{{ item.context }}" 
+                                <button class="btn btn-success btn-sm reuse-history"
                                         data-text="{{ item.original_text }}"
+                                        data-context="{{ item.context }}"
                                         data-tone="{{ item.tone }}"
                                         data-format="{{ item.format }}"
                                         data-length="{{ item.length }}">
@@ -287,10 +287,124 @@
 
         <!-- Configuration Tab -->
         <div class="tab-pane fade" id="config" role="tabpanel">
-            {% include "settings_modal.html" %}
-            {% include "prompt_modal.html" %}
-            {% include "translation_modal.html" %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Fournisseur d'IA</h5>
+                    <select id="aiProvider" class="form-select mb-4">
+                        <option value="ollama">Ollama (Local)</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="anthropic">Anthropic</option>
+                        <option value="groq">Groq</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
+
+                    <!-- Ollama Config -->
+                    <div id="ollamaConfig" class="provider-config">
+                        <div class="mb-3">
+                            <label class="form-label">URL d'Ollama:</label>
+                            <input type="text" id="ollamaUrl" class="form-control" placeholder="http://localhost:11434">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="modelSelect" class="form-select"></select>
+                        </div>
+                        <button id="refreshModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
+                    </div>
+
+                    <!-- OpenAI Config -->
+                    <div id="openaiConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API OpenAI:</label>
+                            <input type="password" id="openaiKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="openaiModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshOpenaiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
+                    </div>
+
+                    <!-- Anthropic Config -->
+                    <div id="anthropicConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Anthropic:</label>
+                            <input type="password" id="anthropicKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="anthropicModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshAnthropicModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
+                    </div>
+
+                    <!-- Groq Config -->
+                    <div id="groqConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Groq:</label>
+                            <input type="password" id="groqKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="groqModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshGroqModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
+                    </div>
+
+                    <!-- Gemini Config -->
+                    <div id="geminiConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Google:</label>
+                            <input type="password" id="geminiKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="geminiModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshGeminiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
+                    </div>
+
+                    <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
+
+                    <!-- System Prompt Config -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+                        <h5 class="mb-0">Configuration du Prompt</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#systemPromptCollapse" aria-expanded="false" aria-controls="systemPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="systemPromptCollapse">
+                        <textarea id="systemPrompt" class="form-control mb-4" rows="5">{{ system_prompt }}</textarea>
+                    </div>
+
+                    <!-- Translation Prompt Config -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="translationPromptCollapse">
+                        <textarea id="translationPrompt" class="form-control mb-4" rows="5">{{ translation_prompt }}</textarea>
+                    </div>
+
+                    <!-- Email Prompt Config -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="emailPromptCollapse">
+                        <textarea id="emailPrompt" class="form-control mb-4" rows="5">{{ email_prompt }}</textarea>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+{% include 'translation_modal.html' %}
+{% include 'prompt_modal.html' %}
+{% include 'settings_modal.html' %}
+
 {% endblock %}
