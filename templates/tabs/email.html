@@ -1,0 +1,67 @@
+<div class="tab-pane fade" id="email" role="tabpanel">
+    <!-- Email Type Selection -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Type d'email:</h5>
+            <select id="emailType" class="form-select">
+                <option value="">Sélectionnez un type d'email...</option>
+                <option value="Demande">Demande</option>
+                <option value="Réponse">Réponse</option>
+                <option value="Information">Information</option>
+                <option value="Réclamation">Réclamation</option>
+                <option value="Remerciement">Remerciement</option>
+                <option value="Candidature">Candidature</option>
+                <option value="Suivi">Suivi</option>
+                <option value="Autre">Autre</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Contenu de l'email:</h5>
+            <textarea id="emailContent" class="form-control" rows="5" placeholder="Décrivez le contenu de votre email..."></textarea>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small class="text-muted">Caractères: <span id="emailContentCharCount">0</span></small>
+                <div>
+                    <small class="text-muted me-3">Mots: <span id="emailContentWordCount">0</span></small>
+                    <small class="text-muted">Paragraphes: <span id="emailContentParaCount">0</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sender Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Signature (optionnel):</h5>
+            <input type="text" id="emailSender" class="form-control" placeholder="Votre nom">
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
+
+    <!-- Output Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Email généré:</h5>
+            <div class="mb-3">
+                <label class="form-label">Objet:</label>
+                <div class="input-group">
+                    <input type="text" id="emailSubject" class="form-control" readonly>
+                    <button id="copyEmailSubject" class="btn btn-success" type="button">Copier</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Corps de l'email:</label>
+                <textarea id="emailOutput" class="form-control mb-3" rows="6" readonly></textarea>
+            </div>
+            <div class="btn-group w-100">
+                <button id="copyEmail" class="btn btn-success">Copier</button>
+                <button id="clearEmail" class="btn btn-success">Effacer</button>
+            </div>
+        </div>
+    </div>
+</div>
