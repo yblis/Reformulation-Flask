@@ -17,14 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Update provider dropdown
-            if (aiProvider) {
-                const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
-                aiProvider.value = savedProvider;
-                
-                // Show correct provider config and load models
-                showProviderConfig(savedProvider);
-                await loadProviderModels(savedProvider);
-            }
+            const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
+            aiProvider.value = savedProvider;
             
             // Update API keys and URLs
             if (data.settings) {
@@ -50,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const geminiKey = document.getElementById('geminiKey');
                 if (geminiKey && data.settings.google_api_key) {
                     geminiKey.value = data.settings.google_api_key;
+                    console.log('Setting Gemini API key:', geminiKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
                 // Groq
@@ -58,6 +53,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     groqKey.value = data.settings.groq_api_key;
                 }
             }
+            
+            // Show correct provider config and load models
+            showProviderConfig(savedProvider);
+            await loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
@@ -65,17 +64,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showProviderConfig(provider) {
-        if (!provider) return;
         providerConfigs.forEach(config => {
-            if (config) {
-                config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
-            }
+            config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
         });
     }
 
     async function loadProviderModels(provider, button = null) {
-        if (!provider) return;
-        
         let modelSelect;
         let originalButtonText = '';
         
@@ -87,13 +81,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Get the correct model select element based on provider
-            modelSelect = provider === 'ollama' 
-                ? document.getElementById('modelSelect')
-                : document.getElementById(`${provider}Model`);
+            if (provider === 'ollama') {
+                modelSelect = document.getElementById('modelSelect');
+            } else {
+                modelSelect = document.getElementById(`${provider}Model`);
+            }
 
             if (!modelSelect) {
-                console.warn(`Model select element not found for ${provider}`);
-                return;
+                throw new Error(`Model select element not found for ${provider}`);
             }
 
             // Clear existing options first
@@ -107,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
@@ -114,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
 
-            if (!data.models || !Array.isArray(data.models)) {
+            if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
                 throw new Error(`No models available for ${provider}`);
             }
 
@@ -133,11 +129,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 modelSelect.value = savedModel;
             }
 
+            showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
+
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
+            
             if (modelSelect) {
                 modelSelect.innerHTML = `<option value="">${error.message}</option>`;
             }
+            
+            showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
                 button.disabled = false;
@@ -159,11 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             try {
-                const selectedProvider = aiProvider ? aiProvider.value : null;
-                if (!selectedProvider) {
-                    throw new Error('No AI provider selected');
-                }
-
+                const selectedProvider = aiProvider.value;
                 const config = {
                     provider: selectedProvider,
                     settings: {}
@@ -173,18 +170,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const apiKeyInput = document.getElementById(`${selectedProvider}Key`);
                 const modelSelect = document.getElementById(`${selectedProvider}Model`) || document.getElementById('modelSelect');
 
+                if (selectedProvider !== 'ollama' && (!apiKeyInput || !apiKeyInput.value.trim())) {
+                    throw new Error(`${selectedProvider} API key is required`);
+                }
+
                 if (selectedProvider === 'ollama') {
-                    const ollamaUrl = document.getElementById('ollamaUrl');
-                    if (ollamaUrl && ollamaUrl.value.trim()) {
-                        config.settings.url = ollamaUrl.value.trim();
+                    const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
+                    if (!ollamaUrl) {
+                        throw new Error('Ollama URL is required');
                     }
-                } else if (apiKeyInput && apiKeyInput.value.trim()) {
+                    config.settings.url = ollamaUrl;
+                } else {
                     config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
                 if (modelSelect && modelSelect.value) {
                     config.settings.model = modelSelect.value;
                     localStorage.setItem(`${selectedProvider}Model`, modelSelect.value);
+                } else {
+                    throw new Error(`Please select a model for ${selectedProvider}`);
                 }
 
                 const response = await fetch('/api/settings', {
@@ -194,11 +198,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();
+
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to save settings');
                 }
 
                 showAlert('Configuration sauvegardée avec succès', 'success', 3000);
+                
+                // Refresh models after saving settings
+                await loadProviderModels(selectedProvider);
                 
             } catch (error) {
                 console.error('Error saving settings:', error);
@@ -219,7 +227,12 @@ document.addEventListener('DOMContentLoaded', function() {
     Object.entries(refreshButtons).forEach(([provider, button]) => {
         if (button) {
             button.addEventListener('click', async () => {
-                await loadProviderModels(provider, button);
+                try {
+                    await loadProviderModels(provider, button);
+                } catch (error) {
+                    console.error(`Error refreshing ${provider} models:`, error);
+                    showAlert(`Failed to refresh ${provider} models: ${error.message}`, 'danger', 5000);
+                }
             });
         }
     });
