@@ -146,20 +146,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle history reuse functionality
     document.querySelectorAll('.reuse-history').forEach(button => {
         button.addEventListener('click', function() {
-            // Get data from the button's data attributes
-            const context = this.dataset.context || '';
-            const text = this.dataset.text || '';
-            const tone = this.dataset.tone;
-            const format = this.dataset.format;
-            const length = this.dataset.length;
+            const historyItem = this.closest('.accordion-item');
+            const originalText = historyItem.querySelector('.original-text')?.textContent || '';
+            const context = historyItem.querySelector('.context')?.textContent || '';
+            const tone = this.getAttribute('data-tone');
+            const format = this.getAttribute('data-format');
+            const length = this.getAttribute('data-length');
 
             // Set the context and input text
             if (contextText) contextText.value = context;
-            if (inputText) inputText.value = text;
+            if (inputText) inputText.value = originalText;
 
             // Update text statistics
             updateTextStats(context, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            updateTextStats(text, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+            updateTextStats(originalText, 'inputCharCount', 'inputWordCount', 'inputParaCount');
 
             // Set the active buttons for tone, format, and length
             setActiveButton('toneGroup', tone);
