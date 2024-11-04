@@ -128,6 +128,51 @@ document.addEventListener('DOMContentLoaded', function() {
         return activeButton ? activeButton.dataset.value : '';
     }
 
+    // Handle reuse history button clicks
+    document.querySelectorAll('.reuse-history').forEach(button => {
+        button.addEventListener('click', function() {
+            // Get the reformulation tab element
+            const reformulationTab = document.getElementById('reformulation-tab');
+            
+            // Switch to reformulation tab
+            const tab = new bootstrap.Tab(reformulationTab);
+            tab.show();
+            
+            // Set the values from history
+            if (contextText) {
+                contextText.value = this.dataset.context || '';
+                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
+            }
+            
+            if (inputText) {
+                inputText.value = this.dataset.text || '';
+                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+            }
+            
+            // Set the options
+            function setActiveButton(groupId, value) {
+                const buttons = document.querySelectorAll(`#${groupId} .btn`);
+                buttons.forEach(btn => {
+                    if (btn.dataset.value === value) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            
+            setActiveButton('toneGroup', this.dataset.tone);
+            setActiveButton('formatGroup', this.dataset.format);
+            setActiveButton('lengthGroup', this.dataset.length);
+            
+            // Clear the output
+            if (outputText) {
+                outputText.value = '';
+                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
+            }
+        });
+    });
+
     if (reformulateBtn) {
         reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
