@@ -263,18 +263,15 @@
                                     <div class="card-body">{{ item.reformulated_text }}</div>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-secondary">{{ item.tone }}</span>
-                                <span class="badge bg-secondary">{{ item.format }}</span>
-                                <span class="badge bg-secondary">{{ item.length }}</span>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-success btn-sm copy-history" data-text="{{ item.reformulated_text }}">
-                                    Copier
-                                </button>
-                                <button class="btn btn-success btn-sm reuse-history" 
-                                        data-original="{{ item.original_text }}"
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-secondary">{{ item.tone }}</span>
+                                    <span class="badge bg-secondary">{{ item.format }}</span>
+                                    <span class="badge bg-secondary">{{ item.length }}</span>
+                                </div>
+                                <button class="btn btn-success reuse-history" 
                                         data-context="{{ item.context }}"
+                                        data-text="{{ item.original_text }}"
                                         data-tone="{{ item.tone }}"
                                         data-format="{{ item.format }}"
                                         data-length="{{ item.length }}">
@@ -290,138 +287,8 @@
 
         <!-- Configuration Tab -->
         <div class="tab-pane fade" id="config" role="tabpanel">
-            <!-- Provider Selection -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Sélection du Fournisseur d'IA</h5>
-                    <select id="aiProvider" class="form-select">
-                        <option value="ollama">Ollama</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="groq">Groq</option>
-                        <option value="anthropic">Anthropic</option>
-                        <option value="gemini">Google Gemini</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Ollama Config -->
-            <div id="ollamaConfig" class="provider-config card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Ollama</h5>
-                    <div class="mb-4">
-                        <label class="form-label">URL d'Ollama:</label>
-                        <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Modèle:</label>
-                        <select id="modelSelect" class="form-select"></select>
-                    </div>
-                    <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
-
-            <!-- OpenAI Config -->
-            <div id="openaiConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration OpenAI</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API OpenAI:</label>
-                        <input type="password" id="openaiKey" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="openaiModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
-
-            <!-- Groq Config -->
-            <div id="groqConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Groq</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Groq:</label>
-                        <input type="password" id="groqKey" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="groqModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
-
-            <!-- Anthropic Config -->
-            <div id="anthropicConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Anthropic</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Anthropic:</label>
-                        <input type="password" id="anthropicKey" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="anthropicModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
-
-            <!-- Google Gemini Config -->
-            <div id="geminiConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Google Gemini</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Google:</label>
-                        <input type="password" id="geminiKey" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="geminiModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
-
-            <!-- Prompts Configuration -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système:</label>
-                        <textarea id="systemPrompt" class="form-control" rows="8">{{ system_prompt }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt de Traduction</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système pour la traduction:</label>
-                        <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration du Prompt de Génération d'Email</h5>
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système pour la génération d'email:</label>
-                        <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
+            <!-- Configuration content here -->
         </div>
     </div>
 </div>
-
-{% include 'translation_modal.html' %}
-{% include 'prompt_modal.html' %}
-{% include 'settings_modal.html' %}
-
 {% endblock %}
