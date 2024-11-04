@@ -54,6 +54,23 @@ def index():
                          translation_history=[h.to_dict() for h in translation_history],
                          email_history=[h.to_dict() for h in email_history])
 
+@app.route('/api/status')
+def check_status():
+    try:
+        preferences = reload_env_config()
+        url = request.args.get('url', preferences.ollama_url)
+        
+        try:
+            response = requests.get(f"{url}/api/version", timeout=5)
+            if response.status_code == 200:
+                return jsonify({"status": "connected"})
+        except (ConnectionError, Timeout):
+            pass
+            
+        return jsonify({"status": "disconnected"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/history/reset', methods=['POST'])
 def reset_history():
     try:
@@ -200,7 +217,6 @@ def reformulate():
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            # Save to history
             history = ReformulationHistory(
                 original_text=text,
                 context=context,
@@ -291,7 +307,6 @@ def translate():
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            # Save to translation history
             history = TranslationHistory(
                 original_text=text,
                 translated_text=response_text,
@@ -379,13 +394,11 @@ def generate_email():
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            # Extract subject from response
             lines = response_text.split('\n')
             subject_line = next((line for line in lines if line.lower().startswith('objet:')), '')
             subject = subject_line[6:].strip() if subject_line else ''
             body = '\n'.join(line for line in lines if not line.lower().startswith('objet:')).strip()
 
-            # Save to email history
             history = EmailHistory(
                 email_type=email_type,
                 content=content,
