@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing code remains the same until history handling...
+    // Text statistics function
+    window.updateTextStats = function(text, charCountId, wordCountId, paraCountId) {
+        const charCount = document.getElementById(charCountId);
+        const wordCount = document.getElementById(wordCountId);
+        const paraCount = document.getElementById(paraCountId);
+        
+        if (charCount) charCount.textContent = text.length;
+        if (wordCount) wordCount.textContent = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+        if (paraCount) paraCount.textContent = text.trim().split(/\n\s*\n/).filter(para => para.length > 0).length;
+    }
 
     // History handling
     const historyAccordion = document.getElementById('historyAccordion');
@@ -41,28 +50,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Fill in the appropriate form based on type
                 switch (type) {
                     case 'reformulation':
+                        const contextText = document.getElementById('contextText');
+                        const inputText = document.getElementById('inputText');
+                        
                         if (contextText) contextText.value = button.dataset.context || '';
                         if (inputText) inputText.value = button.dataset.text || '';
                         
                         // Set tone, format, and length
-                        setActiveButton('toneGroup', button.dataset.tone);
-                        setActiveButton('formatGroup', button.dataset.format);
-                        setActiveButton('lengthGroup', button.dataset.length);
+                        const toneButtons = document.querySelectorAll('#toneGroup .btn');
+                        const formatButtons = document.querySelectorAll('#formatGroup .btn');
+                        const lengthButtons = document.querySelectorAll('#lengthGroup .btn');
+                        
+                        setButtonsByValue(toneButtons, button.dataset.tone);
+                        setButtonsByValue(formatButtons, button.dataset.format);
+                        setButtonsByValue(lengthButtons, button.dataset.length);
                         
                         // Update statistics
-                        updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-                        updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+                        if (contextText) updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
+                        if (inputText) updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
                         break;
                         
                     case 'translation':
+                        const translationInput = document.getElementById('translationInput');
                         if (translationInput) {
                             translationInput.value = button.dataset.text || '';
                             updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
                         }
-                        setActiveButton('targetLanguageGroup', button.dataset.targetLanguage);
+                        
+                        // Set target language
+                        const langButtons = document.querySelectorAll('#targetLanguageGroup .btn');
+                        setButtonsByValue(langButtons, button.dataset.targetLanguage);
                         break;
                         
                     case 'email':
+                        const emailType = document.getElementById('emailType');
+                        const emailContent = document.getElementById('emailContent');
+                        const emailSender = document.getElementById('emailSender');
+                        
                         if (emailType) emailType.value = button.dataset.emailType || '';
                         if (emailContent) {
                             emailContent.value = button.dataset.text || '';
@@ -88,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         // Show success message
                         showAlert('Historique effacé avec succès', 'success');
+                        // Reload the page to refresh history
+                        window.location.reload();
                     } else {
                         throw new Error('Failed to reset history');
                     }
@@ -99,12 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Helper function to set active button in a button group
-    function setActiveButton(groupId, value) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-        
-        const buttons = group.querySelectorAll('.btn');
+    // Helper function to set buttons by value
+    function setButtonsByValue(buttons, value) {
         buttons.forEach(button => {
             if (button.dataset.value === value) {
                 button.classList.add('active');
@@ -133,4 +155,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }, duration);
         }
     }
+
+    // Add input event listeners for text statistics
+    const textAreas = {
+        'contextText': ['contextCharCount', 'contextWordCount', 'contextParaCount'],
+        'inputText': ['inputCharCount', 'inputWordCount', 'inputParaCount'],
+        'translationInput': ['translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount'],
+        'translationOutput': ['translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount'],
+        'emailContent': ['emailContentCharCount', 'emailContentWordCount', 'emailContentParaCount']
+    };
+
+    Object.entries(textAreas).forEach(([id, counters]) => {
+        const textarea = document.getElementById(id);
+        if (textarea) {
+            textarea.addEventListener('input', () => {
+                updateTextStats(textarea.value, ...counters);
+            });
+            // Initial count
+            updateTextStats(textarea.value, ...counters);
+        }
+    });
 });
