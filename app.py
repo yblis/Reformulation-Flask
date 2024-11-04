@@ -71,6 +71,95 @@ def reload_env_config():
     db.session.commit()
     return preferences
 
+@app.route('/api/models/groq')
+def get_groq_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.groq_api_key:
+            return jsonify({"error": "Groq API key not configured"}), 401
+            
+        try:
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {preferences.groq_api_key}"}
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+                
+            data = response.json()
+            return jsonify({
+                "models": [{
+                    "id": model["id"], 
+                    "name": model["id"]
+                } for model in data["data"]]
+            })
+        except Exception as e:
+            return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/models/gemini')
+def get_gemini_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.google_api_key:
+            return jsonify({"error": "Google API key not configured"}), 401
+            
+        # Return static list of available models
+        models = [
+            {"id": "gemini-pro", "name": "Gemini Pro"}
+        ]
+        
+        return jsonify({"models": models})
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch Gemini models: {str(e)}"}), 500
+
+@app.route('/api/models/openai')
+def get_openai_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.openai_api_key:
+            return jsonify({"error": "OpenAI API key not configured"}), 401
+            
+        try:
+            client = OpenAI(api_key=preferences.openai_api_key)
+            models = client.models.list()
+            
+            # Filter for GPT models only
+            gpt_models = [{
+                "id": model.id,
+                "name": model.id
+            } for model in models if "gpt" in model.id.lower()]
+            
+            return jsonify({"models": gpt_models})
+            
+        except Exception as e:
+            return jsonify({"error": f"Failed to fetch OpenAI models: {str(e)}"}), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/models/anthropic')
+def get_anthropic_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.anthropic_api_key:
+            return jsonify({"error": "Anthropic API key not configured"}), 401
+            
+        # Return static list of available models
+        models = [
+            {"id": "claude-3-opus-20240229", "name": "Claude 3 Opus"},
+            {"id": "claude-3-sonnet-20240229", "name": "Claude 3 Sonnet"},
+            {"id": "claude-2.1", "name": "Claude 2.1"}
+        ]
+        
+        return jsonify({"models": models})
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch Anthropic models: {str(e)}"}), 500
+
 @app.route('/')
 def index():
     preferences = reload_env_config()
