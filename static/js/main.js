@@ -30,12 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
     Object.entries(textAreas).forEach(([textAreaId, countIds]) => {
         const textArea = document.getElementById(textAreaId);
         if (textArea) {
-            // Initial count
-            updateTextStats(textArea.value, ...countIds);
-            
-            // Update on input
+            updateTextStats(textArea.value || '', ...countIds);
             textArea.addEventListener('input', () => {
-                updateTextStats(textArea.value, ...countIds);
+                updateTextStats(textArea.value || '', ...countIds);
             });
         }
     });
@@ -47,9 +44,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const reformulateBtn = document.getElementById('reformulateBtn');
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const clearHistory = document.getElementById('clearHistory');
+
+    // Handle reuse history button clicks
+    document.querySelectorAll('.reuse-history').forEach(button => {
+        button.addEventListener('click', function() {
+            const reformulationTab = document.getElementById('reformulation-tab');
+            if (!reformulationTab) return;
+
+            const tab = new bootstrap.Tab(reformulationTab);
+            tab.show();
+            
+            if (contextText && this.dataset.context !== undefined) {
+                contextText.value = this.dataset.context || '';
+                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
+            }
+            
+            if (inputText && this.dataset.text !== undefined) {
+                inputText.value = this.dataset.text || '';
+                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+            }
+            
+            // Set the formatting options
+            function setActiveButton(groupId, value) {
+                const buttons = document.querySelectorAll(`#${groupId} .btn`);
+                if (!buttons.length) return;
+                
+                buttons.forEach(btn => {
+                    if (btn.dataset.value === value) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            if (this.dataset.tone) setActiveButton('toneGroup', this.dataset.tone);
+            if (this.dataset.format) setActiveButton('formatGroup', this.dataset.format);
+            if (this.dataset.length) setActiveButton('lengthGroup', this.dataset.length);
+            
+            if (outputText) {
+                outputText.value = '';
+                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
+            }
+
+            showAlert('Texte et options chargés avec succès', 'success', 2000);
+        });
+    });
 
     // Clear History Button
-    const clearHistory = document.getElementById('clearHistory');
     if (clearHistory) {
         clearHistory.addEventListener('click', async () => {
             if (confirm('Êtes-vous sûr de vouloir supprimer tout l'historique ?')) {
@@ -72,55 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Handle reuse history button clicks
-    document.querySelectorAll('.reuse-history').forEach(button => {
-        button.addEventListener('click', function() {
-            // Get the reformulation tab element and show it
-            const reformulationTab = document.getElementById('reformulation-tab');
-            const tab = new bootstrap.Tab(reformulationTab);
-            tab.show();
-            
-            // Set the context and input text
-            if (contextText) {
-                contextText.value = this.dataset.context || '';
-                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            }
-            
-            if (inputText) {
-                inputText.value = this.dataset.text || '';
-                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
-            }
-            
-            // Set the formatting options
-            const toneButtons = document.querySelectorAll('#toneGroup .btn');
-            const formatButtons = document.querySelectorAll('#formatGroup .btn');
-            const lengthButtons = document.querySelectorAll('#lengthGroup .btn');
-            
-            function setActiveButton(buttons, value) {
-                buttons.forEach(btn => {
-                    if (btn.dataset.value === value) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-
-            setActiveButton(toneButtons, this.dataset.tone);
-            setActiveButton(formatButtons, this.dataset.format);
-            setActiveButton(lengthButtons, this.dataset.length);
-            
-            // Clear the output
-            if (outputText) {
-                outputText.value = '';
-                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
-            }
-
-            // Show confirmation message
-            showAlert('Texte et options chargés avec succès', 'success', 2000);
-        });
-    });
 
     // Status check interval
     let lastStatus = 'unknown';
@@ -152,12 +146,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const isConnected = status === 'connected';
         const buttons = document.querySelectorAll('.requires-ollama');
         buttons.forEach(button => {
-            button.disabled = !isConnected;
-            button.title = !isConnected ? "Service Ollama non disponible" : "";
+            if (button) {
+                button.disabled = !isConnected;
+                button.title = !isConnected ? "Service Ollama non disponible" : "";
+            }
         });
 
         const statusMessage = document.querySelector('.status-message');
-        
         if (!isConnected && lastStatus !== 'unknown') {
             const savedUrl = localStorage.getItem('ollamaUrl');
             if (!savedUrl || !checkOllamaStatus()) {
@@ -205,8 +200,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reformulateBtn) {
         reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
+            if (!inputText) return;
+            
             const text = inputText.value.trim();
-            const context = contextText.value.trim();
+            const context = contextText ? contextText.value.trim() : '';
             
             if (!text) {
                 showAlert('Veuillez entrer un texte à reformuler.', 'warning', 3000);
@@ -219,7 +216,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             reformulateBtn.disabled = true;
             reformulateBtn.textContent = 'En cours...';
-            outputText.value = "Reformulation en cours...";
+            
+            if (outputText) {
+                outputText.value = "Reformulation en cours...";
+            }
 
             try {
                 const response = await fetch('/api/reformulate', {
@@ -237,17 +237,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();
-                if (response.ok) {
+                if (response.ok && outputText) {
                     outputText.value = data.text;
                     updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
                     showAlert('Texte reformulé avec succès', 'success', 2000);
-                } else {
+                } else if (outputText) {
                     outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
                     showAlert(data.error || 'Une erreur est survenue', 'danger', 5000);
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                outputText.value = "Erreur de connexion. Veuillez réessayer.";
+                if (outputText) {
+                    outputText.value = "Erreur de connexion. Veuillez réessayer.";
+                }
                 showAlert('Erreur de connexion', 'danger', 5000);
             } finally {
                 reformulateBtn.disabled = false;
@@ -258,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
+            if (!outputText) return;
             const text = outputText.value;
             if (!text) return;
 
