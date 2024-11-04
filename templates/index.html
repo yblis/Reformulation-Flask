@@ -269,7 +269,8 @@
                                     <span class="badge bg-secondary">{{ item.format }}</span>
                                     <span class="badge bg-secondary">{{ item.length }}</span>
                                 </div>
-                                <button class="btn btn-success btn-sm reuse-history"
+                                <button class="btn btn-success btn-sm reuse-history" 
+                                        data-id="{{ item.id }}"
                                         data-text="{{ item.original_text }}"
                                         data-context="{{ item.context }}"
                                         data-tone="{{ item.tone }}"
@@ -282,6 +283,11 @@
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+
+            <!-- Add Clear History Button -->
+            <div class="d-flex justify-content-end mt-3">
+                <button id="clearHistory" class="btn btn-danger">Réinitialiser l'historique</button>
             </div>
         </div>
 
