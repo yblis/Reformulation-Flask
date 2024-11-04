@@ -128,53 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return activeButton ? activeButton.dataset.value : '';
     }
 
-    // Set active button in a group
-    function setActiveButton(groupId, value) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-
-        const buttons = group.querySelectorAll('.btn');
-        buttons.forEach(button => {
-            if (button.dataset.value === value) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        });
-    }
-
-    // Handle history reuse functionality
-    document.querySelectorAll('.reuse-history').forEach(button => {
-        button.addEventListener('click', function() {
-            const historyItem = this.closest('.accordion-item');
-            const originalText = historyItem.querySelector('.original-text')?.textContent || '';
-            const context = historyItem.querySelector('.context')?.textContent || '';
-            const tone = this.getAttribute('data-tone');
-            const format = this.getAttribute('data-format');
-            const length = this.getAttribute('data-length');
-
-            // Set the context and input text
-            if (contextText) contextText.value = context;
-            if (inputText) inputText.value = originalText;
-
-            // Update text statistics
-            updateTextStats(context, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            updateTextStats(originalText, 'inputCharCount', 'inputWordCount', 'inputParaCount');
-
-            // Set the active buttons for tone, format, and length
-            setActiveButton('toneGroup', tone);
-            setActiveButton('formatGroup', format);
-            setActiveButton('lengthGroup', length);
-
-            // Switch to the reformulation tab
-            const reformulationTab = document.querySelector('#reformulation-tab');
-            if (reformulationTab) {
-                const tab = new bootstrap.Tab(reformulationTab);
-                tab.show();
-            }
-        });
-    });
-
     if (reformulateBtn) {
         reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
