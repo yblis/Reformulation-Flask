@@ -27,49 +27,45 @@ document.addEventListener('DOMContentLoaded', function() {
         return activeButton ? activeButton.dataset.value : 'Anglais';
     }
 
-    if (translateText && translationInput && translationOutput) {
-        translateText.addEventListener('click', async function() {
-            const text = translationInput.value.trim();
-            if (!text) return;
+    translateText.addEventListener('click', async function() {
+        const text = translationInput.value.trim();
+        if (!text) return;
 
-            translateText.disabled = true;
-            translateText.textContent = 'En cours...';
+        translateText.disabled = true;
+        translateText.textContent = 'En cours...';
 
-            try {
-                const response = await fetch('/api/translate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        language: getSelectedLanguage()
-                    })
-                });
+        try {
+            const response = await fetch('/api/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: text,
+                    language: getSelectedLanguage()
+                })
+            });
 
-                const data = await response.json();
-                if (data.error) {
-                    translationOutput.value = `Erreur: ${data.error}`;
-                } else {
-                    translationOutput.value = data.text;
-                }
-            } catch (error) {
-                translationOutput.value = `Erreur: ${error.message}`;
-            } finally {
-                translateText.disabled = false;
-                translateText.textContent = 'Traduire';
+            const data = await response.json();
+            if (data.error) {
+                translationOutput.value = `Erreur: ${data.error}`;
+            } else {
+                translationOutput.value = data.text;
             }
-        });
-    }
+        } catch (error) {
+            translationOutput.value = `Erreur: ${error.message}`;
+        } finally {
+            translateText.disabled = false;
+            translateText.textContent = 'Traduire';
+        }
+    });
 
-    if (copyTranslation && translationOutput) {
-        copyTranslation.addEventListener('click', function() {
-            translationOutput.select();
-            document.execCommand('copy');
-        });
-    }
+    copyTranslation.addEventListener('click', function() {
+        translationOutput.select();
+        document.execCommand('copy');
+    });
 
-    if (clearTranslation && translationInput && translationOutput) {
+    if (clearTranslation) {
         clearTranslation.addEventListener('click', () => {
             translationInput.value = '';
             translationOutput.value = '';

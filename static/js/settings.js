@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadSavedSettings() {
         try {
+            // Fetch current settings from backend
             const response = await fetch('/api/settings');
             const data = await response.json();
             
@@ -16,32 +17,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Update provider dropdown
-            if (aiProvider) {
-                const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
-                aiProvider.value = savedProvider;
-                
-                // Show correct provider config and load models
-                showProviderConfig(savedProvider);
-                await loadProviderModels(savedProvider);
-            }
+            const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
+            aiProvider.value = savedProvider;
             
-            // Add null checks for all element access
+            // Update API keys and URLs
             if (data.settings) {
-                const elements = {
-                    'ollamaUrl': data.settings.ollama_url,
-                    'openaiKey': data.settings.openai_api_key,
-                    'anthropicKey': data.settings.anthropic_api_key,
-                    'geminiKey': data.settings.google_api_key,
-                    'groqKey': data.settings.groq_api_key
-                };
-
-                for (const [id, value] of Object.entries(elements)) {
-                    const element = document.getElementById(id);
-                    if (element && value) {
-                        element.value = value;
-                    }
+                // Ollama URL
+                const ollamaUrl = document.getElementById('ollamaUrl');
+                if (ollamaUrl && data.settings.ollama_url) {
+                    ollamaUrl.value = data.settings.ollama_url;
+                }
+                
+                // OpenAI
+                const openaiKey = document.getElementById('openaiKey');
+                if (openaiKey && data.settings.openai_api_key) {
+                    openaiKey.value = data.settings.openai_api_key;
+                }
+                
+                // Anthropic
+                const anthropicKey = document.getElementById('anthropicKey');
+                if (anthropicKey && data.settings.anthropic_api_key) {
+                    anthropicKey.value = data.settings.anthropic_api_key;
+                }
+                
+                // Gemini
+                const geminiKey = document.getElementById('geminiKey');
+                if (geminiKey && data.settings.google_api_key) {
+                    geminiKey.value = data.settings.google_api_key;
+                    console.log('Setting Gemini API key:', geminiKey.value ? '[HIDDEN]' : 'not set');
+                }
+                
+                // Groq
+                const groqKey = document.getElementById('groqKey');
+                if (groqKey && data.settings.groq_api_key) {
+                    groqKey.value = data.settings.groq_api_key;
                 }
             }
+            
+            // Show correct provider config and load models
+            showProviderConfig(savedProvider);
+            await loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
@@ -87,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
@@ -144,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             try {
-                const selectedProvider = aiProvider ? aiProvider.value : 'ollama';
+                const selectedProvider = aiProvider.value;
                 const config = {
                     provider: selectedProvider,
                     settings: {}
@@ -159,14 +175,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (selectedProvider === 'ollama') {
-                    const ollamaUrl = document.getElementById('ollamaUrl');
-                    if (ollamaUrl && !ollamaUrl.value.trim()) {
+                    const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
+                    if (!ollamaUrl) {
                         throw new Error('Ollama URL is required');
                     }
-                    if (ollamaUrl) {
-                        config.settings.url = ollamaUrl.value.trim();
-                    }
-                } else if (apiKeyInput) {
+                    config.settings.url = ollamaUrl;
+                } else {
                     config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
