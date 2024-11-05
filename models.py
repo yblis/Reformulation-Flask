@@ -93,3 +93,23 @@ class ReformulationHistory(db.Model):
             'length': self.length,
             'created_at': self.created_at.isoformat()
         }
+
+class EmailHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email_type = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    sender = db.Column(db.String(100))
+    generated_subject = db.Column(db.Text)
+    generated_email = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email_type': self.email_type,
+            'content': self.content,
+            'sender': self.sender,
+            'generated_subject': self.generated_subject,
+            'generated_email': self.generated_email,
+            'created_at': self.created_at.isoformat()
+        }

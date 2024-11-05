@@ -215,17 +215,20 @@
                 <button id="resetHistory" class="btn btn-success">Réinitialiser l'historique</button>
             </div>
             <div class="accordion" id="historyAccordion">
-                {% for item in history %}
+                {% for item in reformulation_history %}
                 <div class="accordion-item mb-3">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#history-{{ item.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reformulation-{{ item.id }}">
                             <div class="d-flex justify-content-between w-100 me-3">
-                                <div class="text-truncate">{{ item.original_text[:50] }}...</div>
+                                <div class="text-truncate">
+                                    <span class="badge bg-primary me-2">Reformulation</span>
+                                    {{ item.original_text[:50] }}...
+                                </div>
                                 <small class="text-muted ms-2">{{ item.created_at }}</small>
                             </div>
                         </button>
                     </h2>
-                    <div id="history-{{ item.id }}" class="accordion-collapse collapse">
+                    <div id="reformulation-{{ item.id }}" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             {% if item.context %}
                             <div class="mb-3">
@@ -260,6 +263,64 @@
                                         data-tone="{{ item.tone }}"
                                         data-format="{{ item.format }}"
                                         data-length="{{ item.length }}">
+                                    Réutiliser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for item in email_history %}
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#email-{{ item.id }}">
+                            <div class="d-flex justify-content-between w-100 me-3">
+                                <div class="text-truncate">
+                                    <span class="badge bg-success me-2">Email</span>
+                                    {{ item.email_type }}
+                                </div>
+                                <small class="text-muted ms-2">{{ item.created_at }}</small>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="email-{{ item.id }}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <h6>Type d'email:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.email_type }}</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h6>Contenu et contexte:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.content }}</div>
+                                </div>
+                            </div>
+                            {% if item.sender %}
+                            <div class="mb-3">
+                                <h6>Expéditeur:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.sender }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <h6>Email généré:</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <strong>Objet:</strong> {{ item.generated_subject }}<br><br>
+                                        {{ item.generated_email }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-success btn-sm reuse-email" 
+                                        data-id="{{ item.id }}"
+                                        data-type="{{ item.email_type }}"
+                                        data-content="{{ item.content }}"
+                                        data-sender="{{ item.sender }}">
                                     Réutiliser
                                 </button>
                             </div>

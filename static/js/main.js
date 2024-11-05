@@ -104,6 +104,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    document.querySelectorAll('.reuse-email').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const emailTab = document.querySelector('#email-tab');
+            if (emailTab) {
+                const tab = new bootstrap.Tab(emailTab);
+                tab.show();
+            }
+
+            const emailType = document.getElementById('emailType');
+            const emailContent = document.getElementById('emailContent');
+            const emailSender = document.getElementById('emailSender');
+            const emailSubject = document.getElementById('emailSubject');
+            const emailOutput = document.getElementById('emailOutput');
+            
+            if (emailType) emailType.value = this.dataset.type || '';
+            if (emailContent) emailContent.value = this.dataset.content || '';
+            if (emailSender) emailSender.value = this.dataset.sender || '';
+            if (emailSubject) emailSubject.value = '';
+            if (emailOutput) emailOutput.value = '';
+        });
+    });
+
     const resetHistory = document.getElementById('resetHistory');
     if (resetHistory) {
         resetHistory.addEventListener('click', async () => {
