@@ -138,46 +138,7 @@
 
         <!-- Translation Tab -->
         <div class="tab-pane fade" id="translation" role="tabpanel">
-            <div class='card mb-4'>
-                <div class='card-body'>
-                    <h5 class='mb-3'>Texte à traduire:</h5>
-                    <textarea id='translationInput' class='form-control mb-4' rows='5' placeholder='Entrez votre texte ici...'></textarea>
-                    <div class='d-flex justify-content-between align-items-center mt-2 mb-4'>
-                        <small class='text-muted'>Caractères: <span id='translationInputCharCount'>0</span></small>
-                        <div>
-                            <small class='text-muted me-3'>Mots: <span id='translationInputWordCount'>0</span></small>
-                            <small class='text-muted'>Paragraphes: <span id='translationInputParaCount'>0</span></small>
-                        </div>
-                    </div>
-
-                    <h5 class='mb-3'>Traduire vers:</h5>
-                    <div id="targetLanguageGroup" class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
-                    </div>
-
-                    <button id='translateText' class='btn btn-success w-100 mb-4'>Traduire</button>
-
-                    <h5 class='mb-3'>Traduction:</h5>
-                    <textarea id='translationOutput' class='form-control mb-3' rows='5' readonly></textarea>
-                    <div class='d-flex justify-content-between align-items-center mb-3'>
-                        <small class='text-muted'>Caractères: <span id='translationOutputCharCount'>0</span></small>
-                        <div>
-                            <small class='text-muted me-3'>Mots: <span id='translationOutputWordCount'>0</span></small>
-                            <small class='text-muted'>Paragraphes: <span id='translationOutputParaCount'>0</span></small>
-                        </div>
-                    </div>
-
-                    <div class='btn-group w-100'>
-                        <button id='copyTranslation' class='btn btn-success'>Copier</button>
-                        <button id='clearTranslation' class='btn btn-success'>Effacer</button>
-                    </div>
-                </div>
-            </div>
+            {% include 'translation_modal.html' %}
         </div>
 
         <!-- Email Generator Tab -->
@@ -194,6 +155,9 @@
                     <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
                     
                     <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
+
+                    <h5 class="mb-3">Objet:</h5>
+                    <input type="text" id="emailSubject" class="form-control mb-4" readonly>
                     
                     <h5 class="mb-3">Email généré:</h5>
                     <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
@@ -271,113 +235,8 @@
         <div class="tab-pane fade" id="config" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Fournisseur d'IA</h5>
-                    <select id="aiProvider" class="form-select mb-4">
-                        <option value="ollama">Ollama (Local)</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="anthropic">Anthropic</option>
-                        <option value="groq">Groq</option>
-                        <option value="gemini">Google Gemini</option>
-                    </select>
-
-                    <!-- Provider Configs -->
-                    <!-- Ollama Config -->
-                    <div id="ollamaConfig" class="provider-config">
-                        <div class="mb-3">
-                            <label class="form-label">URL d'Ollama:</label>
-                            <input type="text" id="ollamaUrl" class="form-control" placeholder="http://localhost:11434">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="modelSelect" class="form-select"></select>
-                        </div>
-                        <button id="refreshModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- OpenAI Config -->
-                    <div id="openaiConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API OpenAI:</label>
-                            <input type="password" id="openaiKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="openaiModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshOpenaiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Anthropic Config -->
-                    <div id="anthropicConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Anthropic:</label>
-                            <input type="password" id="anthropicKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="anthropicModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshAnthropicModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Groq Config -->
-                    <div id="groqConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Groq:</label>
-                            <input type="password" id="groqKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="groqModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshGroqModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Gemini Config -->
-                    <div id="geminiConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Google:</label>
-                            <input type="password" id="geminiKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="geminiModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshGeminiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
-
-                    <!-- Prompts -->
-                    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-                        <h5 class="mb-0">Configuration du Prompt</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#systemPromptCollapse" aria-expanded="false" aria-controls="systemPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="collapse" id="systemPromptCollapse">
-                        <textarea id="systemPrompt" class="form-control mb-4" rows="5">{{ system_prompt }}</textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="collapse" id="translationPromptCollapse">
-                        <textarea id="translationPrompt" class="form-control mb-4" rows="5">{{ translation_prompt }}</textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="collapse" id="emailPromptCollapse">
-                        <textarea id="emailPrompt" class="form-control mb-4" rows="5">{{ email_prompt }}</textarea>
-                    </div>
+                    <!-- Configuration content -->
+                    {% include 'settings_modal.html' %}
                 </div>
             </div>
         </div>

@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const emailTab = document.getElementById('email');
     const emailType = document.getElementById('emailType');
     const emailContent = document.getElementById('emailContent');
     const emailSender = document.getElementById('emailSender');
@@ -6,9 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailOutput = document.getElementById('emailOutput');
     const generateEmail = document.getElementById('generateEmail');
     const copyEmail = document.getElementById('copyEmail');
-    const copyEmailSubject = document.getElementById('copyEmailSubject');
     const clearEmail = document.getElementById('clearEmail');
     const emailPrompt = document.getElementById('emailPrompt');
+
+    // Only proceed if we're on the email tab
+    if (!emailTab) return;
 
     // Load saved email prompt from localStorage
     if (emailPrompt) {
@@ -21,19 +25,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (generateEmail) {
         generateEmail.classList.add('requires-ollama');
         generateEmail.addEventListener('click', async function() {
+            if (!emailType || !emailContent || !emailOutput) return;
+            
             const type = emailType.value.trim();
             const content = emailContent.value.trim();
-            const sender = emailSender.value.trim();
+            const sender = emailSender ? emailSender.value.trim() : '';
             
             if (!type || !content) {
-                emailOutput.value = "Veuillez remplir tous les champs.";
+                if (emailOutput) emailOutput.value = "Veuillez remplir tous les champs.";
                 return;
             }
 
             generateEmail.disabled = true;
             generateEmail.textContent = 'En cours...';
-            emailOutput.value = "Génération de l'email en cours...";
-            emailSubject.value = "";
+            if (emailOutput) emailOutput.value = "Génération de l'email en cours...";
+            if (emailSubject) emailSubject.value = "";
 
             try {
                 const response = await fetch('/api/generate-email', {
@@ -54,19 +60,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     const lines = data.text.split('\n');
                     const subjectLine = lines.find(line => line.toLowerCase().startsWith('objet:'));
                     
-                    if (subjectLine) {
+                    if (subjectLine && emailSubject) {
                         emailSubject.value = subjectLine.substring(6).trim();
-                        emailOutput.value = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
+                        if (emailOutput) {
+                            emailOutput.value = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
+                        }
                     } else {
-                        emailSubject.value = "";
-                        emailOutput.value = data.text;
+                        if (emailSubject) emailSubject.value = "";
+                        if (emailOutput) emailOutput.value = data.text;
                     }
                 } else {
-                    emailOutput.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
+                    if (emailOutput) emailOutput.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                emailOutput.value = "Erreur de connexion. Veuillez réessayer.";
+                if (emailOutput) emailOutput.value = "Erreur de connexion. Veuillez réessayer.";
             } finally {
                 generateEmail.disabled = false;
                 generateEmail.textContent = "Générer l'email";
@@ -76,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (copyEmail) {
         copyEmail.addEventListener('click', async () => {
+            if (!emailOutput) return;
             const text = emailOutput.value;
             if (!text) return;
 
@@ -92,31 +101,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (copyEmailSubject) {
-        copyEmailSubject.addEventListener('click', async () => {
-            const text = emailSubject.value;
-            if (!text) return;
-
-            try {
-                await navigator.clipboard.writeText(text);
-                const originalText = copyEmailSubject.textContent;
-                copyEmailSubject.textContent = 'Copié!';
-                setTimeout(() => {
-                    copyEmailSubject.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Erreur lors de la copie:', err);
-            }
-        });
-    }
-
     if (clearEmail) {
         clearEmail.addEventListener('click', () => {
-            emailType.value = '';
-            emailContent.value = '';
-            emailSender.value = '';
-            emailSubject.value = '';
-            emailOutput.value = '';
+            if (emailType) emailType.value = '';
+            if (emailContent) emailContent.value = '';
+            if (emailSender) emailSender.value = '';
+            if (emailSubject) emailSubject.value = '';
+            if (emailOutput) emailOutput.value = '';
         });
     }
 });

@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Text statistics functions
     function countWords(text) {
         return text.trim().split(/\s+/).filter(word => word.length > 0).length;
     }
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (paraCount) paraCount.textContent = countParagraphs(text);
     }
 
-    // Setup text statistics for all textareas
     const textAreas = {
         'contextText': ['contextCharCount', 'contextWordCount', 'contextParaCount'],
         'inputText': ['inputCharCount', 'inputWordCount', 'inputParaCount'],
@@ -30,10 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
     Object.entries(textAreas).forEach(([textAreaId, countIds]) => {
         const textArea = document.getElementById(textAreaId);
         if (textArea) {
-            // Initial count
             updateTextStats(textArea.value, ...countIds);
             
-            // Update on input
             textArea.addEventListener('input', () => {
                 updateTextStats(textArea.value, ...countIds);
             });
@@ -62,21 +58,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return activeButton ? activeButton.dataset.value : '';
     }
 
-    // Handle reuse history button clicks
     document.querySelectorAll('.reuse-history').forEach(button => {
-        button.addEventListener('click', function() {
-            // Get the reformulation tab element
-            const reformulationTab = document.getElementById('reformulation-tab');
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
             
-            // Switch to reformulation tab
-            const tab = new bootstrap.Tab(reformulationTab);
-            tab.show();
-            
-            // Get the elements
+            const reformulationTab = document.querySelector('#reformulation-tab');
+            if (reformulationTab) {
+                const tab = new bootstrap.Tab(reformulationTab);
+                tab.show();
+            }
+
             const contextText = document.getElementById('contextText');
             const inputText = document.getElementById('inputText');
             
-            // Set the values from history
             if (contextText) {
                 contextText.value = this.dataset.context || '';
                 updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
@@ -87,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
             }
             
-            // Set the options
             function setActiveButton(groupId, value) {
                 const buttons = document.querySelectorAll(`#${groupId} .btn`);
                 buttons.forEach(btn => {
@@ -103,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
             setActiveButton('formatGroup', this.dataset.format);
             setActiveButton('lengthGroup', this.dataset.length);
             
-            // Clear the output
             const outputText = document.getElementById('outputText');
             if (outputText) {
                 outputText.value = '';
@@ -112,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Reset history functionality
     const resetHistory = document.getElementById('resetHistory');
     if (resetHistory) {
         resetHistory.addEventListener('click', async () => {
@@ -123,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     
                     if (response.ok) {
-                        // Clear the accordion
                         const accordion = document.getElementById('historyAccordion');
                         if (accordion) {
                             accordion.innerHTML = '';
@@ -140,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Status check interval
     let lastStatus = 'unknown';
     
     async function checkOllamaStatus() {
@@ -178,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
     checkOllamaStatus();
     setInterval(checkOllamaStatus, 30000);
 
-    // Reformulation functionality
     const reformulateBtn = document.getElementById('reformulateBtn');
     if (reformulateBtn) {
         reformulateBtn.classList.add('requires-ollama');
@@ -221,7 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 if (response.ok) {
                     outputText.value = data.text;
-                    // Update output text statistics
                     updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
                 } else {
                     outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
@@ -236,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Copy and clear functionality
     const copyBtn = document.getElementById('copyBtn');
     const clearBtn = document.getElementById('clearBtn');
 
@@ -280,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Alert functionality
     function showAlert(message, type = 'danger', duration = 5000) {
         const existingAlerts = document.querySelectorAll('.floating-alert');
         existingAlerts.forEach(alert => alert.remove());

@@ -1,10 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
+    const configTab = document.getElementById('config');
     const aiProvider = document.getElementById('aiProvider');
     const providerConfigs = document.querySelectorAll('.provider-config');
     const saveConfig = document.getElementById('saveConfig');
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
+    const emailPrompt = document.getElementById('emailPrompt');
+
+    // Only proceed if we're on the config tab
+    if (!configTab) return;
 
     async function loadSavedSettings() {
         try {
@@ -17,8 +22,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Update provider dropdown
-            const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
-            aiProvider.value = savedProvider;
+            if (aiProvider) {
+                const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
+                aiProvider.value = savedProvider;
+                
+                // Show correct provider config
+                showProviderConfig(savedProvider);
+                await loadProviderModels(savedProvider);
+            }
             
             // Update API keys and URLs
             if (data.settings) {
@@ -44,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const geminiKey = document.getElementById('geminiKey');
                 if (geminiKey && data.settings.google_api_key) {
                     geminiKey.value = data.settings.google_api_key;
-                    console.log('Setting Gemini API key:', geminiKey.value ? '[HIDDEN]' : 'not set');
                 }
                 
                 // Groq
@@ -53,10 +63,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     groqKey.value = data.settings.groq_api_key;
                 }
             }
-            
-            // Show correct provider config and load models
-            showProviderConfig(savedProvider);
-            await loadProviderModels(savedProvider);
         } catch (error) {
             console.error('Error loading settings:', error);
             showAlert(error.message || 'Failed to load settings', 'danger', 5000);
@@ -64,8 +70,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showProviderConfig(provider) {
+        if (!providerConfigs) return;
         providerConfigs.forEach(config => {
-            config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
+            if (config) {
+                config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
+            }
         });
     }
 
@@ -81,11 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Get the correct model select element based on provider
-            if (provider === 'ollama') {
-                modelSelect = document.getElementById('modelSelect');
-            } else {
-                modelSelect = document.getElementById(`${provider}Model`);
-            }
+            modelSelect = provider === 'ollama' ? 
+                document.getElementById('modelSelect') : 
+                document.getElementById(`${provider}Model`);
 
             if (!modelSelect) {
                 throw new Error(`Model select element not found for ${provider}`);
@@ -102,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            console.log(`Fetching ${provider} models...`);
             const response = await fetch(url);
             const data = await response.json();
 
@@ -160,6 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveConfig) {
         saveConfig.addEventListener('click', async function() {
             try {
+                if (!aiProvider) throw new Error('Provider selection not available');
+                
                 const selectedProvider = aiProvider.value;
                 const config = {
                     provider: selectedProvider,
@@ -175,12 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (selectedProvider === 'ollama') {
-                    const ollamaUrl = document.getElementById('ollamaUrl').value.trim();
-                    if (!ollamaUrl) {
+                    const ollamaUrl = document.getElementById('ollamaUrl');
+                    if (!ollamaUrl || !ollamaUrl.value.trim()) {
                         throw new Error('Ollama URL is required');
                     }
-                    config.settings.url = ollamaUrl;
-                } else {
+                    config.settings.url = ollamaUrl.value.trim();
+                } else if (apiKeyInput) {
                     config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
@@ -259,6 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize settings
+    // Initialize settings only if we're on the config tab
     loadSavedSettings();
 });
