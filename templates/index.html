@@ -138,7 +138,46 @@
 
         <!-- Translation Tab -->
         <div class="tab-pane fade" id="translation" role="tabpanel">
-            {% include 'translation_modal.html' %}
+            <div class='card mb-4'>
+                <div class='card-body'>
+                    <h5 class='mb-3'>Texte à traduire:</h5>
+                    <textarea id='translationInput' class='form-control mb-4' rows='5' placeholder='Entrez votre texte ici...'></textarea>
+                    <div class='d-flex justify-content-between align-items-center mt-2 mb-4'>
+                        <small class='text-muted'>Caractères: <span id='translationInputCharCount'>0</span></small>
+                        <div>
+                            <small class='text-muted me-3'>Mots: <span id='translationInputWordCount'>0</span></small>
+                            <small class='text-muted'>Paragraphes: <span id='translationInputParaCount'>0</span></small>
+                        </div>
+                    </div>
+
+                    <h5 class='mb-3'>Traduire vers:</h5>
+                    <select id='targetLanguage' class='form-select mb-4'>
+                        <option value='Anglais'>Anglais</option>
+                        <option value='Français'>Français</option>
+                        <option value='Espagnol'>Espagnol</option>
+                        <option value='Allemand'>Allemand</option>
+                        <option value='Italien'>Italien</option>
+                        <option value='Portugais'>Portugais</option>
+                    </select>
+
+                    <button id='translateText' class='btn btn-success w-100 mb-4'>Traduire</button>
+
+                    <h5 class='mb-3'>Traduction:</h5>
+                    <textarea id='translationOutput' class='form-control mb-3' rows='5' readonly></textarea>
+                    <div class='d-flex justify-content-between align-items-center mb-3'>
+                        <small class='text-muted'>Caractères: <span id='translationOutputCharCount'>0</span></small>
+                        <div>
+                            <small class='text-muted me-3'>Mots: <span id='translationOutputWordCount'>0</span></small>
+                            <small class='text-muted'>Paragraphes: <span id='translationOutputParaCount'>0</span></small>
+                        </div>
+                    </div>
+
+                    <div class='btn-group w-100'>
+                        <button id='copyTranslation' class='btn btn-success'>Copier</button>
+                        <button id='clearTranslation' class='btn btn-success'>Effacer</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Email Generator Tab -->
