@@ -71,11 +71,11 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Options de reformulation</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
-                            <i class="bi bi-chevron-down"></i>
+                            <i class="bi bi-chevron-up"></i>
                         </button>
                     </div>
                     
-                    <div class="collapse" id="optionsCollapse">
+                    <div class="collapse show" id="optionsCollapse">
                         <!-- Tone Options -->
                         <div class="mb-4">
                             <h6 class="mb-2">Ton</h6>
@@ -142,16 +142,16 @@
                 <div class="card-body">
                     <h5 class="mb-3">Texte à traduire:</h5>
                     <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
                         <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
                         <div>
                             <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
                             <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
                         </div>
                     </div>
-                    
+
                     <h5 class="mb-3">Traduire vers:</h5>
-                    <div class="btn-group" role="group" id="targetLanguageGroup">
+                    <div id="targetLanguageGroup" class="btn-group" role="group">
                         <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
                         <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
                         <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
@@ -160,7 +160,7 @@
                         <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
                     </div>
 
-                    <button id="translateText" class="btn btn-success w-100 my-4">Traduire</button>
+                    <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
 
                     <h5 class="mb-3">Traduction:</h5>
                     <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
@@ -171,7 +171,7 @@
                             <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
                         </div>
                     </div>
-                    
+
                     <div class="btn-group w-100">
                         <button id="copyTranslation" class="btn btn-success">Copier</button>
                         <button id="clearTranslation" class="btn btn-success">Effacer</button>
@@ -189,36 +189,17 @@
                     
                     <h5 class="mb-3">Contenu et contexte:</h5>
                     <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted">Caractères: <span id="emailContentCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="emailContentWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="emailContentParaCount">0</span></small>
-                        </div>
-                    </div>
-
+                    
                     <h5 class="mb-3">Prénom NOM:</h5>
                     <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
                     
                     <button id="generateEmail" class="btn btn-success w-100 mb-4">Générer l'email</button>
-                    
-                    <div class="mb-4 d-flex align-items-center gap-2">
-                        <div class="flex-grow-1">
-                            <h5 class="mb-2">Objet généré:</h5>
-                            <input type="text" id="emailSubject" class="form-control" readonly>
-                        </div>
-                        <button id="copyEmailSubject" class="btn btn-success align-self-end" style="height: 38px;">Copier</button>
-                    </div>
 
+                    <h5 class="mb-3">Objet:</h5>
+                    <input type="text" id="emailSubject" class="form-control mb-4" readonly>
+                    
                     <h5 class="mb-3">Email généré:</h5>
                     <textarea id="emailOutput" class="form-control mb-3" rows="8" readonly></textarea>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted">Caractères: <span id="emailOutputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="emailOutputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="emailOutputParaCount">0</span></small>
-                        </div>
-                    </div>
                     
                     <div class="btn-group w-100">
                         <button id="copyEmail" class="btn btn-success">Copier</button>
@@ -230,18 +211,24 @@
 
         <!-- History Tab -->
         <div class="tab-pane fade" id="history" role="tabpanel">
+            <div class="d-flex justify-content-end mb-3">
+                <button id="resetHistory" class="btn btn-success">Réinitialiser l'historique</button>
+            </div>
             <div class="accordion" id="historyAccordion">
-                {% for item in history %}
+                {% for item in reformulation_history %}
                 <div class="accordion-item mb-3">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#history-{{ item.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reformulation-{{ item.id }}">
                             <div class="d-flex justify-content-between w-100 me-3">
-                                <div class="text-truncate">{{ item.original_text[:50] }}...</div>
+                                <div class="text-truncate">
+                                    <span class="badge bg-primary me-2">Reformulation</span>
+                                    {{ item.original_text[:50] }}...
+                                </div>
                                 <small class="text-muted ms-2">{{ item.created_at }}</small>
                             </div>
                         </button>
                     </h2>
-                    <div id="history-{{ item.id }}" class="accordion-collapse collapse">
+                    <div id="reformulation-{{ item.id }}" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             {% if item.context %}
                             <div class="mb-3">
@@ -263,21 +250,77 @@
                                     <div class="card-body">{{ item.reformulated_text }}</div>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="badge bg-secondary">{{ item.tone }}</span>
-                                <span class="badge bg-secondary">{{ item.format }}</span>
-                                <span class="badge bg-secondary">{{ item.length }}</span>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-success btn-sm copy-history" data-text="{{ item.reformulated_text }}">
-                                    Copier
-                                </button>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-secondary">{{ item.tone }}</span>
+                                    <span class="badge bg-secondary">{{ item.format }}</span>
+                                    <span class="badge bg-secondary">{{ item.length }}</span>
+                                </div>
                                 <button class="btn btn-success btn-sm reuse-history" 
-                                        data-original="{{ item.original_text }}"
+                                        data-id="{{ item.id }}"
+                                        data-text="{{ item.original_text }}"
                                         data-context="{{ item.context }}"
                                         data-tone="{{ item.tone }}"
                                         data-format="{{ item.format }}"
                                         data-length="{{ item.length }}">
+                                    Réutiliser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for item in email_history %}
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#email-{{ item.id }}">
+                            <div class="d-flex justify-content-between w-100 me-3">
+                                <div class="text-truncate">
+                                    <span class="badge bg-success me-2">Email</span>
+                                    {{ item.email_type }}
+                                </div>
+                                <small class="text-muted ms-2">{{ item.created_at }}</small>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="email-{{ item.id }}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <h6>Type d'email:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.email_type }}</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h6>Contenu et contexte:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.content }}</div>
+                                </div>
+                            </div>
+                            {% if item.sender %}
+                            <div class="mb-3">
+                                <h6>Expéditeur:</h6>
+                                <div class="card">
+                                    <div class="card-body">{{ item.sender }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <h6>Email généré:</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <strong>Objet:</strong> {{ item.generated_subject }}<br><br>
+                                        {{ item.generated_email }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-success btn-sm reuse-email" 
+                                        data-id="{{ item.id }}"
+                                        data-type="{{ item.email_type }}"
+                                        data-content="{{ item.content }}"
+                                        data-sender="{{ item.sender }}">
                                     Réutiliser
                                 </button>
                             </div>
@@ -290,120 +333,95 @@
 
         <!-- Configuration Tab -->
         <div class="tab-pane fade" id="config" role="tabpanel">
-            <!-- Provider Selection -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Sélection du Fournisseur d'IA</h5>
-                    <select id="aiProvider" class="form-select">
-                        <option value="ollama">Ollama</option>
+                    <h5 class="mb-3">Fournisseur d'IA</h5>
+                    <select id="aiProvider" class="form-select mb-4">
+                        <option value="ollama">Ollama (Local)</option>
                         <option value="openai">OpenAI</option>
-                        <option value="groq">Groq</option>
                         <option value="anthropic">Anthropic</option>
+                        <option value="groq">Groq</option>
                         <option value="gemini">Google Gemini</option>
                     </select>
-                </div>
-            </div>
 
-            <!-- Ollama Config -->
-            <div id="ollamaConfig" class="provider-config card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Ollama</h5>
-                    <div class="mb-4">
-                        <label class="form-label">URL d'Ollama:</label>
-                        <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
+                    <!-- Ollama Config -->
+                    <div id="ollamaConfig" class="provider-config">
+                        <div class="mb-3">
+                            <label class="form-label">URL d'Ollama:</label>
+                            <input type="text" id="ollamaUrl" class="form-control" placeholder="http://localhost:11434">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="modelSelect" class="form-select"></select>
+                        </div>
+                        <button id="refreshModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label">Modèle:</label>
-                        <select id="modelSelect" class="form-select"></select>
-                    </div>
-                    <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
 
-            <!-- OpenAI Config -->
-            <div id="openaiConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration OpenAI</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API OpenAI:</label>
-                        <input type="password" id="openaiKey" class="form-control">
+                    <!-- OpenAI Config -->
+                    <div id="openaiConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API OpenAI:</label>
+                            <input type="password" id="openaiKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="openaiModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshOpenaiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="openaiModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
 
-            <!-- Groq Config -->
-            <div id="groqConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Groq</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Groq:</label>
-                        <input type="password" id="groqKey" class="form-control">
+                    <!-- Anthropic Config -->
+                    <div id="anthropicConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Anthropic:</label>
+                            <input type="password" id="anthropicKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="anthropicModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshAnthropicModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="groqModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
 
-            <!-- Anthropic Config -->
-            <div id="anthropicConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Anthropic</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Anthropic:</label>
-                        <input type="password" id="anthropicKey" class="form-control">
+                    <!-- Groq Config -->
+                    <div id="groqConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Groq:</label>
+                            <input type="password" id="groqKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="groqModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshGroqModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="anthropicModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
 
-            <!-- Google Gemini Config -->
-            <div id="geminiConfig" class="provider-config card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h5 class="mb-3">Configuration Google Gemini</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Clé API Google:</label>
-                        <input type="password" id="geminiKey" class="form-control">
+                    <!-- Gemini Config -->
+                    <div id="geminiConfig" class="provider-config" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Clé API Google:</label>
+                            <input type="password" id="geminiKey" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Modèle:</label>
+                            <select id="geminiModel" class="form-select"></select>
+                        </div>
+                        <button id="refreshGeminiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="geminiModel" class="form-select"></select>
-                    </div>
-                    <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                </div>
-            </div>
 
-            <!-- Prompts Configuration -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
+
+                    <!-- Prompts Configs -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
                         <h5 class="mb-0">Configuration du Prompt</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#promptConfigCollapse" aria-expanded="false" aria-controls="promptConfigCollapse">
-                            <i class="bi bi-chevron-down"></i> <!-- Icône vers le bas pour indiquer l'état -->
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#systemPromptCollapse" aria-expanded="false" aria-controls="systemPromptCollapse">
+                            <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
-                    <div class="collapse" id="promptConfigCollapse">
-                        <div class="mb-4">
-                            <label class="form-label">Prompt système:</label>
-                            <textarea id="systemPrompt" class="form-control" rows="8">{{ system_prompt }}</textarea>
-                        </div>
+                    <div class="collapse" id="systemPromptCollapse">
+                        <textarea id="systemPrompt" class="form-control mb-4" rows="5">{{ system_prompt }}</textarea>
                     </div>
-                </div>
-            </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
@@ -411,16 +429,9 @@
                         </button>
                     </div>
                     <div class="collapse" id="translationPromptCollapse">
-                        <div class="mb-4">
-                            <label class="form-label">Prompt système pour la traduction:</label>
-                            <textarea id="translationPrompt" class="form-control" rows="8">{{ translation_prompt }}</textarea>
-                        </div>
+                        <textarea id="translationPrompt" class="form-control mb-4" rows="5">{{ translation_prompt }}</textarea>
                     </div>
-                </div>
-            </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
@@ -428,22 +439,14 @@
                         </button>
                     </div>
                     <div class="collapse" id="emailPromptCollapse">
-                        <div class="mb-4">
-                            <label class="form-label">Prompt système pour la génération d'email:</label>
-                            <textarea id="emailPrompt" class="form-control" rows="8">{{ email_prompt }}</textarea>
-                        </div>
+                        <textarea id="emailPrompt" class="form-control mb-4" rows="5">{{ email_prompt }}</textarea>
                     </div>
                 </div>
             </div>
-
-
-            <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
         </div>
     </div>
 </div>
 
-{% include 'translation_modal.html' %}
 {% include 'prompt_modal.html' %}
-{% include 'settings_modal.html' %}
 
 {% endblock %}

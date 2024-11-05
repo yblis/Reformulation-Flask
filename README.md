@@ -1,6 +1,6 @@
 # Reformulateur - Text Reformulation Web Application
 
-A Flask-based web application for text reformulation, translation, and email generation using multiple AI providers and local Ollama models.
+A Flask-based web application for text reformulation, translation, and email generation using multiple AI providers and local Ollama models. 
 
 ## Features
 - Text reformulation with customizable tone, format, and length
