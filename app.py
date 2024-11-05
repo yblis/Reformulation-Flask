@@ -630,3 +630,13 @@ def generate_email():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/history/reset', methods=['POST'])
+def reset_history():
+    try:
+        ReformulationHistory.query.delete()
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -40,13 +40,105 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Elements for reformulation
-    const contextText = document.getElementById('contextText');
-    const inputText = document.getElementById('inputText');
-    const outputText = document.getElementById('outputText');
-    const reformulateBtn = document.getElementById('reformulateBtn');
-    const copyBtn = document.getElementById('copyBtn');
-    const clearBtn = document.getElementById('clearBtn');
+    function setupTagGroup(groupId) {
+        const group = document.getElementById(groupId);
+        if (!group) return;
+        
+        const buttons = group.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                buttons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    }
+
+    setupTagGroup('toneGroup');
+    setupTagGroup('formatGroup');
+    setupTagGroup('lengthGroup');
+
+    function getSelectedValue(groupId) {
+        const activeButton = document.querySelector(`#${groupId} .btn.active`);
+        return activeButton ? activeButton.dataset.value : '';
+    }
+
+    // Handle reuse history button clicks
+    document.querySelectorAll('.reuse-history').forEach(button => {
+        button.addEventListener('click', function() {
+            // Get the reformulation tab element
+            const reformulationTab = document.getElementById('reformulation-tab');
+            
+            // Switch to reformulation tab
+            const tab = new bootstrap.Tab(reformulationTab);
+            tab.show();
+            
+            // Get the elements
+            const contextText = document.getElementById('contextText');
+            const inputText = document.getElementById('inputText');
+            
+            // Set the values from history
+            if (contextText) {
+                contextText.value = this.dataset.context || '';
+                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
+            }
+            
+            if (inputText) {
+                inputText.value = this.dataset.text || '';
+                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+            }
+            
+            // Set the options
+            function setActiveButton(groupId, value) {
+                const buttons = document.querySelectorAll(`#${groupId} .btn`);
+                buttons.forEach(btn => {
+                    if (btn.dataset.value === value) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            
+            setActiveButton('toneGroup', this.dataset.tone);
+            setActiveButton('formatGroup', this.dataset.format);
+            setActiveButton('lengthGroup', this.dataset.length);
+            
+            // Clear the output
+            const outputText = document.getElementById('outputText');
+            if (outputText) {
+                outputText.value = '';
+                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
+            }
+        });
+    });
+
+    // Reset history functionality
+    const resetHistory = document.getElementById('resetHistory');
+    if (resetHistory) {
+        resetHistory.addEventListener('click', async () => {
+            if (confirm('Êtes-vous sûr de vouloir supprimer tout l\'historique ?')) {
+                try {
+                    const response = await fetch('/api/history/reset', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        // Clear the accordion
+                        const accordion = document.getElementById('historyAccordion');
+                        if (accordion) {
+                            accordion.innerHTML = '';
+                        }
+                        showAlert('Historique réinitialisé', 'success', 3000);
+                    } else {
+                        throw new Error('Failed to reset history');
+                    }
+                } catch (error) {
+                    console.error('Error resetting history:', error);
+                    showAlert('Erreur lors de la réinitialisation', 'danger', 5000);
+                }
+            }
+        });
+    }
 
     // Status check interval
     let lastStatus = 'unknown';
@@ -81,101 +173,20 @@ document.addEventListener('DOMContentLoaded', function() {
             button.disabled = !isConnected;
             button.title = !isConnected ? "Service Ollama non disponible" : "";
         });
-
-        const statusMessage = document.querySelector('.status-message');
-        
-        if (!isConnected && lastStatus !== 'unknown') {
-            const savedUrl = localStorage.getItem('ollamaUrl');
-            if (!savedUrl || !checkOllamaStatus()) {
-                if (!statusMessage) {
-                    const alert = document.createElement('div');
-                    alert.className = 'alert alert-warning mb-3 status-message';
-                    alert.role = 'alert';
-                    alert.textContent = "⚠️ Service Ollama non disponible. Veuillez vérifier la configuration dans l'onglet Configuration.";
-                    const container = document.querySelector('.container');
-                    if (container) {
-                        container.insertBefore(alert, container.firstChild);
-                    }
-                }
-            }
-        } else if (statusMessage) {
-            statusMessage.remove();
-        }
     }
 
     checkOllamaStatus();
     setInterval(checkOllamaStatus, 30000);
 
-    function setupTagGroup(groupId) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-        
-        const buttons = group.querySelectorAll('.btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', function() {
-                buttons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    }
-
-    setupTagGroup('toneGroup');
-    setupTagGroup('formatGroup');
-    setupTagGroup('lengthGroup');
-
-    function getSelectedValue(groupId) {
-        const activeButton = document.querySelector(`#${groupId} .btn.active`);
-        return activeButton ? activeButton.dataset.value : '';
-    }
-
-    // Handle reuse history button clicks
-    document.querySelectorAll('.reuse-history').forEach(button => {
-        button.addEventListener('click', function() {
-            // Get the reformulation tab element
-            const reformulationTab = document.getElementById('reformulation-tab');
-            
-            // Switch to reformulation tab
-            const tab = new bootstrap.Tab(reformulationTab);
-            tab.show();
-            
-            // Set the values from history
-            if (contextText) {
-                contextText.value = this.dataset.context || '';
-                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            }
-            
-            if (inputText) {
-                inputText.value = this.dataset.text || '';
-                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
-            }
-            
-            // Set the options
-            function setActiveButton(groupId, value) {
-                const buttons = document.querySelectorAll(`#${groupId} .btn`);
-                buttons.forEach(btn => {
-                    if (btn.dataset.value === value) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-            
-            setActiveButton('toneGroup', this.dataset.tone);
-            setActiveButton('formatGroup', this.dataset.format);
-            setActiveButton('lengthGroup', this.dataset.length);
-            
-            // Clear the output
-            if (outputText) {
-                outputText.value = '';
-                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
-            }
-        });
-    });
-
+    // Reformulation functionality
+    const reformulateBtn = document.getElementById('reformulateBtn');
     if (reformulateBtn) {
         reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
+            const inputText = document.getElementById('inputText');
+            const contextText = document.getElementById('contextText');
+            const outputText = document.getElementById('outputText');
+            
             const text = inputText.value.trim();
             const context = contextText.value.trim();
             
@@ -225,8 +236,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Copy and clear functionality
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
+            const outputText = document.getElementById('outputText');
             const text = outputText.value;
             if (!text) return;
 
@@ -245,6 +261,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
+            const contextText = document.getElementById('contextText');
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            
             if (contextText) {
                 contextText.value = '';
                 updateTextStats('', 'contextCharCount', 'contextWordCount', 'contextParaCount');
@@ -258,5 +278,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
             }
         });
+    }
+
+    // Alert functionality
+    function showAlert(message, type = 'danger', duration = 5000) {
+        const existingAlerts = document.querySelectorAll('.floating-alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alert);
+
+        if (duration) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, duration);
+        }
     }
 });
