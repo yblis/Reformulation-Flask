@@ -254,6 +254,7 @@
                                     <span class="badge bg-secondary">{{ item.length }}</span>
                                 </div>
                                 <button class="btn btn-success btn-sm reuse-history" 
+                                        data-id="{{ item.id }}"
                                         data-text="{{ item.original_text }}"
                                         data-context="{{ item.context }}"
                                         data-tone="{{ item.tone }}"
@@ -349,7 +350,7 @@
 
                     <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
 
-                    <!-- System Prompt Config -->
+                    <!-- Prompts Configs -->
                     <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
                         <h5 class="mb-0">Configuration du Prompt</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#systemPromptCollapse" aria-expanded="false" aria-controls="systemPromptCollapse">
@@ -360,7 +361,6 @@
                         <textarea id="systemPrompt" class="form-control mb-4" rows="5">{{ system_prompt }}</textarea>
                     </div>
 
-                    <!-- Translation Prompt Config -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
@@ -371,7 +371,6 @@
                         <textarea id="translationPrompt" class="form-control mb-4" rows="5">{{ translation_prompt }}</textarea>
                     </div>
 
-                    <!-- Email Prompt Config -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
