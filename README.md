@@ -1,6 +1,6 @@
 # Reformulateur - Text Reformulation Web Application
 
-A Flask-based web application for text reformulation, translation, and email generation using multiple AI providers and local Ollama models. 
+A Flask-based web application for text reformulation, translation, and email generation using multiple AI providers and local Ollama models.
 
 ## Features
 - Text reformulation with customizable tone, format, and length
@@ -18,20 +18,6 @@ A Flask-based web application for text reformulation, translation, and email gen
 - PWA support for mobile use
 - Responsive design for all devices
 
-## Screenshots
-
-### Rephrase
-<img width="1152" alt="image" src="https://github.com/user-attachments/assets/8f832c76-ee18-4197-8abf-69fef21e3fef">
-<img width="1148" alt="image" src="https://github.com/user-attachments/assets/6fe63f80-1b2f-47e2-809f-ffe4eb3a2629">
-
-
-### Translate
-<img width="1159" alt="image" src="https://github.com/user-attachments/assets/9159dcdc-761f-419c-8d31-317b2578d602">
-
-### Build emails
-<img width="1155" alt="image" src="https://github.com/user-attachments/assets/e3b4941b-0620-421a-a84e-b4139039554a">
-
-
 ## Requirements
 - Python 3.8+
 - SQLite database (included)
@@ -46,7 +32,6 @@ pip install -r requirements.txt
 
 2. Configure environment variables in `.env`:
 ```bash
-OLLAMA_URL=your_ollama_url
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 GOOGLE_API_KEY=your_google_key

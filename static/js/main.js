@@ -157,22 +157,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastStatus = 'unknown';
     
     async function checkOllamaStatus() {
-        const provider = localStorage.getItem('aiProvider') || 'ollama';
-        
-        // Skip status check if not using Ollama
-        if (provider !== 'ollama') {
-            updateUIForStatus('connected');
-            return true;
-        }
-
         try {
-            const response = await fetch('/api/status');
+            const savedUrl = localStorage.getItem('ollamaUrl');
+            const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
+            const response = await fetch(url);
+            
             if (!response.ok) {
                 throw new Error('Status check failed');
             }
             
             const data = await response.json();
-            updateUIForStatus(data.status);
+            if (data.status !== lastStatus) {
+                lastStatus = data.status;
+                updateUIForStatus(data.status);
+            }
             return data.status === 'connected';
         } catch (error) {
             console.error('Error checking status:', error);
@@ -182,29 +180,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateUIForStatus(status) {
-        const provider = localStorage.getItem('aiProvider') || 'ollama';
+        const isConnected = status === 'connected';
         const buttons = document.querySelectorAll('.requires-ollama');
-        
         buttons.forEach(button => {
-            // Only disable buttons if we're using Ollama
-            if (provider === 'ollama') {
-                if (!status || status === 'disconnected') {
-                    button.disabled = true;
-                    button.title = "Service Ollama non disponible";
-                } else {
-                    button.disabled = false;
-                    button.title = "";
-                }
-            } else {
-                // Always enable buttons for other providers
-                button.disabled = false;
-                button.title = "";
-            }
+            button.disabled = !isConnected;
+            button.title = !isConnected ? "Service Ollama non disponible" : "";
         });
     }
 
     checkOllamaStatus();
-    setInterval(checkOllamaStatus, 15000); // Check status every 15 seconds
+    setInterval(checkOllamaStatus, 30000);
 
     const reformulateBtn = document.getElementById('reformulateBtn');
     if (reformulateBtn) {
