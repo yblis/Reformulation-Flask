@@ -157,50 +157,46 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastStatus = 'unknown';
     
     async function checkOllamaStatus() {
+        const provider = localStorage.getItem('aiProvider') || 'ollama';
+        
+        // Skip status check if not using Ollama
+        if (provider !== 'ollama') {
+            updateUIForStatus('connected');
+            return true;
+        }
+
         try {
-            const response = await fetch('/api/status', {
-                timeout: 10000  // Increase timeout to 10s
-            });
-            
+            const response = await fetch('/api/status');
             if (!response.ok) {
                 throw new Error('Status check failed');
             }
             
             const data = await response.json();
-            
-            // Only update UI if status really changed to avoid flickering
-            if (data.status !== lastStatus) {
-                lastStatus = data.status;
-                updateUIForStatus(data.status);
-            }
-            
+            updateUIForStatus(data.status);
             return data.status === 'connected';
         } catch (error) {
             console.error('Error checking status:', error);
-            // Only mark as disconnected after multiple failed attempts
-            if (lastStatus === 'connected') {
-                // Give some grace period before marking as disconnected
-                setTimeout(() => {
-                    if (lastStatus === 'connected') {
-                        lastStatus = 'disconnected';
-                        updateUIForStatus('disconnected');
-                    }
-                }, 5000);
-            }
+            updateUIForStatus('disconnected');
             return false;
         }
     }
 
     function updateUIForStatus(status) {
-        const isConnected = status === 'connected';
+        const provider = localStorage.getItem('aiProvider') || 'ollama';
         const buttons = document.querySelectorAll('.requires-ollama');
         
         buttons.forEach(button => {
-            // Only disable if we're really sure it's disconnected
-            if (!isConnected && lastStatus === 'disconnected') {
-                button.disabled = true;
-                button.title = "Service Ollama non disponible";
+            // Only disable buttons if we're using Ollama
+            if (provider === 'ollama') {
+                if (!status || status === 'disconnected') {
+                    button.disabled = true;
+                    button.title = "Service Ollama non disponible";
+                } else {
+                    button.disabled = false;
+                    button.title = "";
+                }
             } else {
+                // Always enable buttons for other providers
                 button.disabled = false;
                 button.title = "";
             }
