@@ -308,20 +308,39 @@ def reformulate():
         if not text:
             return jsonify({"error": "No text provided"}), 400
         formatted_prompt = f"Context: {context}\nText: {text}\nTone: {tone}\nFormat: {format}\nLength: {length}"
+        
         try:
             response_text = None
             if provider == 'ollama':
-                response = requests.post(
-                    f"{preferences.ollama_url}/api/generate",
-                    json={
-                        'model': preferences.ollama_model,
-                        'prompt': formatted_prompt,
-                        'system': preferences.system_prompt,
-                        'stream': False
-                    }
-                )
-                if response.status_code == 200:
-                    response_text = response.json().get('response', '')
+                # Try to check Ollama status first
+                try:
+                    status_response = requests.get(f"{preferences.ollama_url}/api/version", timeout=5)
+                    if status_response.status_code != 200:
+                        raise Exception("Le serveur Ollama n'est pas disponible")
+                except requests.exceptions.RequestException:
+                    raise Exception("Impossible de se connecter au serveur Ollama")
+                    
+                try:
+                    response = requests.post(
+                        f"{preferences.ollama_url}/api/generate",
+                        json={
+                            'model': preferences.ollama_model,
+                            'prompt': formatted_prompt,
+                            'system': preferences.system_prompt,
+                            'stream': False
+                        },
+                        timeout=10  # Add timeout
+                    )
+                    if response.status_code == 200:
+                        response_text = response.json().get('response', '')
+                    else:
+                        raise Exception(f"Ollama server returned status code {response.status_code}")
+                except requests.exceptions.ConnectionError:
+                    raise Exception("Impossible de se connecter au serveur Ollama. Vérifiez l'URL et le port configurés.")
+                except requests.exceptions.Timeout:
+                    raise Exception("Le serveur Ollama met trop de temps à répondre. Veuillez réessayer.")
+                except Exception as e:
+                    raise Exception(f"Erreur lors de la communication avec Ollama: {str(e)}")
             elif provider == 'openai':
                 client = OpenAI(api_key=preferences.openai_api_key)
                 response = client.chat.completions.create(
@@ -547,3 +566,6 @@ def reset_history():
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
