@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import requests
-import os
+import time
 from dotenv import load_dotenv
-from requests.exceptions import ConnectionError, Timeout
 from models import db, UserPreferences, ReformulationHistory, EmailHistory
+import os
 import openai
 from openai import OpenAI
 import anthropic
@@ -40,6 +40,37 @@ def reload_env_config():
 def before_request():
     reload_env_config()
 
+@app.route('/api/status')
+def check_status():
+    try:
+        preferences = reload_env_config()
+        provider = preferences.current_provider
+        
+        if provider != 'ollama':
+            return jsonify({"status": "connected"})
+            
+        url = request.args.get('url', preferences.ollama_url)
+        if not url:
+            return jsonify({"status": "disconnected"})
+            
+        # Try up to 3 times with increasing delays
+        for attempt in range(3):
+            try:
+                response = requests.get(f"{url}/api/version", 
+                                     timeout=5 + (attempt * 2))
+                if response.status_code == 200:
+                    return jsonify({"status": "connected"})
+                time.sleep(attempt * 1)  # Increasing delay between retries
+            except requests.exceptions.RequestException:
+                if attempt == 2:  # Last attempt failed
+                    return jsonify({"status": "disconnected"})
+                continue
+                
+        return jsonify({"status": "disconnected"})
+    except Exception as e:
+        print(f"Error checking status: {str(e)}")
+        return jsonify({"status": "disconnected"})
+
 @app.errorhandler(404)
 @app.errorhandler(500)
 def handle_error(error):
@@ -62,27 +93,6 @@ def get_settings():
     except Exception as e:
         print(f"Error in get_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/api/status')
-def check_status():
-    try:
-        preferences = reload_env_config()
-        provider = preferences.current_provider
-        if provider != 'ollama':
-            return jsonify({"status": "connected"})
-        url = request.args.get('url', preferences.ollama_url)
-        if not url:
-            return jsonify({"status": "disconnected"})
-        try:
-            response = requests.get(f"{url}/api/version", timeout=5)
-            if response.status_code == 200:
-                return jsonify({"status": "connected"})
-            return jsonify({"status": "disconnected"})
-        except requests.exceptions.RequestException:
-            return jsonify({"status": "disconnected"})
-    except Exception as e:
-        print(f"Error checking status: {str(e)}")
-        return jsonify({"status": "disconnected"})
 
 @app.route('/api/models/gemini')
 def get_gemini_models():
