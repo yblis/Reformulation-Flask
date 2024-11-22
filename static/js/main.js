@@ -66,35 +66,38 @@ document.addEventListener('DOMContentLoaded', function() {
             if (reformulationTab) {
                 const tab = new bootstrap.Tab(reformulationTab);
                 tab.show();
-            }
-
-            const contextText = document.getElementById('contextText');
-            const inputText = document.getElementById('inputText');
-            
-            if (contextText) {
-                contextText.value = this.dataset.context || '';
-                updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            }
-            
-            if (inputText) {
-                inputText.value = this.dataset.text || '';
-                updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
-            }
-            
-            function setActiveButton(groupId, value) {
-                const buttons = document.querySelectorAll(`#${groupId} .btn`);
-                buttons.forEach(btn => {
-                    if (btn.dataset.value === value) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
+                
+                // Wait for the tab transition
+                setTimeout(() => {
+                    const contextText = document.getElementById('contextText');
+                    const inputText = document.getElementById('inputText');
+                    
+                    if (contextText) {
+                        contextText.value = this.dataset.context || '';
+                        updateTextStats(contextText.value, 'contextCharCount', 'contextWordCount', 'contextParaCount');
                     }
-                });
+                    
+                    if (inputText) {
+                        inputText.value = this.dataset.text || '';
+                        updateTextStats(inputText.value, 'inputCharCount', 'inputWordCount', 'inputParaCount');
+                    }
+                    
+                    function setActiveButton(groupId, value) {
+                        const buttons = document.querySelectorAll(`#${groupId} .btn`);
+                        buttons.forEach(btn => {
+                            if (btn.dataset.value === value) {
+                                btn.classList.add('active');
+                            } else {
+                                btn.classList.remove('active');
+                            }
+                        });
+                    }
+                    
+                    setActiveButton('toneGroup', this.dataset.tone);
+                    setActiveButton('formatGroup', this.dataset.format);
+                    setActiveButton('lengthGroup', this.dataset.length);
+                }, 150); // Short delay to ensure tab is fully shown
             }
-            
-            setActiveButton('toneGroup', this.dataset.tone);
-            setActiveButton('formatGroup', this.dataset.format);
-            setActiveButton('lengthGroup', this.dataset.length);
             
             const outputText = document.getElementById('outputText');
             if (outputText) {
