@@ -182,13 +182,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateUIForStatus(status) {
-        const isConnected = status === 'connected';
-        const buttons = document.querySelectorAll('.requires-ollama');
-        buttons.forEach(button => {
-            button.disabled = !isConnected;
-            button.title = !isConnected ? "Service Ollama non disponible" : "";
-        });
+    async function updateUIForStatus(status) {
+        try {
+            const response = await fetch('/api/settings');
+            const data = await response.json();
+            const currentProvider = data.provider;
+            
+            const isConnected = status === 'connected';
+            const buttons = document.querySelectorAll('.requires-ollama');
+            buttons.forEach(button => {
+                const shouldDisable = currentProvider === 'ollama' && !isConnected;
+                button.disabled = shouldDisable;
+                button.title = shouldDisable ? "Service Ollama non disponible" : "";
+            });
+        } catch (error) {
+            console.error('Error fetching provider settings:', error);
+        }
     }
 
     checkOllamaStatus();

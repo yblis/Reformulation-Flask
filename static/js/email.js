@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (generateEmail) {
-        generateEmail.classList.add('requires-ollama');
         generateEmail.addEventListener('click', async function() {
             if (!emailType || !emailContent || !emailOutput) return;
             
