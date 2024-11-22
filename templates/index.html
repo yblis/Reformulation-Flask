@@ -140,7 +140,15 @@
         <div class="tab-pane fade" id="translation" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Texte à traduire:</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Menu de traduction</h5>
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationCollapse" aria-expanded="true" aria-controls="translationCollapse">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="collapse show" id="translationCollapse">
+                        <h5 class="mb-3">Texte à traduire:</h5>
                     <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
                         <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
@@ -256,13 +264,23 @@
                                     <span class="badge bg-secondary">{{ item.format }}</span>
                                     <span class="badge bg-secondary">{{ item.length }}</span>
                                 </div>
-                                <button class="btn btn-success btn-sm reuse-history" 
-                                        data-id="{{ item.id }}"
-                                        data-text="{{ item.original_text }}"
-                                        data-context="{{ item.context }}"
-                                        data-tone="{{ item.tone }}"
-                                        data-format="{{ item.format }}"
-                                        data-length="{{ item.length }}">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-danger btn-sm delete-history" 
+                                            data-id="{{ item.id }}"
+                                            title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-success btn-sm reuse-history" 
+                                            data-id="{{ item.id }}"
+                                            data-text="{{ item.original_text }}"
+                                            data-context="{{ item.context }}"
+                                            data-tone="{{ item.tone }}"
+                                            data-format="{{ item.format }}"
+                                            data-length="{{ item.length }}"
+                                            title="Réutiliser">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </div>
                                     Réutiliser
                                 </button>
                             </div>
