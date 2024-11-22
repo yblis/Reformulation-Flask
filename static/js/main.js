@@ -176,6 +176,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 error: data.error
             };
             
+            // Si le fournisseur n'est pas Ollama, on active les boutons et on arrête les vérifications
+            if (status.provider !== 'ollama') {
+                if (lastStatus !== 'non-ollama') {
+                    lastStatus = 'non-ollama';
+                    updateUIForStatus(status);
+                }
+                return true;
+            }
+            
+            // Pour Ollama, on continue la vérification normale
             if (status.state !== lastStatus) {
                 lastStatus = status.state;
                 updateUIForStatus(status);
@@ -194,8 +204,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function updateUIForStatus(status) {
         const buttons = document.querySelectorAll('.requires-ollama');
-        const shouldDisable = status.provider === 'ollama' && status.state !== 'connected';
         
+        // Si le fournisseur n'est pas Ollama, activer immédiatement tous les boutons
+        if (status.provider !== 'ollama') {
+            buttons.forEach(button => {
+                button.disabled = false;
+                button.title = "";
+            });
+            return;
+        }
+        
+        // Pour Ollama, vérifier l'état de connexion
+        const shouldDisable = status.state !== 'connected';
         buttons.forEach(button => {
             button.disabled = shouldDisable;
             if (shouldDisable && status.error) {
@@ -205,13 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Update UI with error message if needed
-        const statusMessage = shouldDisable && status.error 
-            ? `Ollama non disponible: ${status.error}`
-            : '';
-            
-        if (statusMessage) {
-            console.log(statusMessage);
+        // Afficher le message d'erreur si nécessaire
+        if (shouldDisable && status.error) {
+            console.log(`Ollama non disponible: ${status.error}`);
         }
     }
 
