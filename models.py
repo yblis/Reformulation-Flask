@@ -5,10 +5,6 @@ import os
 db = SQLAlchemy()
 
 class UserPreferences(db.Model):
-    def __init__(self, **kwargs):
-        super().__init__()
-        for key, value in kwargs.items():
-            setattr(self, key, value)
     id = db.Column(db.Integer, primary_key=True)
     
     # Current AI Provider
@@ -21,7 +17,6 @@ class UserPreferences(db.Model):
     # OpenAI Settings
     openai_api_key = db.Column(db.String(255))
     openai_model = db.Column(db.String(100))
-    openai_api_url = db.Column(db.String(255), default="https://api.openai.com/v1")
     
     # Groq Settings
     groq_api_key = db.Column(db.String(255))

@@ -40,11 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // OpenAI
-                const openaiUrl = document.getElementById('openaiUrl');
-                // Initialize OpenAI URL
-                if (openaiUrl) {
-                    openaiUrl.value = data.settings.openai_api_url || 'https://api.openai.com/v1';
-                }
                 const openaiKey = document.getElementById('openaiKey');
                 if (openaiKey && data.settings.openai_api_key) {
                     openaiKey.value = data.settings.openai_api_key;
@@ -78,16 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!providerConfigs) return;
         providerConfigs.forEach(config => {
             if (config) {
-                if (config.id === `${provider}Config`) {
-                    config.style.display = 'block';
-                    // Ensure all children are visible
-                    const inputs = config.querySelectorAll('input, select');
-                    inputs.forEach(input => {
-                        input.style.display = 'block';
-                    });
-                } else {
-                    config.style.display = 'none';
-                }
+                config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
             }
         });
     }
@@ -202,16 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         throw new Error('Ollama URL is required');
                     }
                     config.settings.url = ollamaUrl.value.trim();
-                } else {
-                    if (apiKeyInput) {
-                        config.settings.apiKey = apiKeyInput.value.trim();
-                    }
-                    if (selectedProvider === 'openai') {
-                        const openaiUrl = document.getElementById('openaiUrl');
-                        if (openaiUrl) {
-                            config.settings.url = openaiUrl.value.trim();
-                        }
-                    }
+                } else if (apiKeyInput) {
+                    config.settings.apiKey = apiKeyInput.value.trim();
                 }
 
                 if (modelSelect && modelSelect.value) {

@@ -259,8 +259,6 @@ def update_settings():
         elif provider == 'openai':
             if api_key := settings.get('apiKey'):
                 preferences.openai_api_key = api_key
-            if url := settings.get('url'):
-                preferences.openai_api_url = url
             if model := settings.get('model'):
                 preferences.openai_model = model
         elif provider == 'anthropic':
