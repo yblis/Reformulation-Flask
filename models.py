@@ -5,6 +5,10 @@ import os
 db = SQLAlchemy()
 
 class UserPreferences(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__()
+        for key, value in kwargs.items():
+            setattr(self, key, value)
     id = db.Column(db.Integer, primary_key=True)
     
     # Current AI Provider
