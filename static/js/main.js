@@ -59,37 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.querySelectorAll('.reuse-history').forEach(button => {
-    // Add event listeners for individual history deletion
-    document.querySelectorAll('.delete-history').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
-                const historyId = this.dataset.id;
-                try {
-                    const response = await fetch(`/api/history/${historyId}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (response.ok) {
-                        // Remove the accordion item from the DOM
-                        const accordionItem = this.closest('.accordion-item');
-                        if (accordionItem) {
-                            accordionItem.remove();
-                        }
-                        showAlert('Entrée supprimée', 'success', 3000);
-                    } else {
-                        throw new Error('Failed to delete history entry');
-                    }
-                } catch (error) {
-                    console.error('Error deleting history entry:', error);
-                    showAlert('Erreur lors de la suppression', 'danger', 5000);
-                }
-            }
-        });
-    });
-
         button.addEventListener('click', function(e) {
             e.preventDefault();
             
