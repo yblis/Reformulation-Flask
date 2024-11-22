@@ -41,8 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // OpenAI
                 const openaiUrl = document.getElementById('openaiUrl');
-                if (openaiUrl && data.settings.openai_api_url) {
-                    openaiUrl.value = data.settings.openai_api_url;
+                // Initialize OpenAI URL
+                if (openaiUrl) {
+                    openaiUrl.value = data.settings.openai_api_url || 'https://api.openai.com/v1';
                 }
                 const openaiKey = document.getElementById('openaiKey');
                 if (openaiKey && data.settings.openai_api_key) {
@@ -77,7 +78,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!providerConfigs) return;
         providerConfigs.forEach(config => {
             if (config) {
-                config.style.display = config.id === `${provider}Config` ? 'block' : 'none';
+                if (config.id === `${provider}Config`) {
+                    config.style.display = 'block';
+                    // Ensure all children are visible
+                    const inputs = config.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        input.style.display = 'block';
+                    });
+                } else {
+                    config.style.display = 'none';
+                }
             }
         });
     }
