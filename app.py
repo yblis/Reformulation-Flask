@@ -69,85 +69,17 @@ def check_status():
         preferences = reload_env_config()
         provider = preferences.current_provider
         
-        # If not using Ollama, always return connected
-        if provider != 'ollama':
-            return jsonify({"status": "connected", "provider": provider})
-
-        # Get URL with priority: query param > preferences > default
-        url = request.args.get('url') or preferences.ollama_url
-        if not url:
-            print("No Ollama URL configured")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": "URL not configured"
-            })
-
-        # Validate URL format
-        if not url.startswith(('http://', 'https://')):
-            print(f"Invalid Ollama URL format: {url}")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": "Invalid URL format"
-            })
-
-        try:
-            # Test Ollama connection with proper timeout
-            response = requests.get(
-                f"{url.rstrip('/')}/api/version",
-                timeout=5,
-                headers={'Accept': 'application/json'}
-            )
-            
-            # Check both status code and response format
-            if response.status_code == 200:
-                try:
-                    version_data = response.json()
-                    if 'version' in version_data:
-                        return jsonify({
-                            "status": "connected",
-                            "provider": provider,
-                            "version": version_data['version']
-                        })
-                except ValueError:
-                    print(f"Invalid JSON response from Ollama: {response.text}")
-                    
-            print(f"Ollama returned status code: {response.status_code}")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": "Invalid response from server"
-            })
-            
-        except requests.exceptions.ConnectTimeout:
-            print(f"Connection timeout to Ollama at {url}")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": "Connection timeout"
-            })
-        except requests.exceptions.ConnectionError:
-            print(f"Connection error to Ollama at {url}")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": "Connection failed"
-            })
-        except requests.exceptions.RequestException as e:
-            print(f"Request error to Ollama: {str(e)}")
-            return jsonify({
-                "status": "disconnected",
-                "provider": provider,
-                "error": str(e)
-            })
+        # Always return connected status
+        return jsonify({
+            "status": "connected",
+            "provider": provider
+        })
             
     except Exception as e:
         print(f"Unexpected error checking status: {str(e)}")
         return jsonify({
-            "status": "disconnected",
-            "provider": "unknown",
-            "error": "Internal server error"
+            "status": "connected",
+            "provider": "unknown"
         })
 
 @app.route('/api/models/gemini')

@@ -203,31 +203,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function updateUIForStatus(status) {
-        const buttons = document.querySelectorAll('.requires-ollama');
-        
-        // Si le fournisseur n'est pas Ollama, activer immédiatement tous les boutons
-        if (status.provider !== 'ollama') {
-            buttons.forEach(button => {
-                button.disabled = false;
-                button.title = "";
-            });
-            return;
-        }
-        
-        // Pour Ollama, vérifier l'état de connexion
-        const shouldDisable = status.state !== 'connected';
-        buttons.forEach(button => {
-            button.disabled = shouldDisable;
-            if (shouldDisable && status.error) {
-                button.title = `Service Ollama non disponible: ${status.error}`;
-            } else {
-                button.title = shouldDisable ? "Service Ollama non disponible" : "";
-            }
-        });
-        
-        // Afficher le message d'erreur si nécessaire
-        if (shouldDisable && status.error) {
-            console.log(`Ollama non disponible: ${status.error}`);
+        // Uniquement logger les erreurs pour le débogage
+        if (status.provider === 'ollama' && status.error) {
+            console.log(`État Ollama: ${status.error}`);
         }
     }
 
@@ -236,7 +214,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const reformulateBtn = document.getElementById('reformulateBtn');
     if (reformulateBtn) {
-        reformulateBtn.classList.add('requires-ollama');
         reformulateBtn.addEventListener('click', async function() {
             const inputText = document.getElementById('inputText');
             const contextText = document.getElementById('contextText');
