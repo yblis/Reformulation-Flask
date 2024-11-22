@@ -2,23 +2,94 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Configuration Ollama</h5>
+                <h5 class="modal-title">Configuration</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">URL d'Ollama:</label>
-                    <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
+                <!-- Provider Selection -->
+                <div class="mb-4">
+                    <label class="form-label">Fournisseur d'IA:</label>
+                    <select id="aiProvider" class="form-select">
+                        <option value="ollama">Ollama</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="anthropic">Anthropic</option>
+                        <option value="groq">Groq</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Modèle:</label>
-                    <select id="modelSelect" class="form-select"></select>
+
+                <!-- Ollama Settings -->
+                <div id="ollamaConfig" class="provider-config" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">URL d'Ollama:</label>
+                        <input type="text" id="ollamaUrl" class="form-control" value="http://localhost:11434">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="modelSelect" class="form-select"></select>
+                    </div>
+                    <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
                 </div>
-                <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+
+                <!-- OpenAI Settings -->
+                <div id="openaiConfig" class="provider-config" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">URL de l'API OpenAI:</label>
+                        <input type="text" id="openaiUrl" class="form-control" value="https://api.openai.com/v1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API OpenAI:</label>
+                        <input type="password" id="openaiKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="openaiModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+
+                <!-- Anthropic Settings -->
+                <div id="anthropicConfig" class="provider-config" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Anthropic:</label>
+                        <input type="password" id="anthropicKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="anthropicModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+
+                <!-- Groq Settings -->
+                <div id="groqConfig" class="provider-config" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Groq:</label>
+                        <input type="password" id="groqKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="groqModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
+
+                <!-- Gemini Settings -->
+                <div id="geminiConfig" class="provider-config" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Clé API Google:</label>
+                        <input type="password" id="geminiKey" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="geminiModel" class="form-select"></select>
+                    </div>
+                    <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-success" id="saveSettings">OK</button>
+                <button type="button" class="btn btn-success" id="saveConfig">OK</button>
             </div>
         </div>
     </div>

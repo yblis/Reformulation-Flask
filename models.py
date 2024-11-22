@@ -17,6 +17,7 @@ class UserPreferences(db.Model):
     # OpenAI Settings
     openai_api_key = db.Column(db.String(255))
     openai_model = db.Column(db.String(100))
+    openai_api_url = db.Column(db.String(255), default="https://api.openai.com/v1")
     
     # Groq Settings
     groq_api_key = db.Column(db.String(255))
