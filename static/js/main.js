@@ -170,33 +170,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
-            if (data.status !== lastStatus) {
-                lastStatus = data.status;
-                updateUIForStatus(data.status);
+            const status = {
+                state: data.status,
+                provider: data.provider,
+                error: data.error
+            };
+            
+            if (status.state !== lastStatus) {
+                lastStatus = status.state;
+                updateUIForStatus(status);
             }
-            return data.status === 'connected';
+            return status.state === 'connected';
         } catch (error) {
             console.error('Error checking status:', error);
-            updateUIForStatus('disconnected');
+            updateUIForStatus({
+                state: 'disconnected',
+                provider: 'unknown',
+                error: error.message
+            });
             return false;
         }
     }
 
     async function updateUIForStatus(status) {
-        try {
-            const response = await fetch('/api/settings');
-            const data = await response.json();
-            const currentProvider = data.provider;
-            
-            const isConnected = status === 'connected';
-            const buttons = document.querySelectorAll('.requires-ollama');
-            buttons.forEach(button => {
-                const shouldDisable = currentProvider === 'ollama' && !isConnected;
-                button.disabled = shouldDisable;
+        const buttons = document.querySelectorAll('.requires-ollama');
+        const shouldDisable = status.provider === 'ollama' && status.state !== 'connected';
+        
+        buttons.forEach(button => {
+            button.disabled = shouldDisable;
+            if (shouldDisable && status.error) {
+                button.title = `Service Ollama non disponible: ${status.error}`;
+            } else {
                 button.title = shouldDisable ? "Service Ollama non disponible" : "";
-            });
-        } catch (error) {
-            console.error('Error fetching provider settings:', error);
+            }
+        });
+        
+        // Update UI with error message if needed
+        const statusMessage = shouldDisable && status.error 
+            ? `Ollama non disponible: ${status.error}`
+            : '';
+            
+        if (statusMessage) {
+            console.log(statusMessage);
         }
     }
 
