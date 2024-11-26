@@ -9,8 +9,6 @@ from openai import OpenAI
 import anthropic
 from anthropic import Anthropic
 import google.generativeai as genai
-from langdetect import detect, LangDetectException
-import language_tool_python
 
 load_dotenv()
 
@@ -397,26 +395,77 @@ def correct_text():
         if not text:
             return jsonify({"error": "Empty text"}), 400
 
-        # Detect language
-        try:
-            detected_lang = detect(text)
-            # Convert language codes to full names
-            lang_names = {
-                'fr': 'Français',
-                'en': 'Anglais',
-                'es': 'Espagnol',
-                'de': 'Allemand',
-                'it': 'Italien',
-                'pt': 'Portugais'
-            }
-            detected_language = lang_names.get(detected_lang, detected_lang.upper())
-        except LangDetectException:
-            return jsonify({"error": "Unable to detect language"}), 400
-
-        # Initialize LanguageTool for the detected language
-        tool = language_tool_python.LanguageTool(detected_lang)
+        # Use the current AI provider to correct the text
+        preferences = reload_env_config()
+        provider = preferences.current_provider
         
-        # Get corrections
+        formatted_prompt = f"""Veuillez corriger ce texte en conservant la langue d'origine. 
+        Corrigez uniquement les fautes d'orthographe, de grammaire et de ponctuation.
+        
+        Texte à corriger:
+        {text}"""
+        
+        try:
+            response_text = None
+            if provider == 'ollama':
+                response = requests.post(
+                    f"{preferences.ollama_url}/api/generate",
+                    json={
+                        'model': preferences.ollama_model,
+                        'prompt': formatted_prompt,
+                        'stream': False
+                    }
+                )
+                if response.status_code == 200:
+                    response_text = response.json().get('response', '')
+            elif provider == 'openai':
+                client = OpenAI(api_key=preferences.openai_api_key)
+                response = client.chat.completions.create(
+                    model=preferences.openai_model,
+                    messages=[
+                        {"role": "system", "content": "Vous êtes un assistant spécialisé dans la correction de texte."},
+                        {"role": "user", "content": formatted_prompt}
+                    ]
+                )
+                response_text = response.choices[0].message.content
+            elif provider == 'anthropic':
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                message = client.messages.create(
+                    model=preferences.anthropic_model,
+                    system="Vous êtes un assistant spécialisé dans la correction de texte.",
+                    messages=[{"role": "user", "content": formatted_prompt}]
+                )
+                response_text = message.content[0].text
+            elif provider == 'groq':
+                client = OpenAI(api_key=preferences.groq_api_key,
+                             base_url="https://api.groq.com/openai/v1")
+                response = client.chat.completions.create(
+                    model=preferences.groq_model,
+                    messages=[
+                        {"role": "system", "content": "Vous êtes un assistant spécialisé dans la correction de texte."},
+                        {"role": "user", "content": formatted_prompt}
+                    ]
+                )
+                response_text = response.choices[0].message.content
+            elif provider == 'gemini':
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model)
+                response = model.generate_content([
+                    {"role": "user", "parts": ["Vous êtes un assistant spécialisé dans la correction de texte."]},
+                    {"role": "user", "parts": [formatted_prompt]}
+                ])
+                response_text = response.text
+            
+            if not response_text:
+                raise Exception(f"No response from {provider}")
+            
+            return jsonify({
+                "corrected_text": response_text,
+                "detected_language": "Détection automatique"  # Default message
+            })
+            
+        except Exception as e:
+            return jsonify({"error": f"Error correcting text: {str(e)}"}), 500
         matches = tool.check(text)
         corrected_text = language_tool_python.utils.correct(text, matches)
         

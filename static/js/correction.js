@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 correctionOutput.value = data.corrected_text;
                 if (detectedLanguage) {
-                    detectedLanguage.textContent = `Langue détectée: ${data.detected_language}`;
+                    detectedLanguage.textContent = data.detected_language;
                 }
                 updateTextStats(data.corrected_text, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
             }
