@@ -58,8 +58,18 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
             db.session.add(pref)
             db.session.commit()
         else:
-            # Do not update configuration from environment variables after creation
-            pass
+            # Update with env vars if they exist
+            if os.getenv('OLLAMA_URL'): 
+                pref.ollama_url = os.getenv('OLLAMA_URL')
+            if os.getenv('OPENAI_API_KEY'):
+                pref.openai_api_key = os.getenv('OPENAI_API_KEY')
+            if os.getenv('ANTHROPIC_API_KEY'):
+                pref.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+            if os.getenv('GOOGLE_API_KEY'):
+                pref.google_api_key = os.getenv('GOOGLE_API_KEY')
+            if os.getenv('GROQ_API_KEY'):
+                pref.groq_api_key = os.getenv('GROQ_API_KEY')
+            db.session.commit()
         return pref
 
 class ReformulationHistory(db.Model):
