@@ -1,58 +1,92 @@
 from flask import Flask, request, jsonify, render_template
-from models import db, ReformulationHistory, EmailHistory
+from config import reload_env_config
+import requests
 from openai import OpenAI
 from anthropic import Anthropic
 import google.generativeai as genai
-import requests
-import json
-import os
-from datetime import datetime
+from models import db, ReformulationHistory, EmailHistory
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-class EnvConfig:
-    def __init__(self):
-        self.current_provider = os.getenv('CURRENT_PROVIDER', 'ollama')
-        self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
-        self.ollama_model = os.getenv('OLLAMA_MODEL', 'mistral')
-        self.openai_api_key = os.getenv('OPENAI_API_KEY', '')
-        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
-        self.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', '')
-        self.anthropic_model = os.getenv('ANTHROPIC_MODEL', 'claude-2')
-        self.google_api_key = os.getenv('GOOGLE_API_KEY', '')
-        self.gemini_model = os.getenv('GEMINI_MODEL', 'gemini-pro')
-        self.groq_api_key = os.getenv('GROQ_API_KEY', '')
-        self.groq_model = os.getenv('GROQ_MODEL', 'mixtral-8x7b-32768')
-        self.reformulation_prompt = os.getenv('REFORMULATION_PROMPT', 'Tu es un assistant spécialisé dans la reformulation de texte.')
-        self.translation_prompt = os.getenv('TRANSLATION_PROMPT', 'Tu es un traducteur professionnel.')
-        self.email_prompt = os.getenv('EMAIL_PROMPT', 'Tu es un assistant spécialisé dans la rédaction d\'emails professionnels.')
-
-def reload_env_config():
-    return EnvConfig()
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
     reformulation_history = ReformulationHistory.query.order_by(ReformulationHistory.created_at.desc()).all()
-    return render_template('index.html', reformulation_history=reformulation_history)
+    email_history = EmailHistory.query.order_by(EmailHistory.created_at.desc()).all()
+    return render_template('index.html', reformulation_history=reformulation_history, email_history=email_history)
 
 @app.route('/api/status')
 def check_status():
     preferences = reload_env_config()
     provider = preferences.current_provider
+    
     if provider != 'ollama':
         return jsonify({"status": "connected", "provider": provider})
-    
+        
     ollama_url = request.args.get('url', preferences.ollama_url)
     try:
         response = requests.get(f"{ollama_url}/api/tags")
         if response.status_code == 200:
             return jsonify({"status": "connected", "provider": "ollama"})
-        return jsonify({"status": "error", "provider": "ollama", "error": "Failed to connect to Ollama"})
+        return jsonify({"status": "disconnected", "provider": "ollama", "error": "Failed to connect to Ollama"})
     except Exception as e:
         return jsonify({"status": "disconnected", "provider": "ollama", "error": str(e)})
+
+@app.route('/api/models/<provider>')
+def get_models(provider):
+    preferences = reload_env_config()
+    try:
+        if provider == 'ollama':
+            ollama_url = request.args.get('url', preferences.ollama_url)
+            response = requests.get(f"{ollama_url}/api/tags")
+            if response.status_code == 200:
+                models = [{"id": model["name"], "name": model["name"]} for model in response.json()["models"]]
+                return jsonify({"models": models})
+            return jsonify({"error": "Failed to fetch Ollama models"}), 500
+        elif provider == 'openai':
+            return jsonify({"models": [
+                {"id": "gpt-4", "name": "GPT-4"},
+                {"id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo"}
+            ]})
+        elif provider == 'anthropic':
+            return jsonify({"models": [
+                {"id": "claude-3-opus-20240229", "name": "Claude 3 Opus"},
+                {"id": "claude-3-sonnet-20240229", "name": "Claude 3 Sonnet"},
+                {"id": "claude-2.1", "name": "Claude 2.1"}
+            ]})
+        elif provider == 'groq':
+            return jsonify({"models": [
+                {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B"},
+                {"id": "llama2-70b-4096", "name": "LLaMA2 70B"}
+            ]})
+        elif provider == 'gemini':
+            return jsonify({"models": [
+                {"id": "gemini-pro", "name": "Gemini Pro"}
+            ]})
+        return jsonify({"error": "Invalid provider"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    preferences = reload_env_config()
+    return jsonify({
+        "current_provider": preferences.current_provider,
+        "ollama_url": preferences.ollama_url,
+        "ollama_model": preferences.ollama_model,
+        "openai_model": preferences.openai_model,
+        "anthropic_model": preferences.anthropic_model,
+        "gemini_model": preferences.gemini_model,
+        "groq_model": preferences.groq_model,
+        "reformulation_prompt": preferences.reformulation_prompt,
+        "translation_prompt": preferences.translation_prompt,
+        "email_prompt": preferences.email_prompt
+    })
 
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
@@ -63,20 +97,19 @@ def reformulate():
 
         preferences = reload_env_config()
         provider = preferences.current_provider
-
+        text = data.get('text')
         context = data.get('context', '')
-        text = data.get('text', '')
         tone = data.get('tone', '')
-        format = data.get('format', '')
+        format_type = data.get('format', '')
         length = data.get('length', '')
 
         if not text:
             return jsonify({"error": "Text is required"}), 400
 
-        formatted_prompt = f"""Contexte: {context if context else 'Aucun'}
-Texte: {text}
+        formatted_prompt = f"""Texte à reformuler: {text}
+Context/Email reçu: {context}
 Ton souhaité: {tone}
-Format souhaité: {format}
+Format souhaité: {format_type}
 Longueur souhaitée: {length}"""
 
         try:
@@ -137,91 +170,14 @@ Longueur souhaitée: {length}"""
                     original_text=text,
                     reformulated_text=response_text,
                     tone=tone,
-                    format=format,
+                    format=format_type,
                     length=length
                 )
                 db.session.add(history)
                 db.session.commit()
                 return jsonify({"text": response_text})
             return jsonify({"error": f"No response from {provider}"}), 500
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/translate', methods=['POST'])
-def translate():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        preferences = reload_env_config()
-        provider = preferences.current_provider
-        text = data.get('text')
-        target_language = data.get('target_language')
-
-        if not text or not target_language:
-            return jsonify({"error": "Text and target language are required"}), 400
-
-        formatted_prompt = f"Texte à traduire: {text}\nLangue cible: {target_language}"
-        translation_prompt = preferences.translation_prompt
-
-        try:
-            response_text = None
-            if provider == 'ollama':
-                response = requests.post(
-                    f"{preferences.ollama_url}/api/generate",
-                    json={
-                        'model': preferences.ollama_model,
-                        'prompt': formatted_prompt,
-                        'system': translation_prompt,
-                        'stream': False
-                    }
-                )
-                if response.status_code == 200:
-                    response_text = response.json().get('response', '')
-            elif provider == 'openai':
-                client = OpenAI(api_key=preferences.openai_api_key)
-                response = client.chat.completions.create(
-                    model=preferences.openai_model,
-                    messages=[
-                        {"role": "system", "content": translation_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
-                response_text = response.choices[0].message.content
-            elif provider == 'anthropic':
-                client = Anthropic(api_key=preferences.anthropic_api_key)
-                message = client.messages.create(
-                    model=preferences.anthropic_model,
-                    system=translation_prompt,
-                    messages=[{"role": "user", "content": formatted_prompt}]
-                )
-                response_text = message.content[0].text
-            elif provider == 'groq':
-                client = OpenAI(api_key=preferences.groq_api_key,
-                             base_url="https://api.groq.com/openai/v1")
-                response = client.chat.completions.create(
-                    model=preferences.groq_model,
-                    messages=[
-                        {"role": "system", "content": translation_prompt},
-                        {"role": "user", "content": formatted_prompt}
-                    ]
-                )
-                response_text = response.choices[0].message.content
-            elif provider == 'gemini':
-                genai.configure(api_key=preferences.google_api_key)
-                model = genai.GenerativeModel(preferences.gemini_model)
-                response = model.generate_content([
-                    {"role": "user", "parts": [translation_prompt]},
-                    {"role": "user", "parts": [formatted_prompt]}
-                ])
-                response_text = response.text
-
-            if response_text:
-                return jsonify({"text": response_text})
-            return jsonify({"error": f"No response from {provider}"}), 500
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -237,22 +193,22 @@ def check_grammar():
         text = data['text']
         preferences = reload_env_config()
         provider = preferences.current_provider
+        check_prompt = """Tu es un correcteur grammatical expert. Analyse le texte fourni et retourne une liste d'erreurs grammaticales, orthographiques et stylistiques.
+Pour chaque erreur, indique:
+- Le type d'erreur
+- La position dans le texte
+- Une explication claire
+- Une suggestion de correction
 
-        grammar_prompt = """Tu es un correcteur grammatical expert. Analyse le texte suivant et identifie toutes les erreurs grammaticales, orthographiques et de style. Pour chaque erreur:
-- Indique le type d'erreur (grammaire, orthographe, style, etc.)
-- Fournis une explication claire de l'erreur
-- Propose une correction
-Format de réponse: Liste d'objets JSON avec les propriétés suivantes:
-{
-    "errors": [
-        {
-            "type": "Type d'erreur",
-            "position": "Position dans le texte",
-            "message": "Explication de l'erreur",
-            "suggestion": "Suggestion de correction"
-        }
-    ]
-}"""
+Format de réponse attendu:
+[
+  {
+    "type": "Type d'erreur (grammaticale/orthographique/syntaxique/style)",
+    "position": "Position dans le texte",
+    "message": "Explication de l'erreur",
+    "suggestion": "Suggestion de correction"
+  }
+]"""
 
         try:
             response_text = None
@@ -262,7 +218,7 @@ Format de réponse: Liste d'objets JSON avec les propriétés suivantes:
                     json={
                         'model': preferences.ollama_model,
                         'prompt': text,
-                        'system': grammar_prompt,
+                        'system': check_prompt,
                         'stream': False
                     }
                 )
@@ -273,17 +229,16 @@ Format de réponse: Liste d'objets JSON avec les propriétés suivantes:
                 response = client.chat.completions.create(
                     model=preferences.openai_model,
                     messages=[
-                        {"role": "system", "content": grammar_prompt},
+                        {"role": "system", "content": check_prompt},
                         {"role": "user", "content": text}
-                    ],
-                    response_format={ "type": "json_object" }
+                    ]
                 )
                 response_text = response.choices[0].message.content
             elif provider == 'anthropic':
                 client = Anthropic(api_key=preferences.anthropic_api_key)
                 message = client.messages.create(
                     model=preferences.anthropic_model,
-                    system=grammar_prompt,
+                    system=check_prompt,
                     messages=[{"role": "user", "content": text}]
                 )
                 response_text = message.content[0].text
@@ -293,7 +248,7 @@ Format de réponse: Liste d'objets JSON avec les propriétés suivantes:
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
                     messages=[
-                        {"role": "system", "content": grammar_prompt},
+                        {"role": "system", "content": check_prompt},
                         {"role": "user", "content": text}
                     ]
                 )
@@ -302,19 +257,21 @@ Format de réponse: Liste d'objets JSON avec les propriétés suivantes:
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([
-                    {"role": "user", "parts": [grammar_prompt]},
+                    {"role": "user", "parts": [check_prompt]},
                     {"role": "user", "parts": [text]}
                 ])
                 response_text = response.text
 
             if response_text:
+                # Try to parse the response as a list of errors
                 try:
+                    import json
                     errors = json.loads(response_text)
-                    if not isinstance(errors.get('errors'), list):
-                        errors = {"errors": []}
-                    return jsonify(errors), 200
+                    return jsonify({"errors": errors})
                 except json.JSONDecodeError:
-                    return jsonify({"errors": []}), 200
+                    # If parsing fails, return the raw response
+                    return jsonify({"errors": [{"type": "Format", "position": "N/A", 
+                                              "message": response_text, "suggestion": None}]})
             return jsonify({"error": f"No response from {provider}"}), 500
 
         except Exception as e:
@@ -332,8 +289,8 @@ def fix_grammar():
         text = data['text']
         preferences = reload_env_config()
         provider = preferences.current_provider
-
-        fix_prompt = """Tu es un correcteur grammatical expert. Corrige toutes les erreurs grammaticales, orthographiques et de style dans le texte suivant. Retourne uniquement le texte corrigé, sans explications ni commentaires."""
+        fix_prompt = """Tu es un correcteur grammatical expert. Corrige toutes les erreurs grammaticales, orthographiques et stylistiques dans le texte fourni.
+Retourne uniquement le texte corrigé, sans commentaires ni explications."""
 
         try:
             response_text = None
@@ -501,4 +458,4 @@ def reset_history():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

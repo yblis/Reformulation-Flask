@@ -140,50 +140,95 @@
         <div class="tab-pane fade" id="translation" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Texte à analyser/traduire:</h5>
-                            <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
-                                <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                    <!-- Texte à traduire -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Texte à traduire</h5>
+                        <textarea id="translationInput" class="form-control mb-3" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
+                            <div>
+                                <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
+                                <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloc rétractable "Traduire vers" -->
+                    <div class="card mb-4">
+                        <div class="card-header" data-bs-toggle="collapse" data-bs-target="#targetLangCollapse" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Traduire vers</h5>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="targetLangCollapse" class="collapse show">
+                            <div class="card-body">
+                                <div id="targetLanguageGroup" class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
                                 </div>
                             </div>
-                            
-                            <div class="d-flex gap-2 mb-4">
-                                <button id="checkGrammar" class="btn btn-primary flex-grow-1">
-                                    <i class="bi bi-check-circle me-2"></i>Vérifier la grammaire
-                                </button>
-                                <button id="fixGrammar" class="btn btn-warning flex-grow-1" disabled>
-                                    <i class="bi bi-magic me-2"></i>Corriger
-                                </button>
-                            </div>
+                        </div>
+                    </div>
 
-                            <div id="grammarResults" class="mb-4 d-none">
-                                <h6 class="mb-2">Résultats de l'analyse:</h6>
+                    <!-- Boutons d'action -->
+                    <div class="d-flex gap-2 mb-4">
+                        <button id="translateText" class="btn btn-success flex-grow-1">
+                            <i class="bi bi-translate me-2"></i>Traduire
+                        </button>
+                        <button id="checkGrammar" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-check-circle me-2"></i>Vérifier la grammaire
+                        </button>
+                    </div>
+
+                    <!-- Onglets Traduction/Correcteur -->
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="translation-result-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#translation-result" type="button" role="tab">Traduction</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="grammar-check-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#grammar-check" type="button" role="tab">Correcteur</button>
+                        </li>
+                    </ul>
+
+                    <!-- Contenu des onglets -->
+                    <div class="tab-content">
+                        <!-- Onglet Traduction -->
+                        <div class="tab-pane fade show active" id="translation-result" role="tabpanel">
+                            <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Onglet Correcteur -->
+                        <div class="tab-pane fade" id="grammar-check" role="tabpanel">
+                            <div id="grammarResults">
                                 <div class="list-group">
                                     <!-- Les erreurs seront ajoutées ici dynamiquement -->
                                 </div>
                             </div>
+                            <button id="fixGrammar" class="btn btn-warning w-100 mt-3" disabled>
+                                <i class="bi bi-magic me-2"></i>Corriger automatiquement
+                            </button>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Traduire vers:</h5>
-                            <div id="targetLanguageGroup" class="btn-group mb-4 w-100" role="group">
-                                <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
-                            </div>
+                    </div>
 
-                            <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
-
-                            <h5 class="mb-3">Traduction:</h5>
-                            <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                    <!-- Boutons de copie et effacement -->
+                    <div class="btn-group w-100 mt-3">
+                        <button id="copyTranslation" class="btn btn-success">Copier</button>
+                        <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                    </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
                         <div>
