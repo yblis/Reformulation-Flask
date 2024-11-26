@@ -15,11 +15,6 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="correction-tab" data-bs-toggle="tab" data-bs-target="#correction" type="button" role="tab">
-                ✍️ Correcteur
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
             <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
                 ✉️ Générateur d'Email
             </button>
@@ -180,42 +175,6 @@
                     <div class="btn-group w-100">
                         <button id="copyTranslation" class="btn btn-success">Copier</button>
                         <button id="clearTranslation" class="btn btn-success">Effacer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Correction Tab -->
-        <div class="tab-pane fade" id="correction" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Texte à corriger:</h5>
-                    <textarea id="correctionInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
-                        <small class="text-muted">Caractères: <span id="correctionInputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="correctionInputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="correctionInputParaCount">0</span></small>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info mb-4" id="detectedLanguage"></div>
-                    
-                    <button id="detectAndCorrectBtn" class="btn btn-success w-100 mb-4">Détecter et Corriger</button>
-
-                    <h5 class="mb-3">Texte corrigé:</h5>
-                    <textarea id="correctionOutput" class="form-control mb-3" rows="5" readonly></textarea>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted">Caractères: <span id="correctionOutputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="correctionOutputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="correctionOutputParaCount">0</span></small>
-                        </div>
-                    </div>
-
-                    <div class="btn-group w-100">
-                        <button id="copyCorrectionBtn" class="btn btn-success">Copier</button>
-                        <button id="clearCorrectionBtn" class="btn btn-success">Effacer</button>
                     </div>
                 </div>
             </div>
