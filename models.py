@@ -52,7 +52,7 @@ class UserPreferences(db.Model):
                 system_prompt="""Tu es un expert en reformulation. Tu dois reformuler le texte selon les paramètres spécifiés par l'utilisateur: ton, format et longueur. IMPORTANT : retourne UNIQUEMENT le texte reformulé, sans aucune mention des paramètres. 
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
 Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation.""",
-                translation_prompt="""Tu es un traducteur automatique. Le texte source sera fourni avec sa langue détectée. Traduis le texte en {target_language}. Assure-toi que la traduction est naturelle et fluide. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
+                translation_prompt="""Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
                 email_prompt="""Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
             )
             db.session.add(pref)
