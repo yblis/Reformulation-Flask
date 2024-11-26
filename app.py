@@ -365,6 +365,97 @@ def reformulate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/api/correct', methods=['POST'])
+def correct_text():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        preferences = reload_env_config()
+        provider = preferences.current_provider
+        text = data.get('text')
+        options = data.get('options', {})
+        
+        if not text:
+            return jsonify({"error": "Text is required"}), 400
+
+        # Format the prompt with correction options
+        correction_prompt = "Tu es un correcteur de texte professionnel. Corrige le texte suivant en respectant les options sélectionnées:\n"
+        if options.get('grammar'):
+            correction_prompt += "- Correction grammaticale\n"
+        if options.get('spelling'):
+            correction_prompt += "- Correction orthographique\n"
+        if options.get('style'):
+            correction_prompt += "- Amélioration du style\n"
+        if options.get('punctuation'):
+            correction_prompt += "- Correction de la ponctuation\n"
+        correction_prompt += "\nRetourne UNIQUEMENT le texte corrigé, sans aucun autre commentaire."
+
+        formatted_prompt = f"Texte à corriger: {text}"
+        
+        try:
+            response_text = None
+            if provider == 'ollama':
+                response = requests.post(
+                    f"{preferences.ollama_url}/api/generate",
+                    json={
+                        'model': preferences.ollama_model,
+                        'prompt': formatted_prompt,
+                        'system': correction_prompt,
+                        'stream': False
+                    }
+                )
+                if response.status_code == 200:
+                    response_text = response.json().get('response', '')
+            elif provider == 'openai':
+                client = OpenAI(api_key=preferences.openai_api_key)
+                response = client.chat.completions.create(
+                    model=preferences.openai_model,
+                    messages=[
+                        {"role": "system", "content": correction_prompt},
+                        {"role": "user", "content": formatted_prompt}
+                    ]
+                )
+                response_text = response.choices[0].message.content
+            elif provider == 'anthropic':
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                message = client.messages.create(
+                    model=preferences.anthropic_model,
+                    system=correction_prompt,
+                    messages=[{"role": "user", "content": formatted_prompt}]
+                )
+                response_text = message.content[0].text
+            elif provider == 'groq':
+                client = OpenAI(api_key=preferences.groq_api_key,
+                             base_url="https://api.groq.com/openai/v1")
+                response = client.chat.completions.create(
+                    model=preferences.groq_model,
+                    messages=[
+                        {"role": "system", "content": correction_prompt},
+                        {"role": "user", "content": formatted_prompt}
+                    ]
+                )
+                response_text = response.choices[0].message.content
+            elif provider == 'gemini':
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model)
+                response = model.generate_content([
+                    {"role": "user", "parts": [correction_prompt]},
+                    {"role": "user", "parts": [formatted_prompt]}
+                ])
+                response_text = response.text
+
+            if not response_text:
+                raise Exception(f"No response from {provider}")
+
+            return jsonify({"text": response_text})
+        except Exception as e:
+            return jsonify({"error": f"Error correcting text: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/translate', methods=['POST'])
 def translate():
     try:
