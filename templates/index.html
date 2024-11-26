@@ -15,6 +15,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="correcteur-tab" data-bs-toggle="tab" data-bs-target="#correcteur" type="button" role="tab">
+                ✍️ Correcteur
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
                 ✉️ Générateur d'Email
             </button>
@@ -140,41 +145,94 @@
         <div class="tab-pane fade" id="translation" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="mb-3">Texte à traduire:</h5>
-                    <textarea id="translationInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
-                        <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Texte à traduire:</h5>
+                            <textarea id="translationInput" class="form-control mb-4" rows="8" placeholder="Entrez votre texte ici..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+                                <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Traduction:</h5>
+                            <textarea id="translationOutput" class="form-control mb-3" rows="8" readonly></textarea>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <h5 class="mb-3">Traduire vers:</h5>
-                    <div id="targetLanguageGroup" class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
-                        <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5 class="mb-3">Traduire vers:</h5>
+                            <div id="targetLanguageGroup" class="btn-group flex-wrap" role="group">
+                                <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
+                                <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
+                            </div>
+
+                            <button id="translateText" class="btn btn-success w-100 my-4">Traduire</button>
+
+                            <div class="btn-group w-100">
+                                <button id="copyTranslation" class="btn btn-success">Copier</button>
+                                <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Correcteur Tab -->
+        <div class="tab-pane fade" id="correcteur" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Texte à corriger:</h5>
+                    <textarea id="correctionInput" class="form-control mb-4" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+                        <small class="text-muted">Caractères: <span id="correctionInputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="correctionInputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="correctionInputParaCount">0</span></small>
+                        </div>
                     </div>
 
-                    <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
+                    <div class="mb-4">
+                        <h6 class="mb-2">Options de correction</h6>
+                        <div id="correctionOptions" class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" data-value="Orthographe">Orthographe</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Grammaire">Grammaire</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Ponctuation">Ponctuation</button>
+                            <button type="button" class="btn btn-outline-secondary" data-value="Style">Style</button>
+                        </div>
+                    </div>
 
-                    <h5 class="mb-3">Traduction:</h5>
-                    <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                    <button id="correctText" class="btn btn-success w-100 mb-4">Corriger</button>
+
+                    <h5 class="mb-3">Texte corrigé:</h5>
+                    <textarea id="correctionOutput" class="form-control mb-3" rows="5" readonly></textarea>
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                        <small class="text-muted">Caractères: <span id="correctionOutputCharCount">0</span></small>
                         <div>
-                            <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                            <small class="text-muted me-3">Mots: <span id="correctionOutputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="correctionOutputParaCount">0</span></small>
                         </div>
                     </div>
 
                     <div class="btn-group w-100">
-                        <button id="copyTranslation" class="btn btn-success">Copier</button>
-                        <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                        <button id="copyCorrectionBtn" class="btn btn-success">Copier</button>
+                        <button id="clearCorrectionBtn" class="btn btn-success">Effacer</button>
                     </div>
                 </div>
             </div>
