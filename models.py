@@ -60,8 +60,17 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
 - Correction orthographique
 - Amélioration du style
 - Correction de la ponctuation
+- Suggestions de synonymes
 
-Retourne UNIQUEMENT le texte corrigé, sans aucun autre commentaire."""
+Si l'option "Suggestions de synonymes" est activée, propose des synonymes pour les mots principaux du texte.
+Format de réponse avec synonymes:
+===TEXTE CORRIGÉ===
+[Le texte corrigé]
+===SYNONYMES===
+mot1: synonyme1, synonyme2, synonyme3
+mot2: synonyme1, synonyme2, synonyme3
+
+Si l'option n'est pas activée, retourne UNIQUEMENT le texte corrigé."""
             )
             db.session.add(pref)
             db.session.commit()
