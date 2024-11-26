@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyCorrection = document.getElementById('copyCorrection');
     const clearCorrection = document.getElementById('clearCorrection');
 
-    // Update text statistics for both input and output
+    // Initialize text statistics for both input and output
     function updateTextStats(element, charCountId, wordCountId, paraCountId) {
         const text = element.value;
         const charCount = document.getElementById(charCountId);

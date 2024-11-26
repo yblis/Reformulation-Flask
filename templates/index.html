@@ -143,53 +143,60 @@
 
         <!-- Translation Tab -->
         <div class="tab-pane fade" id="translation" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5 class="mb-3">Texte source:</h5>
-                        <textarea id="translationInput" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
-                            <div>
-                                <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
-                                <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="mb-3">Options de traduction</h5>
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="mb-2">Langue cible:</h6>
-                                <div id="targetLanguageGroup" class="btn-group flex-wrap" role="group">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Anglais">Anglais</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Français">Français</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Espagnol">Espagnol</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Allemand">Allemand</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Italien">Italien</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Portugais">Portugais</button>
+            <div class="row">
+                <!-- Translation Input Card -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Texte source:</h5>
+                            <textarea id="translationInput" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <button id="translateText" class="btn btn-success w-100 mb-4">Traduire</button>
-
-                    <div class="mb-3">
-                        <h5 class="mb-3">Traduction:</h5>
-                        <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
-                            <div>
-                                <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
-                                <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                    <!-- Translation Options Card -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Options de traduction</h5>
+                            <div class="mb-3">
+                                <h6 class="mb-2">Langue cible:</h6>
+                                <select id="targetLanguage" class="form-select">
+                                    <option value="Anglais">Anglais</option>
+                                    <option value="Français">Français</option>
+                                    <option value="Espagnol">Espagnol</option>
+                                    <option value="Allemand">Allemand</option>
+                                    <option value="Italien">Italien</option>
+                                    <option value="Portugais">Portugais</option>
+                                </select>
                             </div>
+                            <button id="translateText" class="btn btn-success w-100">Traduire</button>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="btn-group w-100">
-                            <button id="copyTranslation" class="btn btn-success">Copier</button>
-                            <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                <!-- Translation Output Card -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Traduction:</h5>
+                            <textarea id="translationOutput" class="form-control mb-3" rows="5" readonly></textarea>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
+                                </div>
+                            </div>
+                            <div class="btn-group w-100">
+                                <button id="copyTranslation" class="btn btn-success">Copier</button>
+                                <button id="clearTranslation" class="btn btn-success">Effacer</button>
+                            </div>
                         </div>
                     </div>
                 </div>

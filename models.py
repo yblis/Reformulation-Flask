@@ -34,6 +34,7 @@ class UserPreferences(db.Model):
     system_prompt = db.Column(db.Text, nullable=False)
     translation_prompt = db.Column(db.Text, nullable=False)
     email_prompt = db.Column(db.Text, nullable=False)
+    correction_prompt = db.Column(db.Text, nullable=False)
     
     # Timestamps
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -53,7 +54,14 @@ class UserPreferences(db.Model):
 Respecte scrupuleusement le format demandé, la longueur et le ton. Ne rajoute aucun autre commentaire.
 Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la reformulation.""",
                 translation_prompt="""Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
-                email_prompt="""Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'."""
+                email_prompt="""Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'.""",
+                correction_prompt="""Tu es un correcteur de texte professionnel. Corrige le texte suivant en respectant les options sélectionnées:
+- Correction grammaticale
+- Correction orthographique
+- Amélioration du style
+- Correction de la ponctuation
+
+Retourne UNIQUEMENT le texte corrigé, sans aucun autre commentaire."""
             )
             db.session.add(pref)
             db.session.commit()

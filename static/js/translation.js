@@ -5,26 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyTranslation = document.getElementById('copyTranslation');
     const clearTranslation = document.getElementById('clearTranslation');
 
-    // Setup the target language button group
-    function setupTagGroup(groupId) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-        
-        const buttons = group.querySelectorAll('.btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', function() {
-                buttons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    }
-
-    setupTagGroup('targetLanguageGroup');
-
-    // Get selected language from button group
+    // Get selected language from select input
     function getSelectedLanguage() {
-        const activeButton = document.querySelector('#targetLanguageGroup .btn.active');
-        return activeButton ? activeButton.dataset.value : 'Anglais';
+        const select = document.getElementById('targetLanguage');
+        return select ? select.value : 'Anglais';
     }
 
     translateText.addEventListener('click', async function() {
