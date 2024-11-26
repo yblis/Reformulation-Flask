@@ -14,3 +14,5 @@ google-generativeai
 openai
 python-dotenv
 requests
+langdetect
+language-tool-python
