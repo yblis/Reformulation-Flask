@@ -119,7 +119,54 @@ def translate_text():
         if not text:
             return jsonify({"error": "No text provided"}), 400
             
-        formatted_prompt = f"Texte à traduire: {text}"
+        # Detect source language first
+        detection_prompt = f"Détecte la langue du texte suivant et réponds uniquement avec le nom de la langue en français, sans autre commentaire: {text}"
+        
+        source_language = None
+        try:
+            if provider == 'ollama':
+                response = requests.post(
+                    f"{preferences.ollama_url}/api/generate",
+                    json={
+                        'model': preferences.ollama_model,
+                        'prompt': detection_prompt,
+                        'stream': False
+                    }
+                )
+                if response.status_code == 200:
+                    source_language = response.json().get('response', '').strip()
+            elif provider == 'openai':
+                client = OpenAI(api_key=preferences.openai_api_key)
+                response = client.chat.completions.create(
+                    model=preferences.openai_model,
+                    messages=[{"role": "user", "content": detection_prompt}]
+                )
+                source_language = response.choices[0].message.content.strip()
+            elif provider == 'anthropic':
+                client = Anthropic(api_key=preferences.anthropic_api_key)
+                message = client.messages.create(
+                    model=preferences.anthropic_model,
+                    messages=[{"role": "user", "content": detection_prompt}]
+                )
+                source_language = message.content[0].text.strip()
+            elif provider == 'groq':
+                client = OpenAI(api_key=preferences.groq_api_key,
+                             base_url="https://api.groq.com/openai/v1")
+                response = client.chat.completions.create(
+                    model=preferences.groq_model,
+                    messages=[{"role": "user", "content": detection_prompt}]
+                )
+                source_language = response.choices[0].message.content.strip()
+            elif provider == 'gemini':
+                genai.configure(api_key=preferences.google_api_key)
+                model = genai.GenerativeModel(preferences.gemini_model)
+                response = model.generate_content(detection_prompt)
+                source_language = response.text.strip()
+        except Exception as e:
+            print(f"Language detection error: {str(e)}")
+            source_language = "Langue inconnue"
+
+        formatted_prompt = f"Texte en {source_language} à traduire: {text}"
         translation_prompt = translation_prompt.format(target_language=target_language)
         
         try:
