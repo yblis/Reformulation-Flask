@@ -14,3 +14,4 @@ google-generativeai
 openai
 python-dotenv
 requests
+flask-migrate
