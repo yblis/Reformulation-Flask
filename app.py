@@ -234,6 +234,7 @@ def index():
                          system_prompt=preferences.system_prompt,
                          translation_prompt=preferences.translation_prompt,
                          email_prompt=preferences.email_prompt,
+                         correction_prompt=preferences.correction_prompt,
                          reformulation_history=[h.to_dict() for h in reformulation_history],
                          email_history=[h.to_dict() for h in email_history])
 
@@ -389,7 +390,17 @@ def correct_text():
             correction_prompt += "- Amélioration du style\n"
         if options.get('punctuation'):
             correction_prompt += "- Correction de la ponctuation\n"
-        correction_prompt += "\nRetourne UNIQUEMENT le texte corrigé, sans aucun autre commentaire."
+
+        if options.get('synonyms'):
+            correction_prompt += """
+Format de réponse avec synonymes:
+===TEXTE CORRIGÉ===
+[Le texte corrigé]
+===SYNONYMES===
+mot1: synonyme1, synonyme2, synonyme3
+mot2: synonyme1, synonyme2, synonyme3"""
+        else:
+            correction_prompt += "\nRetourne UNIQUEMENT le texte corrigé, sans aucun autre commentaire."
 
         formatted_prompt = f"Texte à corriger: {text}"
         
