@@ -6,6 +6,12 @@ A Flask-based web application for text reformulation, translation, and email gen
 - Text reformulation with customizable tone, format, and length
 - Translation to multiple languages
 - Professional email generation
+- Advanced text correction with:
+  - Grammar correction
+  - Spelling correction
+  - Style improvement
+  - Punctuation correction
+  - Synonym suggestions with interactive display
 - Support for multiple AI providers:
   - OpenAI
   - Anthropic
@@ -66,6 +72,11 @@ python app.py
 1. Select the desired functionality tab:
    - Reformulation: Rewrite text with specific tone, format, and length
    - Translation: Translate text between multiple languages
+   - Correction: Fix grammar, spelling, style, and get synonym suggestions
    - Email Generation: Create professional emails from templates
-2. Enter your text and configure options
+2. Enter your text and configure options:
+   - For reformulation: Choose tone, format, and length
+   - For translation: Select target language
+   - For correction: Toggle grammar, spelling, style, punctuation, and synonyms options
+   - For email: Select email type and provide context
 3. Use the history tab to view and reuse past reformulations
