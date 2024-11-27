@@ -279,6 +279,88 @@
             </div>
         </div>
 
+        <!-- Configuration Tab -->
+        <div class="tab-pane fade" id="config" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="form-label">Fournisseur d'IA:</label>
+                        <select id="aiProvider" class="form-select">
+                            <option value="ollama">Ollama (Local)</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="groq">Groq</option>
+                        </select>
+                    </div>
+
+                    <!-- Provider-specific configurations -->
+                    <div id="ollamaConfig" class="provider-config mb-4">
+                        <label class="form-label">URL d'Ollama:</label>
+                        <input type="text" id="ollamaUrl" class="form-control mb-3" placeholder="http://localhost:11434">
+                        <label class="form-label">Modèle:</label>
+                        <select id="modelSelect" class="form-select mb-3"></select>
+                        <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <div id="openaiConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API OpenAI:</label>
+                        <input type="password" id="openaiKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="openaiModel" class="form-select mb-3"></select>
+                        <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <div id="anthropicConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API Anthropic:</label>
+                        <input type="password" id="anthropicKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="anthropicModel" class="form-select mb-3"></select>
+                        <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <div id="geminiConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API Google:</label>
+                        <input type="password" id="geminiKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="geminiModel" class="form-select mb-3"></select>
+                        <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <div id="groqConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API Groq:</label>
+                        <input type="password" id="groqKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="groqModel" class="form-select mb-3"></select>
+                        <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <!-- Prompts configuration -->
+                    <div class="mb-4">
+                        <label class="form-label">Prompt système:</label>
+                        <textarea id="systemPrompt" class="form-control" rows="5">{{ system_prompt }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Prompt de traduction:</label>
+                        <textarea id="translationPrompt" class="form-control" rows="5">{{ translation_prompt }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Prompt du correcteur:</label>
+                        <textarea id="correctionPrompt" class="form-control" rows="5">{{ correction_prompt }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Prompt du générateur d'email:</label>
+                        <textarea id="emailPrompt" class="form-control" rows="5">{{ email_prompt }}</textarea>
+                    </div>
+
+                    <button id="saveConfig" class="btn btn-success w-100">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Email Generator Tab -->
         <div class="tab-pane fade" id="email" role="tabpanel">
             <div class="card mb-4">
@@ -310,242 +392,104 @@
 
         <!-- History Tab -->
         <div class="tab-pane fade" id="history" role="tabpanel">
-            <div class="d-flex justify-content-end mb-3">
-                <button id="resetHistory" class="btn btn-success">Réinitialiser l'historique</button>
-            </div>
             <div class="accordion" id="historyAccordion">
-                {% for item in reformulation_history %}
-                <div class="accordion-item mb-3">
+                <!-- Reformulation History -->
+                <div class="accordion-item mb-4">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reformulation-{{ item.id }}">
-                            <div class="d-flex justify-content-between w-100 me-3">
-                                <div class="text-truncate">
-                                    <span class="badge bg-primary me-2">Reformulation</span>
-                                    {{ item.original_text[:50] }}...
-                                </div>
-                                <small class="text-muted ms-2">{{ item.created_at }}</small>
-                            </div>
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#reformulationHistory">
+                            Historique des reformulations
                         </button>
                     </h2>
-                    <div id="reformulation-{{ item.id }}" class="accordion-collapse collapse">
+                    <div id="reformulationHistory" class="accordion-collapse collapse show">
                         <div class="accordion-body">
-                            {% if item.context %}
-                            <div class="mb-3">
-                                <h6>Contexte:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.context }}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <div class="mb-3">
-                                <h6>Texte original:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.original_text }}</div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <h6>Texte reformulé:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.reformulated_text }}</div>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex gap-2">
-                                    <span class="badge bg-secondary">{{ item.tone }}</span>
-                                    <span class="badge bg-secondary">{{ item.format }}</span>
-                                    <span class="badge bg-secondary">{{ item.length }}</span>
-                                </div>
-                                <button class="btn btn-success btn-sm reuse-history" 
-                                        data-id="{{ item.id }}"
-                                        data-text="{{ item.original_text }}"
-                                        data-context="{{ item.context }}"
-                                        data-tone="{{ item.tone }}"
-                                        data-format="{{ item.format }}"
-                                        data-length="{{ item.length }}">
-                                    Réutiliser
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                {% for item in email_history %}
-                <div class="accordion-item mb-3">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#email-{{ item.id }}">
-                            <div class="d-flex justify-content-between w-100 me-3">
-                                <div class="text-truncate">
-                                    <span class="badge bg-success me-2">Email</span>
-                                    {{ item.email_type }}
-                                </div>
-                                <small class="text-muted ms-2">{{ item.created_at }}</small>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="email-{{ item.id }}" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <div class="mb-3">
-                                <h6>Type d'email:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.email_type }}</div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <h6>Contenu et contexte:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.content }}</div>
-                                </div>
-                            </div>
-                            {% if item.sender %}
-                            <div class="mb-3">
-                                <h6>Expéditeur:</h6>
-                                <div class="card">
-                                    <div class="card-body">{{ item.sender }}</div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <div class="mb-3">
-                                <h6>Email généré:</h6>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <strong>Objet:</strong> {{ item.generated_subject }}<br><br>
-                                        {{ item.generated_email }}
+                            {% if reformulation_history %}
+                                <div class="list-group">
+                                    {% for entry in reformulation_history %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">{{ entry.created_at }}</small>
+                                            <button class="btn btn-sm btn-success reuse-history"
+                                                data-context="{{ entry.context }}"
+                                                data-text="{{ entry.original_text }}"
+                                                data-tone="{{ entry.tone }}"
+                                                data-format="{{ entry.format }}"
+                                                data-length="{{ entry.length }}">
+                                                Réutiliser
+                                            </button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Original:</strong>
+                                            <pre class="mb-2">{{ entry.original_text }}</pre>
+                                            {% if entry.context %}
+                                            <strong>Contexte:</strong>
+                                            <pre class="mb-2">{{ entry.context }}</pre>
+                                            {% endif %}
+                                            <strong>Reformulation:</strong>
+                                            <pre>{{ entry.reformulated_text }}</pre>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary me-1">{{ entry.tone }}</span>
+                                            <span class="badge bg-secondary me-1">{{ entry.format }}</span>
+                                            <span class="badge bg-secondary">{{ entry.length }}</span>
+                                        </div>
                                     </div>
+                                    {% endfor %}
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button class="btn btn-success btn-sm reuse-email" 
-                                        data-id="{{ item.id }}"
-                                        data-type="{{ item.email_type }}"
-                                        data-content="{{ item.content }}"
-                                        data-sender="{{ item.sender }}">
-                                    Réutiliser
-                                </button>
-                            </div>
+                            {% else %}
+                                <p class="text-muted">Aucun historique de reformulation</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-        </div>
 
-        <!-- Configuration Tab -->
-        <div class="tab-pane fade" id="config" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Fournisseur d'IA</h5>
-                    <select id="aiProvider" class="form-select mb-4">
-                        <option value="ollama">Ollama (Local)</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="anthropic">Anthropic</option>
-                        <option value="groq">Groq</option>
-                        <option value="gemini">Google Gemini</option>
-                    </select>
-
-                    <!-- Ollama Config -->
-                    <div id="ollamaConfig" class="provider-config">
-                        <div class="mb-3">
-                            <label class="form-label">URL d'Ollama:</label>
-                            <input type="text" id="ollamaUrl" class="form-control" placeholder="http://localhost:11434">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="modelSelect" class="form-select"></select>
-                        </div>
-                        <button id="refreshModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- OpenAI Config -->
-                    <div id="openaiConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API OpenAI:</label>
-                            <input type="password" id="openaiKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="openaiModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshOpenaiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Anthropic Config -->
-                    <div id="anthropicConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Anthropic:</label>
-                            <input type="password" id="anthropicKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="anthropicModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshAnthropicModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Groq Config -->
-                    <div id="groqConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Groq:</label>
-                            <input type="password" id="groqKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="groqModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshGroqModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Gemini Config -->
-                    <div id="geminiConfig" class="provider-config" style="display: none;">
-                        <div class="mb-3">
-                            <label class="form-label">Clé API Google:</label>
-                            <input type="password" id="geminiKey" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modèle:</label>
-                            <select id="geminiModel" class="form-select"></select>
-                        </div>
-                        <button id="refreshGeminiModels" class="btn btn-success w-100 mb-4">Rafraîchir les modèles</button>
-                    </div>
-
-                    <button id="saveConfig" class="btn btn-success w-100">Sauvegarder la configuration</button>
-
-                    <!-- Prompts Configs -->
-                    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-                        <h5 class="mb-0">Configuration du Prompt</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#systemPromptCollapse" aria-expanded="false" aria-controls="systemPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
+                <!-- Email History -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailHistory">
+                            Historique des emails
                         </button>
-                    </div>
-                    <div class="collapse" id="systemPromptCollapse">
-                        <textarea id="systemPrompt" class="form-control mb-4" rows="5">{{ system_prompt }}</textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Configuration du Prompt de Traduction</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationPromptCollapse" aria-expanded="false" aria-controls="translationPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="collapse" id="translationPromptCollapse">
-                        <textarea id="translationPrompt" class="form-control mb-4" rows="5">{{ translation_prompt }}</textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Configuration du Prompt de Génération d'Email</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#emailPromptCollapse" aria-expanded="false" aria-controls="emailPromptCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="collapse" id="emailPromptCollapse">
-                        <textarea id="emailPrompt" class="form-control mb-4" rows="5">{{ email_prompt }}</textarea>
+                    </h2>
+                    <div id="emailHistory" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            {% if email_history %}
+                                <div class="list-group">
+                                    {% for entry in email_history %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">{{ entry.created_at }}</small>
+                                            <button class="btn btn-sm btn-success reuse-email"
+                                                data-type="{{ entry.email_type }}"
+                                                data-content="{{ entry.content }}"
+                                                data-sender="{{ entry.sender }}">
+                                                Réutiliser
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <strong>Type:</strong> {{ entry.email_type }}<br>
+                                            {% if entry.sender %}
+                                            <strong>Expéditeur:</strong> {{ entry.sender }}<br>
+                                            {% endif %}
+                                            <strong>Contenu:</strong>
+                                            <pre class="mb-2">{{ entry.content }}</pre>
+                                            <strong>Email généré:</strong>
+                                            <pre>{{ entry.generated_email }}</pre>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun historique d'email</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <button id="resetHistory" class="btn btn-danger w-100 mt-4">Réinitialiser l'historique</button>
         </div>
     </div>
 </div>
 
-{% include 'prompt_modal.html' %}
-
+{% include 'translation_modal.html' %}
+{% include 'settings_modal.html' %}
 {% endblock %}

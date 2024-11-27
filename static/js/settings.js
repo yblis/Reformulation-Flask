@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveConfig = document.getElementById('saveConfig');
     const systemPrompt = document.getElementById('systemPrompt');
     const translationPrompt = document.getElementById('translationPrompt');
+    const correctionPrompt = document.getElementById('correctionPrompt');
     const emailPrompt = document.getElementById('emailPrompt');
 
     // Only proceed if we're on the config tab
