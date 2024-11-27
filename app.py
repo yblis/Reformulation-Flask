@@ -401,7 +401,7 @@ def correct_text():
                     json={
                         'model': preferences.ollama_model,
                         'prompt': formatted_prompt,
-                        'system': correction_prompt,
+                        'system': correction_prompt + ("\nVeuillez inclure des suggestions de synonymes." if options.get('synonyms') else ""),
                         'stream': False
                     }
                 )
