@@ -415,38 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateUIForStatus(status) {
-        const statusIndicator = document.getElementById('statusIndicator');
-        if (!statusIndicator) {
-            return;
+        if (status.provider === 'ollama' && status.error) {
+            console.log(`État Ollama: ${status.error}`);
         }
-
-        let icon = '';
-        let color = '';
-        
-        switch(status.state) {
-            case 'connected':
-                icon = '<i class="bi bi-check-circle-fill"></i>';
-                color = 'text-success';
-                break;
-            case 'warning':
-                icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
-                color = 'text-warning';
-                break;
-            case 'error':
-            case 'disconnected':
-                icon = '<i class="bi bi-x-circle-fill"></i>';
-                color = 'text-danger';
-                break;
-            default:
-                icon = '<i class="bi bi-question-circle-fill"></i>';
-                color = 'text-secondary';
-        }
-
-        statusIndicator.innerHTML = `
-            <span class="${color}" title="${status.error || status.message || 'État du service'}">
-                ${icon} ${status.provider.charAt(0).toUpperCase() + status.provider.slice(1)}
-            </span>
-        `;
     }
 
     // Initialize status check

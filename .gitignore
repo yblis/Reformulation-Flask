@@ -2,6 +2,3 @@
 __pycache__/
 *.pyc
 instance/
-.pytest_cache/
-*.db
-backup_preferences.json

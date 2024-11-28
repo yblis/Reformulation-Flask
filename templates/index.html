@@ -318,8 +318,7 @@
                         <input type="text" id="ollamaUrl" class="form-control mb-3" placeholder="http://localhost:11434">
                         <label class="form-label">Modèle:</label>
                         <select id="modelSelect" class="form-select mb-3"></select>
-                        <button id="refreshModels" class="btn btn-success w-100 mb-3">Rafraîchir les modèles</button>
-                        <button id="saveConfig" class="btn btn-success w-100">Enregistrer</button>
+                        <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
                     </div>
 
                     <div id="openaiConfig" class="provider-config mb-4" style="display: none;">
@@ -374,6 +373,8 @@
                         <label class="form-label">Prompt du générateur d'email:</label>
                         <textarea id="emailPrompt" class="form-control" rows="5">{{ email_prompt }}</textarea>
                     </div>
+
+                    <button id="saveConfig" class="btn btn-success w-100">Enregistrer</button>
                 </div>
             </div>
         </div>

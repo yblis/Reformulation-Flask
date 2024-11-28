@@ -11,14 +11,21 @@ def datetime_handler(x):
 def backup_data():
     with app.app_context():
         # Backup UserPreferences
-        # Seules les données non-sensibles sont sauvegardées
-        # Les données suivantes sont gérées exclusivement via le fichier .env :
-        # - Tous les paramètres liés aux fournisseurs IA
-        # - Toutes les clés API
         preferences = UserPreferences.query.all()
         with open('backup_preferences.json', 'w', encoding='utf-8') as f:
             json.dump([{
                 'syntax_rules': p.syntax_rules,
+                'current_provider': p.current_provider,
+                'ollama_url': p.ollama_url,
+                'ollama_model': p.ollama_model,
+                'openai_api_key': p.openai_api_key,
+                'openai_model': p.openai_model,
+                'groq_api_key': p.groq_api_key,
+                'groq_model': p.groq_model,
+                'anthropic_api_key': p.anthropic_api_key,
+                'anthropic_model': p.anthropic_model,
+                'google_api_key': p.google_api_key,
+                'gemini_model': p.gemini_model,
                 'system_prompt': p.system_prompt,
                 'translation_prompt': p.translation_prompt,
                 'email_prompt': p.email_prompt,
