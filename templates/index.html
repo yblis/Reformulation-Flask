@@ -187,9 +187,15 @@
                     </div>
 
                     <div class="mb-4">
-                        <h5 class="mb-3">Options de correction</h5>
-                        <div class="card">
-                            <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Options de correction</h5>
+                            <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#correctionOptions" aria-expanded="false" aria-controls="correctionOptions">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="collapse" id="correctionOptions">
+                            <div class="card">
+                                <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -273,6 +279,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     <button id="correctText" class="btn btn-success w-100 mb-4">Corriger</button>
