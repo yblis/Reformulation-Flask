@@ -11,6 +11,7 @@ A Flask-based web application for text reformulation, translation, and email gen
   - Spelling correction
   - Style improvement
   - Punctuation correction
+  - Syntax correction
   - Synonym suggestions with interactive display
 - Support for multiple AI providers:
   - OpenAI
@@ -77,6 +78,6 @@ python app.py
 2. Enter your text and configure options:
    - For reformulation: Choose tone, format, and length
    - For translation: Select target language
-   - For correction: Toggle grammar, spelling, style, punctuation, and synonyms options
+   - For correction: Toggle grammar, spelling, style, punctuation, syntax, and synonyms options
    - For email: Select email type and provide context
 3. Use the history tab to view and reuse past reformulations
