@@ -262,3 +262,26 @@ h5 {
 .floating-alert:hover {
     opacity: 1;
 }
+
+/* Checkbox alignment fixes */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    margin-top: 0;
+}
+
+.form-check-label {
+    margin-bottom: 0;
+}
+
+/* Custom button link for syntax rules */
+.btn-link.syntax-toggle {
+    padding: 0;
+    margin-left: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+}
