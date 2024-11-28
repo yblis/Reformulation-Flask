@@ -495,15 +495,21 @@ h5 {
         padding: 0.75rem;
         border-radius: 0 0 8px 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: none;
+        transform-origin: top;
+        transform: scaleY(0);
+        transition: transform 0.2s ease-out;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
     }
 
     .navbar-collapse.collapsing {
-        display: none;
+        transform: scaleY(0);
     }
 
     .navbar-collapse.show {
-        display: block;
+        transform: scaleY(1);
     }
 
     .navbar-nav {
@@ -514,5 +520,6 @@ h5 {
         padding: 0.5rem 0.75rem;
         font-size: 0.9rem;
         opacity: 1;
+        transition: transform 0.2s ease-out;
     }
 }
