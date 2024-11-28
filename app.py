@@ -67,18 +67,48 @@ def check_status():
         preferences = reload_env_config()
         provider = preferences.current_provider
         
-        # Always return connected status
+        # Vérifier la disponibilité du fournisseur actuel
+        status = "connected"
+        status_message = "Service disponible"
+        
+        if provider == 'ollama':
+            try:
+                url = preferences.ollama_url
+                response = requests.get(f"{url}/api/tags", timeout=2)
+                if response.status_code != 200:
+                    status = "warning"
+                    status_message = "Ollama est configuré mais pas complètement disponible"
+            except requests.exceptions.RequestException:
+                status = "warning"
+                status_message = "Impossible de contacter le serveur Ollama"
+        elif provider in ['openai', 'anthropic', 'groq', 'gemini']:
+            api_key = None
+            if provider == 'openai':
+                api_key = preferences.openai_api_key
+            elif provider == 'anthropic':
+                api_key = preferences.anthropic_api_key
+            elif provider == 'groq':
+                api_key = preferences.groq_api_key
+            elif provider == 'gemini':
+                api_key = preferences.google_api_key
+                
+            if not api_key:
+                status = "warning"
+                status_message = f"Clé API {provider} non configurée"
+        
         return jsonify({
-            "status": "connected",
-            "provider": provider
+            "status": status,
+            "provider": provider,
+            "message": status_message
         })
             
     except Exception as e:
-        print(f"Unexpected error checking status: {str(e)}")
+        print(f"Erreur lors de la vérification du statut: {str(e)}")
         return jsonify({
-            "status": "connected",
-            "provider": "unknown"
-        })
+            "status": "error",
+            "provider": "unknown",
+            "message": "Erreur interne du serveur"
+        }), 500
 
 @app.route('/api/models/gemini')
 def get_gemini_models():
