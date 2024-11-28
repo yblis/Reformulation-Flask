@@ -1,45 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
 // Navigation functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const navbarMain = document.querySelector('.navbar');
     const navbar = document.querySelector('.navbar-collapse');
     const navLinks = document.querySelectorAll('.nav-link');
     const navbarToggler = document.querySelector('.navbar-toggler');
-    const navbarNav = document.querySelector('.navbar-nav');
-    let resizeTimeout;
-
-    function checkNavOverflow() {
-        const navbarWidth = navbarMain.offsetWidth;
-        const brandWidth = document.querySelector('.navbar-brand').offsetWidth;
-        const togglerWidth = navbarToggler.offsetWidth;
-        const navItemsWidth = Array.from(navLinks).reduce((total, link) => total + link.offsetWidth, 0);
-        const totalWidth = brandWidth + navItemsWidth + 40; // Adding padding/margin
-
-        if (totalWidth > navbarWidth) {
-            navbarMain.classList.add('collapsed-nav');
-        } else {
-            navbarMain.classList.remove('collapsed-nav');
-            navbar.classList.remove('show');
-        }
-    }
 
     // Function to close the mobile menu
     function closeNavbar() {
-        if (navbarMain.classList.contains('collapsed-nav') && navbar.classList.contains('show')) {
+        if (window.innerWidth <= 768 && navbar.classList.contains('show')) {
             navbarToggler.click();
         }
     }
 
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(checkNavOverflow, 100);
-    });
-
-    // Initial check
-    checkNavOverflow();
-
-    // Close menu when clicking a nav link
+    // Close menu when clicking a nav link on mobile
     navLinks.forEach(link => {
         link.addEventListener('click', closeNavbar);
     });

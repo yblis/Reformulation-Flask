@@ -290,20 +290,17 @@ h5 {
 .navbar-container {
     background-color: #2D2D2D;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
 }
 
 .navbar {
-    padding: 0.75rem;
-    transition: all 0.3s ease;
+    padding: 1rem;
 }
 
 .navbar-brand {
     color: #FFFFFF;
     font-weight: 500;
-    padding: 0.5rem 0.75rem;
-    margin-right: 1.5rem;
-    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    margin-right: 2rem;
 }
 
 .navbar-brand:hover {
@@ -311,11 +308,9 @@ h5 {
 }
 
 .navbar-toggler {
-    display: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.5rem 0.75rem;
     color: #FFFFFF;
-    transition: all 0.3s ease;
 }
 
 .navbar-toggler:focus {
@@ -323,14 +318,8 @@ h5 {
     border-color: #4CAF50;
 }
 
-.navbar-collapse {
-    transition: all 0.3s ease;
-}
-
 .navbar-nav {
-    gap: 0.35rem;
-    transition: all 0.3s ease;
-    flex-wrap: nowrap;
+    gap: 0.5rem;
 }
 
 .nav-link {
@@ -343,7 +332,6 @@ h5 {
     gap: 0.5rem;
     white-space: nowrap;
     font-size: 0.95rem;
-    min-width: max-content;
 }
 
 .nav-link:hover {
@@ -364,31 +352,23 @@ h5 {
 /* Content wrapper adjustments */
 .content-wrapper {
     padding-top: 1rem;
-    transition: all 0.3s ease;
 }
 
-/* Responsive navigation */
-.navbar.collapsed-nav .navbar-toggler {
-    display: block;
-}
+/* Mobile styles */
+@media (max-width: 768px) {
+    .navbar-collapse {
+        background-color: #2D2D2D;
+        padding: 0.75rem;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-.navbar.collapsed-nav .navbar-collapse {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: #2D2D2D;
-    padding: 0.75rem;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+    .navbar-nav {
+        gap: 0.15rem;
+    }
 
-.navbar.collapsed-nav .navbar-nav {
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.navbar.collapsed-nav .nav-link {
-    width: 100%;
-    padding: 0.65rem 0.75rem;
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
 }
