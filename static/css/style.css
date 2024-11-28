@@ -574,7 +574,7 @@ h5 {
 
 /* Navigation styles */
 .navbar-container {
-    background-color: #2D2D2D;
+    background-color: transparent;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -587,6 +587,7 @@ h5 {
     font-weight: 500;
     padding: 0.5rem 1rem;
     margin-right: 2rem;
+    transition: color 0.2s ease;
 }
 
 .navbar-brand:hover {
@@ -597,6 +598,7 @@ h5 {
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.5rem 0.75rem;
     color: #FFFFFF;
+    transition: all 0.2s ease;
 }
 
 .navbar-toggler:focus {
@@ -619,6 +621,7 @@ h5 {
     max-width: 200px;
     overflow: hidden;
     white-space: nowrap;
+    background-color: transparent;
 }
 
 .nav-link .nav-text {
@@ -627,13 +630,13 @@ h5 {
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
     color: #4CAF50;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .nav-link.active {
-    background-color: #4CAF50;
-    color: #FFFFFF;
+    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
 }
 
 .nav-link i {
@@ -648,9 +651,14 @@ h5 {
 /* Mobile styles */
 @media (max-width: 768px) {
     .navbar-collapse {
-        background-color: #2D2D2D;
+        background-color: transparent;
         padding: 1rem;
         border-radius: 0 0 8px 8px;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-collapse.show {
+        background-color: rgba(0, 0, 0, 0.95);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
