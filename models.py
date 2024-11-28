@@ -58,9 +58,17 @@ Si un contexte ou un email reçu est fourni, utilise-le pour mieux adapter la re
                 correction_prompt="""Tu es un correcteur de texte professionnel. Corrige le texte suivant en respectant les options sélectionnées:
 - Correction grammaticale
 - Correction orthographique
+- Correction syntaxique
 - Amélioration du style
 - Correction de la ponctuation
 - Suggestions de synonymes
+
+Règles de correction syntaxique par défaut:
+- Vérification de l'ordre des mots dans la phrase
+- Respect de la structure Sujet-Verbe-Complément
+- Cohérence des temps verbaux
+- Vérification des accords en genre et en nombre
+- Utilisation correcte des pronoms relatifs
 
 Si l'option "Suggestions de synonymes" est activée, propose des synonymes pour les mots principaux du texte.
 Format de réponse avec synonymes:

@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Get correction options
             const options = {
+                syntax: document.getElementById('checkSyntax')?.checked || false,
                 grammar: document.getElementById('checkGrammar')?.checked || false,
                 spelling: document.getElementById('checkSpelling')?.checked || false,
                 style: document.getElementById('checkStyle')?.checked || false,
