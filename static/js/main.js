@@ -1,4 +1,47 @@
 document.addEventListener('DOMContentLoaded', function() {
+// Sidebar functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const contentWrapper = document.querySelector('.content-wrapper');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('show');
+        contentWrapper.classList.toggle('sidebar-open');
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarClose.addEventListener('click', toggleSidebar);
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', function(event) {
+        const isClickInside = sidebar.contains(event.target) || sidebarToggle.contains(event.target);
+        if (!isClickInside && sidebar.classList.contains('show')) {
+            toggleSidebar();
+        }
+    });
+
+    // Close sidebar when pressing escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && sidebar.classList.contains('show')) {
+            toggleSidebar();
+        }
+    });
+
+    // Handle navigation item clicks on mobile
+    if (window.innerWidth <= 768) {
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+    }
+});
+
     function countWords(text) {
         return text.trim().split(/\s+/).filter(word => word.length > 0).length;
     }
