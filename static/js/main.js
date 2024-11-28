@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-// Navigation functionality
-document.addEventListener('DOMContentLoaded', function() {
+    // Navigation functionality
     const navbar = document.querySelector('.navbar-collapse');
     const navLinks = document.querySelectorAll('.nav-link');
     const navbarToggler = document.querySelector('.navbar-toggler');
@@ -14,7 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close menu when clicking a nav link on mobile
     navLinks.forEach(link => {
-        link.addEventListener('click', closeNavbar);
+        link.addEventListener('click', function(e) {
+            // Permettre au lien de naviguer vers l'onglet avant de fermer le menu
+            setTimeout(() => {
+                closeNavbar();
+            }, 100);
+        });
     });
 
     // Close menu when clicking outside
@@ -31,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
             closeNavbar();
         }
     });
-});
 
     function countWords(text) {
         return text.trim().split(/\s+/).filter(word => word.length > 0).length;
