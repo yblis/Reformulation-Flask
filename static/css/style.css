@@ -39,9 +39,33 @@ body {
     }
 }
 
+.card {
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), 
+                              rgba(76, 175, 80, 0.1) 0%,
+                              transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
 .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.card:hover::before {
+    opacity: 1;
 }
 
 .card-body {
@@ -236,15 +260,61 @@ h5 {
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Pull to refresh animation */
-@keyframes pull-to-refresh {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(10px); }
-    100% { transform: translateY(0); }
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.pull-to-refresh {
-    animation: pull-to-refresh 1s ease-in-out;
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+.stats-value {
+    transition: all 0.3s ease-out;
+    display: inline-block;
+}
+
+.stats-value.updating {
+    animation: pulse 0.3s ease-out;
+    color: #4CAF50;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    position: relative;
+    width: 24px;
+    height: 24px;
+}
+
+.loading-spinner::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: #4CAF50;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Floating alert styling */

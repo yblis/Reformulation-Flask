@@ -1,41 +1,30 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Navigation functionality
+    // Navigation functionality with improved mobile handling
     const navbar = document.querySelector('.navbar-collapse');
     const navLinks = document.querySelectorAll('.nav-link');
     const navbarToggler = document.querySelector('.navbar-toggler');
 
-    // Function to close the mobile menu
+    // Function to close the mobile menu with animation
     function closeNavbar() {
         if (window.innerWidth <= 768 && navbar.classList.contains('show')) {
-            navbarToggler.click();
+            navbar.classList.add('fade');
+            setTimeout(() => {
+                navbarToggler.click();
+                navbar.classList.remove('fade');
+            }, 150);
         }
     }
 
-    // Close menu when clicking a nav link on mobile
+    // Close menu when clicking a nav link on mobile with smooth transition
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Permettre au lien de naviguer vers l'onglet avant de fermer le menu
             setTimeout(() => {
                 closeNavbar();
             }, 100);
         });
     });
 
-    // Close menu when clicking outside
-    document.addEventListener('click', function(event) {
-        const isClickInside = navbar.contains(event.target) || navbarToggler.contains(event.target);
-        if (!isClickInside && navbar.classList.contains('show')) {
-            closeNavbar();
-        }
-    });
-
-    // Close menu when pressing escape key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && navbar.classList.contains('show')) {
-            closeNavbar();
-        }
-    });
-
+    // Enhanced text statistics functions
     function countWords(text) {
         return text.trim().split(/\s+/).filter(word => word.length > 0).length;
     }
@@ -44,16 +33,94 @@ document.addEventListener('DOMContentLoaded', function() {
         return text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
     }
 
+    // Improved statistics update with animations
     function updateTextStats(text, charCountId, wordCountId, paraCountId) {
-        const charCount = document.getElementById(charCountId);
-        const wordCount = document.getElementById(wordCountId);
-        const paraCount = document.getElementById(paraCountId);
+        const elements = {
+            char: document.getElementById(charCountId),
+            word: document.getElementById(wordCountId),
+            para: document.getElementById(paraCountId)
+        };
 
-        if (charCount) charCount.textContent = text.length;
-        if (wordCount) wordCount.textContent = countWords(text);
-        if (paraCount) paraCount.textContent = countParagraphs(text);
+        const stats = {
+            char: text.length,
+            word: countWords(text),
+            para: countParagraphs(text)
+        };
+
+        Object.entries(elements).forEach(([type, element]) => {
+            if (element) {
+                const currentValue = parseInt(element.textContent) || 0;
+                const targetValue = stats[type];
+                
+                // Animate the number change
+                animateValue(element, currentValue, targetValue, 200);
+            }
+        });
     }
 
+    // Number animation function
+    function animateValue(element, start, end, duration) {
+        if (start === end) return;
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const value = Math.floor(start + (range * progress));
+            element.textContent = value;
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    // Enhanced alert system with animations
+    function showAlert(message, type = 'danger', duration = 5000) {
+        const existingAlerts = document.querySelectorAll('.floating-alert');
+        existingAlerts.forEach(alert => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+        });
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible floating-alert`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        setTimeout(() => alert.classList.add('show'), 10);
+
+        if (duration) {
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+    }
+
+    // Loading spinner management
+    function setLoading(button, isLoading, originalText) {
+        if (isLoading) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
+        } else {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
+
+    // Setup text areas statistics tracking
     const textAreas = {
         'contextText': ['contextCharCount', 'contextWordCount', 'contextParaCount'],
         'inputText': ['inputCharCount', 'inputWordCount', 'inputParaCount'],
@@ -70,6 +137,21 @@ document.addEventListener('DOMContentLoaded', function() {
             textArea.addEventListener('input', () => {
                 updateTextStats(textArea.value, ...countIds);
             });
+        }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const isClickInside = navbar.contains(event.target) || navbarToggler.contains(event.target);
+        if (!isClickInside && navbar.classList.contains('show')) {
+            closeNavbar();
+        }
+    });
+
+    // Close menu when pressing escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && navbar.classList.contains('show')) {
+            closeNavbar();
         }
     });
 
@@ -194,61 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    let lastStatus = 'unknown';
-    
-    async function checkOllamaStatus() {
-        try {
-            const savedUrl = localStorage.getItem('ollamaUrl');
-            const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error('Status check failed');
-            }
-            
-            const data = await response.json();
-            const status = {
-                state: data.status,
-                provider: data.provider,
-                error: data.error
-            };
-            
-            // Si le fournisseur n'est pas Ollama, on active les boutons et on arrête les vérifications
-            if (status.provider !== 'ollama') {
-                if (lastStatus !== 'non-ollama') {
-                    lastStatus = 'non-ollama';
-                    updateUIForStatus(status);
-                }
-                return true;
-            }
-            
-            // Pour Ollama, on continue la vérification normale
-            if (status.state !== lastStatus) {
-                lastStatus = status.state;
-                updateUIForStatus(status);
-            }
-            return status.state === 'connected';
-        } catch (error) {
-            console.error('Error checking status:', error);
-            updateUIForStatus({
-                state: 'disconnected',
-                provider: 'unknown',
-                error: error.message
-            });
-            return false;
-        }
-    }
-
-    async function updateUIForStatus(status) {
-        // Uniquement logger les erreurs pour le débogage
-        if (status.provider === 'ollama' && status.error) {
-            console.log(`État Ollama: ${status.error}`);
-        }
-    }
-
-    checkOllamaStatus();
-    setInterval(checkOllamaStatus, 30000);
-
+    // Enhanced reformulate functionality
     const reformulateBtn = document.getElementById('reformulateBtn');
     if (reformulateBtn) {
         reformulateBtn.addEventListener('click', async function() {
@@ -260,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const context = contextText.value.trim();
             
             if (!text) {
-                outputText.value = "Veuillez entrer un texte à reformuler.";
+                showAlert("Veuillez entrer un texte à reformuler.", "warning");
                 return;
             }
 
@@ -268,8 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const format = getSelectedValue('formatGroup');
             const length = getSelectedValue('lengthGroup');
 
-            reformulateBtn.disabled = true;
-            reformulateBtn.textContent = 'En cours...';
+            setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
 
             try {
@@ -291,22 +318,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     outputText.value = data.text;
                     updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
+                    showAlert("Reformulation terminée avec succès!", "success", 3000);
                 } else {
-                    outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
+                    outputText.value = "";
+                    showAlert(`Erreur: ${data.error || 'Une erreur est survenue'}`, "danger");
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                outputText.value = "Erreur de connexion. Veuillez réessayer.";
+                outputText.value = "";
+                showAlert("Erreur de connexion. Veuillez réessayer.", "danger");
             } finally {
-                reformulateBtn.disabled = false;
-                reformulateBtn.textContent = 'Reformuler';
+                setLoading(reformulateBtn, false, "Reformuler");
             }
         });
     }
 
+    // Enhanced copy functionality
     const copyBtn = document.getElementById('copyBtn');
-    const clearBtn = document.getElementById('clearBtn');
-
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
             const outputText = document.getElementById('outputText');
@@ -316,56 +344,84 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 await navigator.clipboard.writeText(text);
                 const originalText = copyBtn.textContent;
-                copyBtn.textContent = 'Copié!';
+                copyBtn.innerHTML = '<i class="bi bi-check2"></i> Copié!';
                 setTimeout(() => {
                     copyBtn.textContent = originalText;
                 }, 2000);
             } catch (err) {
                 console.error('Erreur lors de la copie:', err);
+                showAlert("Erreur lors de la copie du texte", "danger");
             }
         });
     }
 
+    // Enhanced clear functionality
+    const clearBtn = document.getElementById('clearBtn');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            const contextText = document.getElementById('contextText');
-            const inputText = document.getElementById('inputText');
-            const outputText = document.getElementById('outputText');
-            
-            if (contextText) {
-                contextText.value = '';
-                updateTextStats('', 'contextCharCount', 'contextWordCount', 'contextParaCount');
-            }
-            if (inputText) {
-                inputText.value = '';
-                updateTextStats('', 'inputCharCount', 'inputWordCount', 'inputParaCount');
-            }
-            if (outputText) {
-                outputText.value = '';
-                updateTextStats('', 'outputCharCount', 'outputWordCount', 'outputParaCount');
-            }
+            ['contextText', 'inputText', 'outputText'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = '';
+                    const [charId, wordId, paraId] = textAreas[id];
+                    updateTextStats('', charId, wordId, paraId);
+                }
+            });
+            showAlert("Tous les champs ont été effacés", "info", 2000);
         });
     }
 
-    function showAlert(message, type = 'danger', duration = 5000) {
-        const existingAlerts = document.querySelectorAll('.floating-alert');
-        existingAlerts.forEach(alert => alert.remove());
-
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(alert);
-
-        if (duration) {
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.remove();
+    let lastStatus = 'unknown';
+    
+    async function checkOllamaStatus() {
+        try {
+            const savedUrl = localStorage.getItem('ollamaUrl');
+            const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Status check failed');
+            }
+            
+            const data = await response.json();
+            const status = {
+                state: data.status,
+                provider: data.provider,
+                error: data.error
+            };
+            
+            if (status.provider !== 'ollama') {
+                if (lastStatus !== 'non-ollama') {
+                    lastStatus = 'non-ollama';
+                    updateUIForStatus(status);
                 }
-            }, duration);
+                return true;
+            }
+            
+            if (status.state !== lastStatus) {
+                lastStatus = status.state;
+                updateUIForStatus(status);
+            }
+            return status.state === 'connected';
+        } catch (error) {
+            console.error('Error checking status:', error);
+            updateUIForStatus({
+                state: 'disconnected',
+                provider: 'unknown',
+                error: error.message
+            });
+            return false;
         }
     }
+
+    function updateUIForStatus(status) {
+        if (status.provider === 'ollama' && status.error) {
+            console.log(`État Ollama: ${status.error}`);
+        }
+    }
+
+    // Initialize status check
+    checkOllamaStatus();
+    setInterval(checkOllamaStatus, 30000);
+
 });
