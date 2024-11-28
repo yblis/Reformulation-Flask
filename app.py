@@ -40,8 +40,24 @@ def before_request():
 
 @app.errorhandler(404)
 @app.errorhandler(500)
+@app.errorhandler(400)
+@app.errorhandler(401)
+@app.errorhandler(403)
 def handle_error(error):
-    return jsonify({"error": str(error), "status": error.code}), error.code
+    error_messages = {
+        400: "Requête invalide. Veuillez vérifier vos données.",
+        401: "Non autorisé. Veuillez vérifier vos identifiants.",
+        403: "Accès refusé.",
+        404: "La ressource demandée n'existe pas.",
+        500: "Erreur interne du serveur. Veuillez réessayer plus tard."
+    }
+    
+    error_message = error_messages.get(error.code, str(error))
+    return jsonify({
+        "error": error_message,
+        "status": error.code,
+        "details": str(error)
+    }), error.code
 
 @app.route('/api/settings', methods=['GET'])
 def get_settings():
@@ -273,41 +289,78 @@ def update_settings():
     try:
         data = request.get_json()
         if data is None:
-            return jsonify({"error": "Invalid request: No JSON data"}), 400
+            return jsonify({
+                "error": "Données JSON manquantes",
+                "details": "La requête doit contenir des données JSON valides"
+            }), 400
+
+        if not isinstance(data, dict):
+            return jsonify({
+                "error": "Format de données invalide",
+                "details": "Les données doivent être un objet JSON"
+            }), 400
+
         preferences = reload_env_config()
         provider = data.get('provider', 'ollama')
         settings = data.get('settings', {})
+
+        if provider not in ['ollama', 'openai', 'anthropic', 'groq', 'gemini']:
+            return jsonify({
+                "error": "Fournisseur non valide",
+                "details": f"Le fournisseur '{provider}' n'est pas supporté"
+            }), 400
+
         preferences.current_provider = provider
+
+        # Validation et mise à jour des paramètres spécifiques au fournisseur
         if provider == 'ollama':
             if url := settings.get('url'):
+                if not isinstance(url, str) or not url.startswith(('http://', 'https://')):
+                    return jsonify({
+                        "error": "URL Ollama invalide",
+                        "details": "L'URL doit commencer par http:// ou https://"
+                    }), 400
                 preferences.ollama_url = url
             if model := settings.get('model'):
                 preferences.ollama_model = model
-        elif provider == 'openai':
-            if api_key := settings.get('apiKey'):
-                preferences.openai_api_key = api_key
-            if model := settings.get('model'):
-                preferences.openai_model = model
-        elif provider == 'anthropic':
-            if api_key := settings.get('apiKey'):
-                preferences.anthropic_api_key = api_key
-            if model := settings.get('model'):
-                preferences.anthropic_model = model
-        elif provider == 'groq':
-            if api_key := settings.get('apiKey'):
-                preferences.groq_api_key = api_key
-            if model := settings.get('model'):
-                preferences.groq_model = model
-        elif provider == 'gemini':
-            if api_key := settings.get('apiKey'):
-                preferences.google_api_key = api_key
-            if model := settings.get('model'):
-                preferences.gemini_model = model
+        elif provider in ['openai', 'anthropic', 'groq', 'gemini']:
+            api_key = settings.get('apiKey')
+            model = settings.get('model')
+            
+            if provider == 'openai':
+                if api_key:
+                    preferences.openai_api_key = api_key
+                if model:
+                    preferences.openai_model = model
+            elif provider == 'anthropic':
+                if api_key:
+                    preferences.anthropic_api_key = api_key
+                if model:
+                    preferences.anthropic_model = model
+            elif provider == 'groq':
+                if api_key:
+                    preferences.groq_api_key = api_key
+                if model:
+                    preferences.groq_model = model
+            elif provider == 'gemini':
+                if api_key:
+                    preferences.google_api_key = api_key
+                if model:
+                    preferences.gemini_model = model
+
         db.session.commit()
-        return jsonify({"status": "success"})
+        return jsonify({
+            "status": "success",
+            "message": "Configuration mise à jour avec succès"
+        })
+
     except Exception as e:
-        print(f"Error in update_settings: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"Erreur dans update_settings: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            "error": "Erreur lors de la mise à jour des paramètres",
+            "details": str(e)
+        }), 500
 
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
