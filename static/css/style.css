@@ -366,6 +366,20 @@ h5 {
 
 .navbar {
     padding: 1rem;
+.navbar .container-fluid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .navbar .container-fluid {
+        padding: 0.5rem;
+    }
+}
 }
 
 .navbar-brand {
@@ -407,6 +421,9 @@ h5 {
 
 .navbar-nav {
     gap: 0.5rem;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
 }
 
 .nav-link {
