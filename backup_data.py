@@ -22,13 +22,6 @@ def backup_data():
             json.dump([{
                 # Configuration non-sensible uniquement
                 'syntax_rules': p.syntax_rules,
-                'current_provider': p.current_provider,
-                'ollama_url': p.ollama_url,
-                'ollama_model': p.ollama_model,
-                'openai_model': p.openai_model,
-                'groq_model': p.groq_model,
-                'anthropic_model': p.anthropic_model,
-                'gemini_model': p.gemini_model,
                 'system_prompt': p.system_prompt,
                 'translation_prompt': p.translation_prompt,
                 'email_prompt': p.email_prompt,

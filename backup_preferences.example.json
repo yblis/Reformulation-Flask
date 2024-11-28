@@ -7,13 +7,6 @@
       "gender_number": true,
       "relative_pronouns": true
     },
-    "current_provider": "ollama",
-    "ollama_url": "http://localhost:11434",
-    "ollama_model": "qwen2.5:3b",
-    "openai_model": "gpt-4",
-    "groq_model": "mixtral-8x7b-32768",
-    "anthropic_model": "claude-2",
-    "gemini_model": "gemini-pro",
     "system_prompt": "Tu es un expert en reformulation...",
     "translation_prompt": "Tu es un traducteur automatique...",
     "email_prompt": "Tu es un expert en rédaction d'emails professionnels...",
