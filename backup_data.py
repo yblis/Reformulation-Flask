@@ -11,6 +11,8 @@ def datetime_handler(x):
 def backup_data():
     with app.app_context():
         # Backup UserPreferences
+        # Note: Les clés API sensibles (openai_api_key, anthropic_api_key, google_api_key, groq_api_key)
+        # sont stockées uniquement dans le fichier .env et ne sont jamais incluses dans les sauvegardes
         preferences = UserPreferences.query.all()
         with open('backup_preferences.json', 'w', encoding='utf-8') as f:
             json.dump([{
@@ -28,6 +30,7 @@ def backup_data():
                 'correction_prompt': p.correction_prompt,
                 'created_at': p.created_at,
                 'updated_at': p.updated_at
+                # Les clés API sensibles sont exclues de la sauvegarde pour des raisons de sécurité
             } for p in preferences], f, default=datetime_handler, ensure_ascii=False, indent=2)
 
         # Backup ReformulationHistory
