@@ -1,18 +1,37 @@
 document.addEventListener('DOMContentLoaded', function() {
 // Navigation functionality
 document.addEventListener('DOMContentLoaded', function() {
+    const navbarContainer = document.querySelector('.navbar');
     const navbar = document.querySelector('.navbar-collapse');
     const navLinks = document.querySelectorAll('.nav-link');
     const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarBrand = document.querySelector('.navbar-brand');
+    const navbarNav = document.querySelector('.navbar-nav');
+
+    function checkNavOverflow() {
+        if (!navbarContainer || !navbarNav || !navbarBrand) return;
+
+        const containerWidth = navbarContainer.offsetWidth;
+        const brandWidth = navbarBrand.offsetWidth;
+        const navWidth = Array.from(navLinks).reduce((total, link) => total + link.offsetWidth + 8, 0); // 8px for gap
+        const totalWidth = brandWidth + navWidth + 32; // Adding padding
+
+        if (totalWidth > containerWidth) {
+            navbarContainer.classList.add('compact-mode');
+        } else {
+            navbarContainer.classList.remove('compact-mode');
+            navbar.classList.remove('show');
+        }
+    }
 
     // Function to close the mobile menu
     function closeNavbar() {
-        if (window.innerWidth <= 768 && navbar.classList.contains('show')) {
+        if (navbarContainer.classList.contains('compact-mode') && navbar.classList.contains('show')) {
             navbarToggler.click();
         }
     }
 
-    // Close menu when clicking a nav link on mobile
+    // Close menu when clicking a nav link in compact mode
     navLinks.forEach(link => {
         link.addEventListener('click', closeNavbar);
     });
@@ -31,6 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
             closeNavbar();
         }
     });
+
+    // Check overflow on load and resize
+    checkNavOverflow();
+    window.addEventListener('resize', checkNavOverflow);
 });
 
     function countWords(text) {
