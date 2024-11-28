@@ -1,0 +1,28 @@
+[
+  {
+    "syntax_rules": {
+      "word_order": true,
+      "subject_verb_agreement": true,
+      "verb_tense": true,
+      "gender_number": true,
+      "relative_pronouns": true
+    },
+    "current_provider": "ollama",
+    "ollama_url": "http://localhost:11434",
+    "ollama_model": "qwen2.5:3b",
+    "openai_api_key": "",
+    "openai_model": "",
+    "groq_api_key": "",
+    "groq_model": "",
+    "anthropic_api_key": "",
+    "anthropic_model": "",
+    "google_api_key": "",
+    "gemini_model": "",
+    "system_prompt": "Tu es un expert en reformulation...",
+    "translation_prompt": "Tu es un traducteur automatique...",
+    "email_prompt": "Tu es un expert en rédaction d'emails professionnels...",
+    "correction_prompt": "Tu es un correcteur de texte professionnel...",
+    "created_at": "2024-11-28T00:00:00",
+    "updated_at": "2024-11-28T00:00:00"
+  }
+]

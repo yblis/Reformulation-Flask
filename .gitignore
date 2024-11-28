@@ -2,3 +2,9 @@
 __pycache__/
 *.pyc
 instance/
+backup_preferences.json
+backup_reformulations.json
+backup_corrections.json
+backup_emails.json
+.pytest_cache/
+*.db
