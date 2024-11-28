@@ -2,9 +2,12 @@
 __pycache__/
 *.pyc
 instance/
-backup_preferences.json
-backup_reformulations.json
-backup_corrections.json
-backup_emails.json
 .pytest_cache/
 *.db
+
+# Ignore all JSON files by default
+*.json
+
+# But keep example and manifest files
+!*.example.json
+!static/manifest.json
