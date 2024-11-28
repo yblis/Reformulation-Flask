@@ -15,5 +15,3 @@ openai
 python-dotenv
 requests
 flask-migrate
-psycopg2-binary
-email-validator

@@ -128,22 +128,6 @@ class ReformulationHistory(db.Model):
             'created_at': self.created_at.isoformat()
         }
 
-class CorrectionHistory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    original_text = db.Column(db.Text, nullable=False)
-    corrected_text = db.Column(db.Text, nullable=False)
-    options = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'original_text': self.original_text,
-            'corrected_text': self.corrected_text,
-            'options': self.options,
-            'created_at': self.created_at.isoformat()
-        }
-
 class EmailHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email_type = db.Column(db.String(100), nullable=False)
