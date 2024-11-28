@@ -225,11 +225,50 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="checkSyntax" checked>
-                                            <label class="form-check-label" for="checkSyntax">
-                                                Syntaxe
-                                            </label>
+                                        <div class="mb-3">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="checkSyntax" checked>
+                                                <label class="form-check-label" for="checkSyntax">
+                                                    Syntaxe
+                                                </label>
+                                                <button class="btn btn-sm btn-link text-white" type="button" data-bs-toggle="collapse" data-bs-target="#syntaxRules">
+                                                    <i class="bi bi-gear"></i>
+                                                </button>
+                                            </div>
+                                            <div class="collapse" id="syntaxRules">
+                                                <div class="card card-body bg-dark">
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input syntax-rule" type="checkbox" id="wordOrder" checked>
+                                                        <label class="form-check-label" for="wordOrder">
+                                                            Ordre des mots
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input syntax-rule" type="checkbox" id="subjectVerb" checked>
+                                                        <label class="form-check-label" for="subjectVerb">
+                                                            Accord sujet-verbe
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input syntax-rule" type="checkbox" id="verbTense" checked>
+                                                        <label class="form-check-label" for="verbTense">
+                                                            Temps verbaux
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input syntax-rule" type="checkbox" id="genderNumber" checked>
+                                                        <label class="form-check-label" for="genderNumber">
+                                                            Accord en genre et nombre
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input syntax-rule" type="checkbox" id="relativePronouns" checked>
+                                                        <label class="form-check-label" for="relativePronouns">
+                                                            Pronoms relatifs
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-check mb-2">
                                             <input class="form-check-input" type="checkbox" id="checkGrammar" checked>

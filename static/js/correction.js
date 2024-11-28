@@ -80,8 +80,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!text) return;
 
             // Get correction options
+            const syntaxRules = {
+                word_order: document.getElementById('wordOrder')?.checked || false,
+                subject_verb_agreement: document.getElementById('subjectVerb')?.checked || false,
+                verb_tense: document.getElementById('verbTense')?.checked || false,
+                gender_number: document.getElementById('genderNumber')?.checked || false,
+                relative_pronouns: document.getElementById('relativePronouns')?.checked || false
+            };
+
             const options = {
                 syntax: document.getElementById('checkSyntax')?.checked || false,
+                syntax_rules: syntaxRules,
                 grammar: document.getElementById('checkGrammar')?.checked || false,
                 spelling: document.getElementById('checkSpelling')?.checked || false,
                 style: document.getElementById('checkStyle')?.checked || false,

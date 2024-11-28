@@ -7,6 +7,15 @@ db = SQLAlchemy()
 class UserPreferences(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     
+    # Syntax Rules
+    syntax_rules = db.Column(db.JSON, nullable=False, default=lambda: {
+        'word_order': True,
+        'subject_verb_agreement': True,
+        'verb_tense': True,
+        'gender_number': True,
+        'relative_pronouns': True
+    })
+    
     # Current AI Provider
     current_provider = db.Column(db.String(50), nullable=False, default="ollama")
     

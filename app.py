@@ -390,6 +390,19 @@ def correct_text():
             correction_prompt += "- Amélioration du style\n"
         if options.get('punctuation'):
             correction_prompt += "- Correction de la ponctuation\n"
+        if options.get('syntax'):
+            correction_prompt += "- Correction syntaxique avec les règles suivantes:\n"
+            syntax_rules = options.get('syntax_rules', {})
+            if syntax_rules.get('word_order'):
+                correction_prompt += "  • Vérification de l'ordre des mots\n"
+            if syntax_rules.get('subject_verb_agreement'):
+                correction_prompt += "  • Accord sujet-verbe\n"
+            if syntax_rules.get('verb_tense'):
+                correction_prompt += "  • Temps verbaux\n"
+            if syntax_rules.get('gender_number'):
+                correction_prompt += "  • Accord en genre et nombre\n"
+            if syntax_rules.get('relative_pronouns'):
+                correction_prompt += "  • Pronoms relatifs\n"
 
         if options.get('synonyms'):
             correction_prompt += """
