@@ -497,7 +497,7 @@ h5 {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transform-origin: top;
         transform: scaleY(0);
-        transition: transform 0.2s ease-out;
+        transition: transform 0.1s ease-out;
         position: absolute;
         top: 100%;
         left: 0;
