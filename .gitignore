@@ -4,10 +4,4 @@ __pycache__/
 instance/
 .pytest_cache/
 *.db
-
-# Ignore all JSON files by default
-*.json
-
-# But keep example and manifest files
-!*.example.json
-!static/manifest.json
+backup_preferences.json
