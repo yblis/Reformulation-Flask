@@ -11,16 +11,13 @@ def datetime_handler(x):
 def backup_data():
     with app.app_context():
         # Backup UserPreferences
-        # SECURITE : Les données sensibles suivantes ne sont jamais incluses dans les sauvegardes:
-        # - openai_api_key : Clé API OpenAI
-        # - anthropic_api_key : Clé API Anthropic
-        # - google_api_key : Clé API Google/Gemini
-        # - groq_api_key : Clé API Groq
-        # Ces clés sont gérées exclusivement via le fichier .env pour des raisons de sécurité
+        # Seules les données non-sensibles sont sauvegardées
+        # Les données suivantes sont gérées exclusivement via le fichier .env :
+        # - Tous les paramètres liés aux fournisseurs IA
+        # - Toutes les clés API
         preferences = UserPreferences.query.all()
         with open('backup_preferences.json', 'w', encoding='utf-8') as f:
             json.dump([{
-                # Configuration non-sensible uniquement
                 'syntax_rules': p.syntax_rules,
                 'system_prompt': p.system_prompt,
                 'translation_prompt': p.translation_prompt,
