@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
