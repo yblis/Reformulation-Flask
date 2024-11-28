@@ -4,7 +4,7 @@ from flask_cors import CORS
 import requests
 import os
 from dotenv import load_dotenv
-from models import db, UserPreferences, ReformulationHistory, EmailHistory
+from models import db, UserPreferences, ReformulationHistory, EmailHistory, CorrectionHistory
 from openai import OpenAI
 from anthropic import Anthropic
 import google.generativeai as genai
@@ -471,7 +471,20 @@ mot2: synonyme1, synonyme2, synonyme3"""
 
             if not response_text:
                 raise Exception(f"No response from {provider}")
-
+                
+            # Sauvegarde dans l'historique
+            try:
+                correction = CorrectionHistory(
+                    original_text=text,
+                    corrected_text=response_text,
+                    options=options
+                )
+                db.session.add(correction)
+                db.session.commit()
+            except Exception as e:
+                print(f"Error saving correction history: {str(e)}")
+                # On continue même si la sauvegarde échoue
+                
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Error correcting text: {str(e)}"}), 500
