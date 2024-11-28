@@ -1,45 +1,36 @@
 document.addEventListener('DOMContentLoaded', function() {
-// Sidebar functionality
+// Navigation functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebarClose = document.getElementById('sidebarClose');
-    const contentWrapper = document.querySelector('.content-wrapper');
+    const navbar = document.querySelector('.navbar-collapse');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navbarToggler = document.querySelector('.navbar-toggler');
 
-    function toggleSidebar() {
-        sidebar.classList.toggle('show');
-        contentWrapper.classList.toggle('sidebar-open');
+    // Function to close the mobile menu
+    function closeNavbar() {
+        if (window.innerWidth <= 768 && navbar.classList.contains('show')) {
+            navbarToggler.click();
+        }
     }
 
-    sidebarToggle.addEventListener('click', toggleSidebar);
-    sidebarClose.addEventListener('click', toggleSidebar);
+    // Close menu when clicking a nav link on mobile
+    navLinks.forEach(link => {
+        link.addEventListener('click', closeNavbar);
+    });
 
-    // Close sidebar when clicking outside
+    // Close menu when clicking outside
     document.addEventListener('click', function(event) {
-        const isClickInside = sidebar.contains(event.target) || sidebarToggle.contains(event.target);
-        if (!isClickInside && sidebar.classList.contains('show')) {
-            toggleSidebar();
+        const isClickInside = navbar.contains(event.target) || navbarToggler.contains(event.target);
+        if (!isClickInside && navbar.classList.contains('show')) {
+            closeNavbar();
         }
     });
 
-    // Close sidebar when pressing escape key
+    // Close menu when pressing escape key
     document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && sidebar.classList.contains('show')) {
-            toggleSidebar();
+        if (event.key === 'Escape' && navbar.classList.contains('show')) {
+            closeNavbar();
         }
     });
-
-    // Handle navigation item clicks on mobile
-    if (window.innerWidth <= 768) {
-        const navLinks = sidebar.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    toggleSidebar();
-                }
-            });
-        });
-    }
 });
 
     function countWords(text) {
