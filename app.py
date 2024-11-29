@@ -18,40 +18,31 @@ app.secret_key = os.urandom(24)
 # Use SQLite for development
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
 with app.app_context():
     db.create_all()
 
-
 def reload_env_config():
     load_dotenv(override=True)
     preferences = UserPreferences.get_or_create()
     preferences.ollama_url = os.getenv('OLLAMA_URL', preferences.ollama_url)
-    preferences.openai_api_key = os.getenv('OPENAI_API_KEY',
-                                           preferences.openai_api_key)
-    preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY',
-                                              preferences.anthropic_api_key)
-    preferences.google_api_key = os.getenv('GOOGLE_API_KEY',
-                                           preferences.google_api_key)
-    preferences.groq_api_key = os.getenv('GROQ_API_KEY',
-                                         preferences.groq_api_key)
+    preferences.openai_api_key = os.getenv('OPENAI_API_KEY', preferences.openai_api_key)
+    preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', preferences.anthropic_api_key)
+    preferences.google_api_key = os.getenv('GOOGLE_API_KEY', preferences.google_api_key)
+    preferences.groq_api_key = os.getenv('GROQ_API_KEY', preferences.groq_api_key)
     db.session.commit()
     return preferences
-
 
 @app.before_request
 def before_request():
     reload_env_config()
 
-
 @app.errorhandler(404)
 @app.errorhandler(500)
 def handle_error(error):
     return jsonify({"error": str(error), "status": error.code}), error.code
-
 
 @app.route('/api/settings', methods=['GET'])
 def get_settings():
@@ -71,20 +62,15 @@ def get_settings():
         print(f"Error in get_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-
 @app.route('/api/status')
 def check_status():
     try:
         preferences = reload_env_config()
         provider = preferences.current_provider
-
-        # Always return connected status
         return jsonify({"status": "connected", "provider": provider})
-
     except Exception as e:
         print(f"Unexpected error checking status: {str(e)}")
-        return jsonify({"status": "connected", "provider": "unknown"})
-
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 @app.route('/api/models/gemini')
 def get_gemini_models():
@@ -101,15 +87,11 @@ def get_gemini_models():
             } for model in models if 'gemini' in model.name]
             return jsonify({"models": filtered_models})
         except Exception as e:
-            print(
-                f"Erreur lors de la récupération des modèles Gemini : {str(e)}"
-            )
-            return jsonify({"error":
-                            f"Erreur de l'API Gemini : {str(e)}"}), 500
+            print(f"Erreur lors de la récupération des modèles Gemini : {str(e)}")
+            return jsonify({"error": f"Erreur de l'API Gemini : {str(e)}"}), 500
     except Exception as e:
         print(f"Erreur dans get_gemini_models : {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/api/models/anthropic')
 def get_anthropic_models():
@@ -120,12 +102,6 @@ def get_anthropic_models():
         try:
             client = Anthropic(api_key=preferences.anthropic_api_key)
             models = [{
-                "id": "claude-3.5-sonnet-20241022",
-                "name": "Claude 3.5 Sonnet"
-            }, {
-                "id": "claude-3.5-haiku-20241022",
-                "name": "Claude 3.5 Haiku"
-            }, {
                 "id": "claude-3-opus-20240229",
                 "name": "Claude 3 Opus"
             }, {
@@ -146,15 +122,11 @@ def get_anthropic_models():
             }]
             return jsonify({"models": models})
         except Exception as e:
-            print(
-                f"Erreur lors de la récupération des modèles Anthropic : {str(e)}"
-            )
-            return jsonify({"error":
-                            f"Erreur de l'API Anthropic : {str(e)}"}), 500
+            print(f"Erreur lors de la récupération des modèles Anthropic : {str(e)}")
+            return jsonify({"error": f"Erreur de l'API Anthropic : {str(e)}"}), 500
     except Exception as e:
         print(f"Erreur dans get_anthropic_models : {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/api/models/groq')
 def get_groq_models():
@@ -163,11 +135,9 @@ def get_groq_models():
         if not preferences.groq_api_key:
             return jsonify({"error": "Groq API key not configured"}), 401
         try:
-            response = requests.get("https://api.groq.com/openai/v1/models",
-                                    headers={
-                                        "Authorization":
-                                        f"Bearer {preferences.groq_api_key}"
-                                    })
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {preferences.groq_api_key}"})
             if response.status_code != 200:
                 return jsonify({"error": response.text}), response.status_code
             data = response.json()
@@ -178,11 +148,9 @@ def get_groq_models():
                 } for model in data["data"]]
             })
         except Exception as e:
-            return jsonify({"error":
-                            f"Failed to fetch Groq models: {str(e)}"}), 500
+            return jsonify({"error": f"Failed to fetch Groq models: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/api/models/openai')
 def get_openai_models():
@@ -200,15 +168,11 @@ def get_openai_models():
             } for model in models if 'gpt' in model.id]
             return jsonify({"models": filtered_models})
         except Exception as e:
-            print(
-                f"Erreur lors de la récupération des modèles OpenAI : {str(e)}"
-            )
-            return jsonify({"error":
-                            f"Erreur de l'API OpenAI : {str(e)}"}), 500
+            print(f"Erreur lors de la récupération des modèles OpenAI : {str(e)}")
+            return jsonify({"error": f"Erreur de l'API OpenAI : {str(e)}"}), 500
     except Exception as e:
         print(f"Erreur dans get_openai_models : {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/api/models/ollama')
 def get_ollama_models():
@@ -220,8 +184,7 @@ def get_ollama_models():
         try:
             response = requests.get(f"{url}/api/tags", timeout=5)
             if response.status_code != 200:
-                return jsonify({"error": "Failed to fetch Ollama models"
-                                }), response.status_code
+                return jsonify({"error": "Failed to fetch Ollama models"}), response.status_code
             data = response.json()
             models = [{
                 "id": model["name"],
@@ -230,12 +193,10 @@ def get_ollama_models():
             return jsonify({"models": models})
         except requests.exceptions.RequestException as e:
             print(f"Error in get_ollama_models: {str(e)}")
-            return jsonify({"error":
-                            f"Ollama connection error: {str(e)}"}), 500
+            return jsonify({"error": f"Ollama connection error: {str(e)}"}), 500
     except Exception as e:
         print(f"Error in get_ollama_models: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/')
 def index():
@@ -252,7 +213,6 @@ def index():
         correction_prompt=preferences.correction_prompt,
         reformulation_history=[h.to_dict() for h in reformulation_history],
         email_history=[h.to_dict() for h in email_history])
-
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
@@ -295,7 +255,6 @@ def update_settings():
         print(f"Error in update_settings: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-
 @app.route('/api/reformulate', methods=['POST'])
 def reformulate():
     try:
@@ -309,8 +268,10 @@ def reformulate():
         tone = data.get('tone', 'Professional')
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
+        
         if not text:
             return jsonify({"error": "No text provided"}), 400
+
         # Construction d'un prompt plus détaillé avec meilleure intégration du contexte
         preferences = UserPreferences.get_or_create()
         reformulation_prefs = preferences.reformulation_preferences
@@ -319,9 +280,25 @@ def reformulate():
         context_importance = reformulation_prefs.get('context_importance', 0.8)
         advanced_options = reformulation_prefs.get('advanced_options', {})
 
+        email_format_instructions = """
+Structure OBLIGATOIRE pour le format mail:
+1. Ligne "Objet: [sujet]" (OBLIGATOIRE en début d'email)
+2. Formule de salutation appropriée et personnalisée
+3. Corps du message structuré en paragraphes clairs
+4. Formule de politesse adaptée au contexte
+5. Signature professionnelle
+
+Règles supplémentaires format mail:
+- L'objet doit être concis et pertinent
+- La salutation doit être adaptée au destinataire
+- Les paragraphes doivent être courts et bien espacés
+- La formule de politesse doit correspondre au ton choisi
+- La signature doit inclure les informations essentielles
+""" if format.lower() == 'mail' else ''
+
         formatted_prompt = f"""ATTENTION : Reformuler UNIQUEMENT le texte ci-dessous, en utilisant le contexte comme guide.
 
-===CONTEXTE (pour référence uniquement)=== 
+===CONTEXTE (référence uniquement)=== 
 {context}
 
 ===TEXTE À REFORMULER (contenu à traiter)=== 
@@ -332,19 +309,7 @@ Instructions de reformulation:
 - Format souhaité: {format}
 - Longueur cible: {length}
 
-{f'''Structure obligatoire pour le format mail:
-1. Ligne "Objet: [sujet]" (obligatoire)
-2. Formule de salutation appropriée (Bonjour/Madame/Monsieur)
-3. Corps du message structuré et cohérent
-4. Formule de politesse (ex: Cordialement)
-5. Signature si pertinent
-
-Règles strictes pour le format mail:
-- Commencer IMPÉRATIVEMENT par "Objet: "
-- Inclure une formule de salutation formelle
-- Structurer le contenu en paragraphes clairs
-- Terminer par une formule de politesse appropriée
-''' if format.lower() == 'mail' else ''}
+{email_format_instructions}
 
 Paramètres de préservation:
 - Conservation du style original: {int(style_preservation * 100)}%
@@ -352,14 +317,8 @@ Paramètres de préservation:
 - Préservation des mots-clés: {"Oui" if reformulation_prefs.get('keyword_preservation') else "Non"}
 
 Options avancées activées:
-{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
+{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}"""
 
-Consignes supplémentaires:
-1. Adaptez le style au contexte fourni tout en respectant le degré de conservation du style original
-2. Conservez les informations clés du texte original
-3. Respectez strictement le ton et le format demandés
-4. Ajustez la longueur selon les paramètres tout en préservant le message principal
-5. Assurez une cohérence avec le contexte donné en fonction de son importance définie"""
         try:
             response_text = None
             if provider == 'ollama':
@@ -396,8 +355,9 @@ Consignes supplémentaires:
                     }])
                 response_text = message.content[0].text
             elif provider == 'groq':
-                client = OpenAI(api_key=preferences.groq_api_key,
-                                base_url="https://api.groq.com/openai/v1")
+                client = OpenAI(
+                    api_key=preferences.groq_api_key,
+                    base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
                     messages=[{
@@ -412,31 +372,32 @@ Consignes supplémentaires:
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
                 response = model.generate_content([{
-                    "role":
-                    "user",
+                    "role": "user",
                     "parts": [preferences.system_prompt]
                 }, {
                     "role": "user",
                     "parts": [formatted_prompt]
                 }])
                 response_text = response.text
+
             if not response_text:
                 raise Exception(f"No response from {provider}")
-            history = ReformulationHistory(original_text=text,
-                                           context=context,
-                                           reformulated_text=response_text,
-                                           tone=tone,
-                                           format=format,
-                                           length=length)
+
+            history = ReformulationHistory(
+                original_text=text,
+                context=context,
+                reformulated_text=response_text,
+                tone=tone,
+                format=format,
+                length=length)
             db.session.add(history)
             db.session.commit()
+
             return jsonify({"text": response_text})
         except Exception as e:
-            return jsonify({"error":
-                            f"Error reformulating text: {str(e)}"}), 500
+            return jsonify({"error": f"Error reformulating text: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/api/correct', methods=['POST'])
 def correct_text():
@@ -673,9 +634,23 @@ Expéditeur: {sender}
 Instructions spécifiques:
 - Format: Email professionnel
 - Type spécifique: {email_type}
-- Structure: Introduction, développement, conclusion
-- Ton: Adapté au type d'email
-- Mise en forme: Paragraphes clairs et espacés"""
+- Structure: Objet, Salutation, Corps du message, Formule de politesse, Signature
+- Ton: Adapté au type d'email et au destinataire
+- Contenu:  Développer le contenu en incluant les points importants de "Contenu à inclure"
+- Mise en forme: Paragraphes clairs, concis et espacés.  L'objet doit être concis et informatif.
+
+Exemple de structure:
+
+Objet: [Sujet clair et concis]
+
+Cher/Chère [Nom du destinataire],
+
+[Corps du message, bien structuré en paragraphes]
+
+Cordialement,
+
+[Nom de l'expéditeur]
+"""
         try:
             response_text = None
             if provider == 'ollama':

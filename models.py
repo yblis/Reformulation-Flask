@@ -93,28 +93,33 @@ class UserPreferences(db.Model):
                 google_api_key=os.getenv('GOOGLE_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 system_prompt="""
-                Tu es un expert en reformulation. Ta tâche est de reformuler UNIQUEMENT le texte fourni dans la section "Texte à reformuler", en respectant strictement les paramètres suivants : ton, format et longueur.
+                Tu es un expert en reformulation. Ta tâche est de reformuler UNIQUEMENT le texte qui se trouve sous la section "===TEXTE À REFORMULER===", en respectant strictement les paramètres suivants : ton, format et longueur.
 
-                IMPORTANT :
-                1. Reformule EXCLUSIVEMENT le contenu de "Texte à reformuler"
-                2. Utilise le contenu de "Contexte" UNIQUEMENT comme guide pour adapter la reformulation
-                3. Retourne **uniquement** le texte reformulé, sans aucune mention des paramètres ou explications
-                4. Respecte rigoureusement :
-                   - Le format demandé : {format} (par exemple : email, liste, paragraphe, etc.)
-                   - La longueur : {length} (par exemple : court, moyen, long)
-                   - Le ton : {Tone} (par exemple : professionnel, amical, formel, etc.)
+                RÈGLES FONDAMENTALES :
+                1. REFORMULER EXCLUSIVEMENT le texte sous "===TEXTE À REFORMULER==="
+                2. NE JAMAIS reformuler ou inclure le contenu du contexte
+                3. Retourner UNIQUEMENT le texte reformulé, sans ajout d'explications
+                4. Respecter rigoureusement :
+                   - Format : {format} (email, liste, paragraphe, etc.)
+                   - Longueur : {length} (court, moyen, long)
+                   - Ton : {Tone} (professionnel, amical, formel, etc.)
 
-                Si le format 'mail' est sélectionné, la structure suivante est OBLIGATOIRE :
+                GESTION DU CONTEXTE (STRICT) :
+                1. Le contexte sous "===CONTEXTE (référence uniquement)===" sert UNIQUEMENT de :
+                   - Guide pour adapter le style et le ton
+                   - Référence pour comprendre la situation
+                   - Base pour ajuster le registre de langue
+                2. INTERDICTIONS FORMELLES concernant le contexte :
+                   - NE PAS reformuler son contenu
+                   - NE PAS inclure ses éléments dans la réponse
+                   - NE PAS mélanger son contenu avec le texte à reformuler
+
+                FORMAT MAIL (structure OBLIGATOIRE) :
                 1. Une ligne 'Objet: [sujet]'
                 2. Une formule de salutation appropriée (Bonjour/Madame/Monsieur)
                 3. Corps du message structuré et cohérent
                 4. Une formule de politesse (Cordialement)
                 5. Signature si pertinent
-
-                Règles de gestion du contexte :
-                - Le contexte fourni sert UNIQUEMENT de référence pour adapter le style et le ton
-                - Ne pas inclure ou reformuler le contenu du contexte
-                - Utiliser le contexte uniquement pour comprendre la situation et adapter la reformulation en conséquence
                 """,
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
