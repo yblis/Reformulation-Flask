@@ -296,28 +296,26 @@ Règles supplémentaires format mail:
 - La signature doit inclure les informations essentielles
 """ if format.lower() == 'mail' else ''
 
-        formatted_prompt = f"""ATTENTION : Reformuler UNIQUEMENT le texte ci-dessous, en utilisant le contexte comme guide.
+        formatted_prompt = f"""INSTRUCTIONS DE REFORMULATION :
+Ce message est une réponse à un email reçu.
 
-===CONTEXTE (référence uniquement)=== 
+===EMAIL REÇU (NE PAS REFORMULER)=== 
 {context}
 
-===TEXTE À REFORMULER (contenu à traiter)=== 
+===RÉPONSE À REFORMULER=== 
 {text}
 
-Instructions de reformulation:
-- Ton désiré: {tone}
-- Format souhaité: {format}
-- Longueur cible: {length}
+RÈGLES STRICTES :
+1. REFORMULER UNIQUEMENT le texte sous "===RÉPONSE À REFORMULER==="
+2. NE PAS reformuler ni inclure l'email reçu
+3. Produire une réponse cohérente avec l'email reçu
 
-{email_format_instructions}
+Paramètres de reformulation :
+- Ton désiré : {tone}
+- Format souhaité : {format}
+- Longueur cible : {length}
 
-Paramètres de préservation:
-- Conservation du style original: {int(style_preservation * 100)}%
-- Importance du contexte: {int(context_importance * 100)}%
-- Préservation des mots-clés: {"Oui" if reformulation_prefs.get('keyword_preservation') else "Non"}
-
-Options avancées activées:
-{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}"""
+{email_format_instructions}"""
 
         try:
             response_text = None
