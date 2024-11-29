@@ -296,39 +296,81 @@ def reformulate():
         length = data.get('length', 'Medium')
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        # Construction d'un prompt plus détaillé avec meilleure intégration du contexte
+        # Validation des paramètres
+        valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
+        valid_formats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
+        valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
+        
+        if tone not in valid_tones:
+            return jsonify({"error": f"Ton invalide. Valeurs possibles : {', '.join(valid_tones)}"}), 400
+        if format not in valid_formats:
+            return jsonify({"error": f"Format invalide. Valeurs possibles : {', '.join(valid_formats)}"}), 400
+        if length not in valid_lengths:
+            return jsonify({"error": f"Longueur invalide. Valeurs possibles : {', '.join(valid_lengths)}"}), 400
+            
         preferences = UserPreferences.get_or_create()
         reformulation_prefs = preferences.reformulation_preferences
         
         style_preservation = reformulation_prefs.get('style_preservation', 0.7)
         context_importance = reformulation_prefs.get('context_importance', 0.8)
         advanced_options = reformulation_prefs.get('advanced_options', {})
+
+        # Exemples spécifiques pour chaque paramètre
+        tone_examples = {
+            'Professional': 'Nous vous prions de bien vouloir considérer notre proposition...',
+            'Casual': "On pourrait envisager de faire ça comme ça...",
+            'Friendly': "Hey! J'ai une super idée pour améliorer ça...",
+            'Assertive': "Cette solution est la plus efficace pour résoudre le problème...",
+            'Empathetic': "Je comprends vos préoccupations et voici comment nous pouvons y répondre..."
+        }
+
+        format_examples = {
+            'Paragraph': "Le texte est structuré en paragraphes cohérents avec des transitions fluides...",
+            'List': "• Premier point\n• Deuxième point\n• Troisième point...",
+            'Dialogue': "- Comment pourrions-nous améliorer cela ?\n- Voici une suggestion...",
+            'Quote': '« Citation directe avec le style approprié »',
+            'Summary': "En résumé, les points essentiels sont..."
+        }
         
-        formatted_prompt = f"""Contexte de reformulation:
+        formatted_prompt = f"""PARAMÈTRES STRICTS À RESPECTER :
+
+1. TON REQUIS : {tone}
+Exemple de référence : {tone_examples[tone]}
+→ Maintenir ce ton de manière constante dans tout le texte
+
+2. FORMAT IMPOSÉ : {format}
+Exemple de structure : {format_examples[format]}
+→ Suivre strictement ce format
+
+3. LONGUEUR DEMANDÉE : {length}
+Cible précise :
+- Short : 25-50% du texte original
+- Medium : 50-75% du texte original
+- Long : 75-100% du texte original
+- Very Long : 100-150% du texte original
+
+CONTEXTE FOURNI :
 {context}
 
-Texte à reformuler:
+TEXTE À REFORMULER :
 {text}
 
-Instructions de reformulation:
-- Ton désiré: {tone}
-- Format souhaité: {format}
-- Longueur cible: {length}
+PARAMÈTRES DE PRÉSERVATION :
+• Style original : {int(style_preservation * 100)}%
+• Importance contexte : {int(context_importance * 100)}%
+• Mots-clés : {"Préserver" if reformulation_prefs.get('keyword_preservation') else "Flexible"}
 
-Paramètres de préservation:
-- Conservation du style original: {int(style_preservation * 100)}%
-- Importance du contexte: {int(context_importance * 100)}%
-- Préservation des mots-clés: {"Oui" if reformulation_prefs.get('keyword_preservation') else "Non"}
+OPTIONS AVANCÉES ACTIVÉES :
+{chr(10).join([f"• {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
 
-Options avancées activées:
-{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
+DIRECTIVES CRUCIALES :
+1. RESPECTER ABSOLUMENT le ton {tone} comme dans l'exemple
+2. MAINTENIR RIGOUREUSEMENT le format {format}
+3. ADHÉRER PRÉCISÉMENT à la longueur {length}
+4. Intégrer le contexte selon l'importance définie ({int(context_importance * 100)}%)
+5. Préserver le style original au niveau spécifié ({int(style_preservation * 100)}%)
 
-Consignes supplémentaires:
-1. Adaptez le style au contexte fourni tout en respectant le degré de conservation du style original
-2. Conservez les informations clés du texte original
-3. Respectez strictement le ton et le format demandés
-4. Ajustez la longueur selon les paramètres tout en préservant le message principal
-5. Assurez une cohérence avec le contexte donné en fonction de son importance définie"""
+RETOURNER UNIQUEMENT LE TEXTE REFORMULÉ, SANS COMMENTAIRES."""
         try:
             response_text = None
             if provider == 'ollama':

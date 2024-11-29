@@ -296,6 +296,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const format = getSelectedValue('formatGroup');
             const length = getSelectedValue('lengthGroup');
 
+            // Validation des paramètres côté client
+            const validTones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic'];
+            const validFormats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary'];
+            const validLengths = ['Short', 'Medium', 'Long', 'Very Long'];
+
+            if (!validTones.includes(tone)) {
+                showAlert(`Ton invalide. Valeurs possibles : ${validTones.join(', ')}`, "warning");
+                return;
+            }
+            if (!validFormats.includes(format)) {
+                showAlert(`Format invalide. Valeurs possibles : ${validFormats.join(', ')}`, "warning");
+                return;
+            }
+            if (!validLengths.includes(length)) {
+                showAlert(`Longueur invalide. Valeurs possibles : ${validLengths.join(', ')}`, "warning");
+                return;
+            }
+
             setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
 
