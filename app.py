@@ -294,62 +294,41 @@ def reformulate():
         tone = data.get('tone', 'Professional')
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
-        
-        print(f"Paramètres reçus - Ton: '{tone}', Format: '{format}', Longueur: '{length}'")
-        print(f"Type des paramètres - Ton: {type(tone)}, Format: {type(format)}, Longueur: {type(length)}")
-        
         if not text:
             return jsonify({"error": "No text provided"}), 400
-            
-        # Validation des paramètres
-        valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
-        valid_formats = ['Mail', 'Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
-        valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
-        
-        # Vérification détaillée des paramètres
-        if not isinstance(tone, str) or not isinstance(format, str) or not isinstance(length, str):
-            return jsonify({"error": "Les paramètres doivent être des chaînes de caractères"}), 400
-        
-        if tone not in valid_tones:
-            return jsonify({"error": f"Ton invalide. Valeurs possibles : {', '.join(valid_tones)}"}), 400
-        if format not in valid_formats:
-            return jsonify({"error": f"Format invalide. Valeurs possibles : {', '.join(valid_formats)}"}), 400
-        if length not in valid_lengths:
-            return jsonify({"error": f"Longueur invalide. Valeurs possibles : {', '.join(valid_lengths)}"}), 400
-            
+        # Construction d'un prompt plus détaillé avec meilleure intégration du contexte
         preferences = UserPreferences.get_or_create()
         reformulation_prefs = preferences.reformulation_preferences
         
         style_preservation = reformulation_prefs.get('style_preservation', 0.7)
         context_importance = reformulation_prefs.get('context_importance', 0.8)
         advanced_options = reformulation_prefs.get('advanced_options', {})
-
-        # Exemples spécifiques pour chaque paramètre
-        tone_examples = {
-            'Professional': 'Nous vous prions de bien vouloir considérer notre proposition...',
-            'Casual': "On pourrait envisager de faire ça comme ça...",
-            'Friendly': "Hey! J'ai une super idée pour améliorer ça...",
-            'Assertive': "Cette solution est la plus efficace pour résoudre le problème...",
-            'Empathetic': "Je comprends vos préoccupations et voici comment nous pouvons y répondre..."
-        }
-
-        format_examples = {
-            'Paragraph': "Le texte est structuré en paragraphes cohérents avec des transitions fluides...",
-            'List': "• Premier point\n• Deuxième point\n• Troisième point...",
-            'Dialogue': "- Comment pourrions-nous améliorer cela ?\n- Voici une suggestion...",
-            'Quote': '« Citation directe avec le style approprié »',
-            'Summary': "En résumé, les points essentiels sont..."
-        }
         
-        formatted_prompt = f'''PARAMÈTRES IMPOSÉS:
-<TON>{tone}</TON>
-<FORMAT>{format}</FORMAT>
-<LONGUEUR>{length}</LONGUEUR>
-<CONTEXTE>{context}</CONTEXTE>
+        formatted_prompt = f"""Contexte de reformulation:
+{context}
 
-TEXTE À REFORMULER:
+Texte à reformuler:
 {text}
-'''
+
+Instructions de reformulation:
+- Ton désiré: {tone}
+- Format souhaité: {format}
+- Longueur cible: {length}
+
+Paramètres de préservation:
+- Conservation du style original: {int(style_preservation * 100)}%
+- Importance du contexte: {int(context_importance * 100)}%
+- Préservation des mots-clés: {"Oui" if reformulation_prefs.get('keyword_preservation') else "Non"}
+
+Options avancées activées:
+{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
+
+Consignes supplémentaires:
+1. Adaptez le style au contexte fourni tout en respectant le degré de conservation du style original
+2. Conservez les informations clés du texte original
+3. Respectez strictement le ton et le format demandés
+4. Ajustez la longueur selon les paramètres tout en préservant le message principal
+5. Assurez une cohérence avec le contexte donné en fonction de son importance définie"""
         try:
             response_text = None
             if provider == 'ollama':
