@@ -330,6 +330,20 @@ Instructions de reformulation:
 - Format souhaité: {format}
 - Longueur cible: {length}
 
+{f'''Structure obligatoire pour le format mail:
+1. Ligne "Objet: [sujet]" (obligatoire)
+2. Formule de salutation appropriée (Bonjour/Madame/Monsieur)
+3. Corps du message structuré et cohérent
+4. Formule de politesse (ex: Cordialement)
+5. Signature si pertinent
+
+Règles strictes pour le format mail:
+- Commencer IMPÉRATIVEMENT par "Objet: "
+- Inclure une formule de salutation formelle
+- Structurer le contenu en paragraphes clairs
+- Terminer par une formule de politesse appropriée
+''' if format.lower() == 'mail' else ''}
+
 Paramètres de préservation:
 - Conservation du style original: {int(style_preservation * 100)}%
 - Importance du contexte: {int(context_importance * 100)}%

@@ -10,14 +10,14 @@ class UserPreferences(db.Model):
 
     # Syntax Rules
     syntax_rules = db.Column(db.JSON,
-                             nullable=False,
-                             default=lambda: {
-                                 'word_order': True,
-                                 'subject_verb_agreement': True,
-                                 'verb_tense': True,
-                                 'gender_number': True,
-                                 'relative_pronouns': True
-                             })
+                          nullable=False,
+                          default=lambda: {
+                              'word_order': True,
+                              'subject_verb_agreement': True,
+                              'verb_tense': True,
+                              'gender_number': True,
+                              'relative_pronouns': True
+                          })
 
     # Reformulation Preferences
     reformulation_preferences = db.Column(
@@ -40,16 +40,16 @@ class UserPreferences(db.Model):
 
     # Current AI Provider
     current_provider = db.Column(db.String(50),
-                                 nullable=False,
-                                 default="ollama")
+                              nullable=False,
+                              default="ollama")
 
     # Ollama Settings
     ollama_url = db.Column(db.String(255),
-                           nullable=False,
-                           default="http://localhost:11434")
+                        nullable=False,
+                        default="http://localhost:11434")
     ollama_model = db.Column(db.String(100),
-                             nullable=False,
-                             default="qwen2.5:3b")
+                          nullable=False,
+                          default="qwen2.5:3b")
 
     # OpenAI Settings
     openai_api_key = db.Column(db.String(255))
@@ -75,12 +75,12 @@ class UserPreferences(db.Model):
 
     # Timestamps
     created_at = db.Column(db.DateTime,
-                           nullable=False,
-                           default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,
-                           nullable=False,
-                           default=datetime.utcnow,
-                           onupdate=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     @staticmethod
     def get_or_create():
@@ -98,40 +98,46 @@ class UserPreferences(db.Model):
                 IMPORTANT :
                 1. Retourne **uniquement** le texte reformulé, sans aucune mention des paramètres ou explications supplémentaires.
                 2. Respecte rigoureusement :
-                   - Le format demandé : {format} (par exemple : email, liste, paragraphe, etc.).
-                   - La longueur : {length} (par exemple : court, moyen, long).
-                   - Le ton : {Tone} (par exemple : professionnel, amical, formel, etc.).
+                   - Le format demandé : {format} (par exemple : email, liste, paragraphe, etc.)
+                   - La longueur : {length} (par exemple : court, moyen, long)
+                   - Le ton : {Tone} (par exemple : professionnel, amical, formel, etc.)
 
-                Si un contexte ou un texte initial, tel qu’un email reçu, est fourni, utilise ces éléments pour adapter la reformulation de manière pertinente.
+                Si le format 'mail' est sélectionné, la structure suivante est OBLIGATOIRE :
+                1. Une ligne 'Objet: [sujet]'
+                2. Une formule de salutation appropriée (Bonjour/Madame/Monsieur)
+                3. Corps du message structuré et cohérent
+                4. Une formule de politesse (Cordialement)
+                5. Signature si pertinent
+
+                Si un contexte ou un texte initial est fourni, utilise ces éléments pour adapter la reformulation de manière pertinente.
                 """,
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
                 email_prompt=
                 """Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni.
 
+Structure OBLIGATOIRE pour tous les emails :
+1. Une ligne 'Objet: [sujet]' (OBLIGATOIRE)
+2. Une formule de salutation appropriée (Bonjour/Madame/Monsieur)
+3. Corps du message structuré et cohérent
+4. Une formule de politesse (Cordialement)
+5. Signature si un expéditeur est fourni
+
 Instructions spécifiques par type d'email :
-- Professionnel : Style formel, structure claire avec introduction-développement-conclusion
-- Commercial : Approche persuasive, mise en valeur des bénéfices, call-to-action clair
-- Administratif : Style très formel, références précises, structure stricte
-- Relationnel : Ton cordial mais professionnel, personnalisation appropriée
-- Réclamation : Ton ferme mais courtois, faits précis, demande claire
-- Candidature : Mise en valeur des compétences, lien avec le poste, motivation
+- Professionnel : Style formel, structure claire
+- Commercial : Approche persuasive, bénéfices mis en valeur
+- Administratif : Style très formel, références précises
+- Relationnel : Ton cordial mais professionnel
+- Réclamation : Ton ferme mais courtois, faits précis
+- Candidature : Mise en valeur des compétences
 
-Structure requise :
-1. Objet : Commence TOUJOURS par 'Objet: ' suivi d'un titre concis et pertinent
-2. Formule d'appel adaptée au contexte
-3. Corps du message structuré en paragraphes
-4. Formule de politesse appropriée
-5. Signature professionnelle si un expéditeur est fourni
-
-Règles importantes :
-- Adapter le niveau de formalité selon le type d'email
-- Utiliser les formules de politesse appropriées
+Règles strictes :
+- Commencer IMPÉRATIVEMENT par 'Objet: '
+- Inclure une formule de salutation formelle
 - Structurer le contenu en paragraphes clairs
-- Maintenir un ton professionnel
-- Inclure systématiquement un objet pertinent
+- Terminer par une formule de politesse appropriée
 
-IMPORTANT : Retourne UNIQUEMENT l'email généré, en commençant par la ligne 'Objet:' et en respectant la structure demandée.""",
+IMPORTANT : Retourne UNIQUEMENT l'email généré, en commençant par la ligne 'Objet:' et en respectant la structure obligatoire.""",
                 correction_prompt=
                 """Tu es un correcteur de texte professionnel. Corrige le texte suivant en respectant les options sélectionnées:
 - Correction grammaticale
@@ -184,8 +190,8 @@ class ReformulationHistory(db.Model):
     format = db.Column(db.String(50), nullable=False)
     length = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime,
-                           nullable=False,
-                           default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
 
     def to_dict(self):
         return {
@@ -208,8 +214,8 @@ class EmailHistory(db.Model):
     generated_subject = db.Column(db.Text)
     generated_email = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime,
-                           nullable=False,
-                           default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
 
     def to_dict(self):
         return {
