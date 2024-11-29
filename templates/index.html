@@ -116,13 +116,13 @@
 
         <!-- Translation Tab -->
         <div class="tab-pane fade" id="translation" role="tabpanel">
-            <div class="row">
+            <div class="row g-4">
                 <!-- Translation Input Card -->
                 <div class="col-lg-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Texte source:</h5>
-                            <textarea id="translationInput" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="mb-3">Texte source</h5>
+                            <textarea id="translationInput" class="form-control flex-grow-1" rows="10" placeholder="Entrez votre texte ici..."></textarea>
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
                                 <div>
@@ -130,35 +130,45 @@
                                     <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Translation Options Card -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Options de traduction</h5>
-                            <div class="mb-3">
-                                <h6 class="mb-2">Langue cible:</h6>
-                                <select id="targetLanguage" class="form-select">
-                                    <option value="Anglais">Anglais</option>
-                                    <option value="Français">Français</option>
-                                    <option value="Espagnol">Espagnol</option>
-                                    <option value="Allemand">Allemand</option>
-                                    <option value="Italien">Italien</option>
-                                    <option value="Portugais">Portugais</option>
-                                </select>
+                            <!-- Translation Options -->
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Options de traduction</h5>
+                                    <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationOptions" aria-expanded="true">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div class="collapse show" id="translationOptions">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Langue cible:</label>
+                                                <select id="targetLanguage" class="form-select mb-3">
+                                                    <option value="Anglais">Anglais</option>
+                                                    <option value="Français">Français</option>
+                                                    <option value="Espagnol">Espagnol</option>
+                                                    <option value="Allemand">Allemand</option>
+                                                    <option value="Italien">Italien</option>
+                                                    <option value="Portugais">Portugais</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button id="translateText" class="btn btn-success w-100">Traduire</button>
+                            
+                            <button id="translateText" class="btn btn-success w-100 mt-4">Traduire</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Translation Output Card -->
                 <div class="col-lg-6">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Traduction:</h5>
-                            <textarea id="translationOutput" class="form-control mb-3" rows="20" readonly></textarea>
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="mb-3">Traduction</h5>
+                            <textarea id="translationOutput" class="form-control flex-grow-1 mb-3" rows="10" readonly></textarea>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
                                 <div>
@@ -195,97 +205,108 @@
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Options de correction</h5>
-                            <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#correctionOptions" aria-expanded="false" aria-controls="correctionOptions">
+                            <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#correctionOptions" aria-expanded="true" aria-controls="correctionOptions">
                                 <i class="bi bi-chevron-down"></i>
                             </button>
                         </div>
-                        <div class="collapse" id="correctionOptions">
+                        <div class="collapse show" id="correctionOptions">
                             <div class="card">
                                 <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input" type="checkbox" id="checkSyntax" checked>
-                                                <label class="form-check-label" for="checkSyntax">
-                                                    Syntaxe
-                                                </label>
-                                                <button class="btn btn-sm btn-link text-white syntax-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#syntaxRules">
-                                                    <i class="bi bi-chevron-down"></i>
+                                    <div class="row g-3">
+                                        <!-- Syntax Section -->
+                                        <div class="col-12 mb-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="checkbox" id="checkSyntax" checked>
+                                                    <label class="form-check-label h6 mb-0" for="checkSyntax">
+                                                        Syntaxe
+                                                    </label>
+                                                </div>
+                                                <button class="btn btn-sm btn-link text-white ms-2 syntax-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#syntaxRules">
+                                                    <i class="bi bi-gear-fill"></i>
                                                 </button>
                                             </div>
-                                            <div class="collapse" id="syntaxRules">
+                                            <div class="collapse show" id="syntaxRules">
                                                 <div class="card card-body bg-dark">
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input syntax-rule" type="checkbox" id="wordOrder" checked>
-                                                        <label class="form-check-label" for="wordOrder">
-                                                            Ordre des mots
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input syntax-rule" type="checkbox" id="subjectVerb" checked>
-                                                        <label class="form-check-label" for="subjectVerb">
-                                                            Accord sujet-verbe
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input syntax-rule" type="checkbox" id="verbTense" checked>
-                                                        <label class="form-check-label" for="verbTense">
-                                                            Temps verbaux
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input syntax-rule" type="checkbox" id="genderNumber" checked>
-                                                        <label class="form-check-label" for="genderNumber">
-                                                            Accord en genre et nombre
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input syntax-rule" type="checkbox" id="relativePronouns" checked>
-                                                        <label class="form-check-label" for="relativePronouns">
-                                                            Pronoms relatifs
-                                                        </label>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input syntax-rule" type="checkbox" id="wordOrder" checked>
+                                                                <label class="form-check-label" for="wordOrder">
+                                                                    Ordre des mots
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input syntax-rule" type="checkbox" id="subjectVerb" checked>
+                                                                <label class="form-check-label" for="subjectVerb">
+                                                                    Accord sujet-verbe
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input syntax-rule" type="checkbox" id="verbTense" checked>
+                                                                <label class="form-check-label" for="verbTense">
+                                                                    Temps verbaux
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input syntax-rule" type="checkbox" id="genderNumber" checked>
+                                                                <label class="form-check-label" for="genderNumber">
+                                                                    Accord en genre et nombre
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input syntax-rule" type="checkbox" id="relativePronouns" checked>
+                                                                <label class="form-check-label" for="relativePronouns">
+                                                                    Pronoms relatifs
+                                                                </label>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="checkGrammar" checked>
-                                            <label class="form-check-label" for="checkGrammar">
-                                                Grammaire
-                                            </label>
+                                        
+                                        <!-- Other Options -->
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="checkGrammar" checked>
+                                                <label class="form-check-label" for="checkGrammar">
+                                                    Grammaire
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="checkSpelling" checked>
+                                                <label class="form-check-label" for="checkSpelling">
+                                                    Orthographe
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="checkStyle" checked>
+                                                <label class="form-check-label" for="checkStyle">
+                                                    Style
+                                                </label>
+                                            </div>
                                         </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="checkSpelling" checked>
-                                            <label class="form-check-label" for="checkSpelling">
-                                                Orthographe
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="checkStyle" checked>
-                                            <label class="form-check-label" for="checkStyle">
-                                                Style
-                                            </label>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="checkPunctuation" checked>
-                                            <label class="form-check-label" for="checkPunctuation">
-                                                Ponctuation
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="checkSynonyms">
-                                            <label class="form-check-label" for="checkSynonyms">
-                                                Suggestions de synonymes
-                                            </label>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="checkPunctuation" checked>
+                                                <label class="form-check-label" for="checkPunctuation">
+                                                    Ponctuation
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="checkSynonyms">
+                                                <label class="form-check-label" for="checkSynonyms">
+                                                    Suggestions de synonymes
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     </div>
 
                     <button id="correctText" class="btn btn-success w-100 mb-4">Corriger</button>
