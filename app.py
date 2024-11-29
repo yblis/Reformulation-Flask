@@ -303,7 +303,7 @@ def reformulate():
             
         # Validation des paramètres
         valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
-        valid_formats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
+        valid_formats = ['Mail', 'Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
         valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
         
         # Vérification détaillée des paramètres

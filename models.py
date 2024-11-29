@@ -90,6 +90,13 @@ PARAMÈTRES DE STYLE :
 - Empathetic : compréhensif et bienveillant, vocabulaire empathique
 
 2. FORMAT :
+- Mail : structure email complète avec :
+  • Ligne d'objet
+  • Formule d'introduction
+  • Corps du message (paragraphes séparés)
+  • Formule de conclusion
+  • Signature
+  • Sauts de ligne appropriés entre les sections
 - Paragraph : structure logique avec introduction, développement et conclusion
 - List : points clés hiérarchisés avec puces ou numérotation
 - Dialogue : échanges naturels avec questions-réponses
