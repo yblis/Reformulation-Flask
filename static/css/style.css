@@ -553,17 +553,37 @@ h5 {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: flex-start;
 }
 
 .compact-btn-group .btn {
-    flex: 1 1 auto;
-    min-width: 120px;
+    flex: 1 0 calc(33.333% - 0.5rem);
+    min-width: 140px;
+    max-width: 200px;
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {
     .compact-btn-group .btn {
-        width: calc(50% - 0.25rem);
+        flex: 1 0 calc(50% - 0.25rem);
+        min-width: 120px;
     }
+}
+
+/* Ajustements spécifiques pour les groupes de boutons */
+#toneGroup.compact-btn-group .btn {
+    flex: 1 0 calc(33.333% - 0.5rem);
+}
+
+#formatGroup.compact-btn-group .btn {
+    flex: 1 0 calc(50% - 0.5rem);
+}
+
+#lengthGroup.compact-btn-group .btn {
+    flex: 1 0 calc(33.333% - 0.5rem);
 }
