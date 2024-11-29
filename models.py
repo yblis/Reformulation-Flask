@@ -107,7 +107,31 @@ class UserPreferences(db.Model):
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
                 email_prompt=
-                """Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni. L'email doit être professionnel, bien structuré et adapté au contexte. IMPORTANT : retourne UNIQUEMENT l'email généré, avec l'objet en première ligne commençant par 'Objet:'.""",
+                """Tu es un expert en rédaction d'emails professionnels. Génère un email selon le type et le contexte fourni.
+
+Instructions spécifiques par type d'email :
+- Professionnel : Style formel, structure claire avec introduction-développement-conclusion
+- Commercial : Approche persuasive, mise en valeur des bénéfices, call-to-action clair
+- Administratif : Style très formel, références précises, structure stricte
+- Relationnel : Ton cordial mais professionnel, personnalisation appropriée
+- Réclamation : Ton ferme mais courtois, faits précis, demande claire
+- Candidature : Mise en valeur des compétences, lien avec le poste, motivation
+
+Structure requise :
+1. Objet : Commence TOUJOURS par 'Objet: ' suivi d'un titre concis et pertinent
+2. Formule d'appel adaptée au contexte
+3. Corps du message structuré en paragraphes
+4. Formule de politesse appropriée
+5. Signature professionnelle si un expéditeur est fourni
+
+Règles importantes :
+- Adapter le niveau de formalité selon le type d'email
+- Utiliser les formules de politesse appropriées
+- Structurer le contenu en paragraphes clairs
+- Maintenir un ton professionnel
+- Inclure systématiquement un objet pertinent
+
+IMPORTANT : Retourne UNIQUEMENT l'email généré, en commençant par la ligne 'Objet:' et en respectant la structure demandée.""",
                 correction_prompt=
                 """Tu es un correcteur de texte professionnel. Corrige le texte suivant en respectant les options sélectionnées:
 - Correction grammaticale

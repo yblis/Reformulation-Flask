@@ -649,7 +649,17 @@ def generate_email():
         if not email_type or not content:
             return jsonify({"error":
                             "Email type and content are required"}), 400
-        formatted_prompt = f"Type d'email: {email_type}\nContenu: {content}\nExpéditeur: {sender}"
+        # Enhanced prompt with more context and structure
+        formatted_prompt = f"""Type d'email: {email_type}
+Contenu à inclure: {content}
+Expéditeur: {sender}
+
+Instructions spécifiques:
+- Format: Email professionnel
+- Type spécifique: {email_type}
+- Structure: Introduction, développement, conclusion
+- Ton: Adapté au type d'email
+- Mise en forme: Paragraphes clairs et espacés"""
         try:
             response_text = None
             if provider == 'ollama':

@@ -55,16 +55,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json();
                 if (response.ok) {
-                    // Split the response into subject and body
+                    // Enhanced email parsing
                     const lines = data.text.split('\n');
-                    const subjectLine = lines.find(line => line.toLowerCase().startsWith('objet:'));
+                    const subjectLine = lines.find(line => 
+                        line.toLowerCase().startsWith('objet:') || 
+                        line.toLowerCase().startsWith('object:') ||
+                        line.toLowerCase().startsWith('sujet:')
+                    );
                     
                     if (subjectLine && emailSubject) {
-                        emailSubject.value = subjectLine.substring(6).trim();
+                        // Extract subject, removing any prefix (Objet:, Object:, Sujet:)
+                        const subjectText = subjectLine.substring(subjectLine.indexOf(':') + 1).trim();
+                        emailSubject.value = subjectText;
+                        
+                        // Format the email body with proper spacing
                         if (emailOutput) {
-                            emailOutput.value = lines.filter(line => !line.toLowerCase().startsWith('objet:')).join('\n').trim();
+                            const bodyLines = lines
+                                .filter(line => !line.toLowerCase().match(/^(objet|object|sujet):/))
+                                .join('\n')
+                                .trim()
+                                // Ensure proper spacing between sections
+                                .replace(/\n{3,}/g, '\n\n');
+                            emailOutput.value = bodyLines;
                         }
                     } else {
+                        // Fallback if no subject is found
                         if (emailSubject) emailSubject.value = "";
                         if (emailOutput) emailOutput.value = data.text;
                     }
