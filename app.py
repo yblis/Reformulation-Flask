@@ -294,12 +294,22 @@ def reformulate():
         tone = data.get('tone', 'Professional')
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
+        
+        print(f"Ton reçu: '{tone}'")  # Log pour debug
+        print(f"Format reçu: '{format}'")  # Log pour debug
+        print(f"Longueur reçue: '{length}'")  # Log pour debug
+        
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        # Validation des paramètres
-        valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
-        valid_formats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
-        valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
+        # Validation des paramètres avec la casse exacte
+        valid_tones = ['professional', 'casual', 'friendly', 'assertive', 'empathetic']  # Tout en minuscules
+        valid_formats = ['paragraph', 'list', 'dialogue', 'quote', 'summary']  # Tout en minuscules
+        valid_lengths = ['short', 'medium', 'long', 'very_long']  # Tout en minuscules
+        
+        # Conversion en minuscules pour la validation
+        tone = tone.lower()
+        format = format.lower()
+        length = length.lower()
         
         if tone not in valid_tones:
             return jsonify({"error": f"Ton invalide. Valeurs possibles : {', '.join(valid_tones)}"}), 400
