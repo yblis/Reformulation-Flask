@@ -301,15 +301,12 @@ def reformulate():
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        # Validation des paramètres avec la casse exacte
-        valid_tones = ['professional', 'casual', 'friendly', 'assertive', 'empathetic']  # Tout en minuscules
-        valid_formats = ['paragraph', 'list', 'dialogue', 'quote', 'summary']  # Tout en minuscules
-        valid_lengths = ['short', 'medium', 'long', 'very_long']  # Tout en minuscules
+        # Validation des paramètres
+        valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
+        valid_formats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
+        valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
         
-        # Conversion en minuscules pour la validation
-        tone = tone.lower()
-        format = format.lower()
-        length = length.lower()
+        # La conversion en minuscules n'est plus nécessaire car les valeurs sont déjà dans la bonne casse
         
         if tone not in valid_tones:
             return jsonify({"error": f"Ton invalide. Valeurs possibles : {', '.join(valid_tones)}"}), 400

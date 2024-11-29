@@ -297,9 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const length = getSelectedValue('lengthGroup');
 
             // Validation des paramètres côté client
-            const validTones = ['professional', 'casual', 'friendly', 'assertive', 'empathetic'];
-            const validFormats = ['paragraph', 'list', 'dialogue', 'quote', 'summary'];
-            const validLengths = ['short', 'medium', 'long', 'very_long'];
+            const validTones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic'];
+            const validFormats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary'];
+            const validLengths = ['Short', 'Medium', 'Long', 'Very Long'];
 
             if (!validTones.includes(tone)) {
                 showAlert(`Ton invalide. Valeurs possibles : ${validTones.join(', ')}`, "warning");
