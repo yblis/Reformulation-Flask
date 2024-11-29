@@ -296,6 +296,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const format = getSelectedValue('formatGroup');
             const length = getSelectedValue('lengthGroup');
 
+            // Debug logs
+            console.log('Valeurs sélectionnées:', {
+                tone,
+                format,
+                length
+            });
+
             // Validation des paramètres côté client
             const validTones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic'];
             const validFormats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary'];

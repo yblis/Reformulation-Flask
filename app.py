@@ -295,18 +295,20 @@ def reformulate():
         format = data.get('format', 'Paragraph')
         length = data.get('length', 'Medium')
         
-        print(f"Ton reçu: '{tone}'")  # Log pour debug
-        print(f"Format reçu: '{format}'")  # Log pour debug
-        print(f"Longueur reçue: '{length}'")  # Log pour debug
+        print(f"Paramètres reçus - Ton: '{tone}', Format: '{format}', Longueur: '{length}'")
+        print(f"Type des paramètres - Ton: {type(tone)}, Format: {type(format)}, Longueur: {type(length)}")
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
+            
         # Validation des paramètres
         valid_tones = ['Professional', 'Casual', 'Friendly', 'Assertive', 'Empathetic']
         valid_formats = ['Paragraph', 'List', 'Dialogue', 'Quote', 'Summary']
         valid_lengths = ['Short', 'Medium', 'Long', 'Very Long']
         
-        # La conversion en minuscules n'est plus nécessaire car les valeurs sont déjà dans la bonne casse
+        # Vérification détaillée des paramètres
+        if not isinstance(tone, str) or not isinstance(format, str) or not isinstance(length, str):
+            return jsonify({"error": "Les paramètres doivent être des chaînes de caractères"}), 400
         
         if tone not in valid_tones:
             return jsonify({"error": f"Ton invalide. Valeurs possibles : {', '.join(valid_tones)}"}), 400
