@@ -16,6 +16,20 @@ class UserPreferences(db.Model):
         'relative_pronouns': True
     })
     
+    # Reformulation Preferences
+    reformulation_preferences = db.Column(db.JSON, nullable=False, default=lambda: {
+        'style_preservation': 0.7,  # 0-1: degré de conservation du style original
+        'context_importance': 0.8,  # 0-1: importance du contexte dans la reformulation
+        'keyword_preservation': True,  # conserver les mots-clés importants
+        'advanced_options': {
+            'preserve_technical_terms': True,
+            'maintain_formal_level': True,
+            'adapt_to_audience': True,
+            'keep_sentence_boundaries': True,
+            'smart_paragraph_breaks': True
+        }
+    })
+    
     # Current AI Provider
     current_provider = db.Column(db.String(50), nullable=False, default="ollama")
     

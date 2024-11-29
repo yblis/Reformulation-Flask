@@ -15,7 +15,9 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 
+# Use SQLite for development
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -294,7 +296,39 @@ def reformulate():
         length = data.get('length', 'Medium')
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        formatted_prompt = f"Context: {context}\nText: {text}\nTone: {tone}\nFormat: {format}\nLength: {length}"
+        # Construction d'un prompt plus détaillé avec meilleure intégration du contexte
+        preferences = UserPreferences.get_or_create()
+        reformulation_prefs = preferences.reformulation_preferences
+        
+        style_preservation = reformulation_prefs.get('style_preservation', 0.7)
+        context_importance = reformulation_prefs.get('context_importance', 0.8)
+        advanced_options = reformulation_prefs.get('advanced_options', {})
+        
+        formatted_prompt = f"""Contexte de reformulation:
+{context}
+
+Texte à reformuler:
+{text}
+
+Instructions de reformulation:
+- Ton désiré: {tone}
+- Format souhaité: {format}
+- Longueur cible: {length}
+
+Paramètres de préservation:
+- Conservation du style original: {int(style_preservation * 100)}%
+- Importance du contexte: {int(context_importance * 100)}%
+- Préservation des mots-clés: {"Oui" if reformulation_prefs.get('keyword_preservation') else "Non"}
+
+Options avancées activées:
+{chr(10).join([f"- {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
+
+Consignes supplémentaires:
+1. Adaptez le style au contexte fourni tout en respectant le degré de conservation du style original
+2. Conservez les informations clés du texte original
+3. Respectez strictement le ton et le format demandés
+4. Ajustez la longueur selon les paramètres tout en préservant le message principal
+5. Assurez une cohérence avec le contexte donné en fonction de son importance définie"""
         try:
             response_text = None
             if provider == 'ollama':
