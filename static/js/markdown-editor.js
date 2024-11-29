@@ -22,11 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 toolbar: [
                     'bold', 'italic', 'heading',
                     '|', 'quote', 'unordered-list', 'ordered-list',
-                    '|', 'link',
-                    '|', 'preview',
+                    '|', 'link'
                 ],
+                hideIcons: ['guide', 'preview'],
+                renderingConfig: { 
+                    singleLineBreaks: false, 
+                    codeSyntaxHighlighting: false 
+                },
                 placeholder: textarea.placeholder,
                 initialValue: textarea.value,
+                indentWithTabs: false,
+                styleSelectedText: true,
+                forceSync: true,
+                sideBySideFullscreen: false,
+                maxHeight: '400px',
             });
         }
         return null;
