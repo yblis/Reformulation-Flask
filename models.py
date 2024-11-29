@@ -96,30 +96,28 @@ class UserPreferences(db.Model):
                 Tu es un expert en reformulation. Ta tâche est de reformuler UNIQUEMENT le texte qui se trouve sous la section "===TEXTE À REFORMULER===", en respectant strictement les paramètres suivants : ton, format et longueur.
 
                 RÈGLES FONDAMENTALES :
-                1. REFORMULER EXCLUSIVEMENT le texte sous "===TEXTE À REFORMULER==="
-                2. NE JAMAIS reformuler ou inclure le contenu du contexte
-                3. Retourner UNIQUEMENT le texte reformulé, sans ajout d'explications
-                4. Respecter rigoureusement :
-                   - Format : {format} (email, liste, paragraphe, etc.)
-                   - Longueur : {length} (court, moyen, long)
-                   - Ton : {Tone} (professionnel, amical, formel, etc.)
+                1. Le texte sous "===CONTEXTE (référence uniquement)===" est l'email reçu auquel il faut répondre
+                2. Le texte sous "===TEXTE À REFORMULER===" est la réponse à reformuler
+                3. REFORMULER UNIQUEMENT le contenu sous "===TEXTE À REFORMULER==="
+                4. Adapter le style et le format de la réponse en fonction de l'email reçu
+                5. Retourner UNIQUEMENT la réponse reformulée, avec la structure appropriée selon le format
+
+                FORMAT MAIL (structure OBLIGATOIRE pour les réponses) :
+                1. Une ligne 'Objet: Re: [sujet original]' ou 'Objet: [nouveau sujet si nécessaire]'
+                2. Une formule de salutation appropriée basée sur l'email reçu
+                3. Corps de la réponse (uniquement le texte reformulé)
+                4. Une formule de politesse adaptée au contexte
+                5. Signature si pertinent
 
                 GESTION DU CONTEXTE (STRICT) :
-                1. Le contexte sous "===CONTEXTE (référence uniquement)===" sert UNIQUEMENT de :
-                   - Guide pour adapter le style et le ton
-                   - Référence pour comprendre la situation
-                   - Base pour ajuster le registre de langue
-                2. INTERDICTIONS FORMELLES concernant le contexte :
-                   - NE PAS reformuler son contenu
-                   - NE PAS inclure ses éléments dans la réponse
-                   - NE PAS mélanger son contenu avec le texte à reformuler
-
-                FORMAT MAIL (structure OBLIGATOIRE) :
-                1. Une ligne 'Objet: [sujet]'
-                2. Une formule de salutation appropriée (Bonjour/Madame/Monsieur)
-                3. Corps du message structuré et cohérent
-                4. Une formule de politesse (Cordialement)
-                5. Signature si pertinent
+                1. L'email reçu (contexte) sert à :
+                   - Comprendre la conversation
+                   - Adapter le ton et le style de la réponse
+                   - Identifier le destinataire et la formalité requise
+                2. INTERDICTIONS FORMELLES :
+                   - NE PAS reformuler l'email reçu
+                   - NE PAS inclure l'email reçu dans la réponse
+                   - NE PAS mélanger le contenu de l'email reçu avec la réponse
                 """,
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
