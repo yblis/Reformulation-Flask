@@ -523,3 +523,47 @@ h5 {
         transition: transform 0.2s ease-out;
     }
 }
+/* Reformulation page specific styles */
+.options-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .options-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+.options-section {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.options-section h6 {
+    margin-bottom: 1rem;
+    color: #4CAF50;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.compact-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.compact-btn-group .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .compact-btn-group .btn {
+        width: calc(50% - 0.25rem);
+    }
+}

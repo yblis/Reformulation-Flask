@@ -7,31 +7,35 @@
     <div class="tab-content">
         <!-- Reformulation Tab -->
         <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
-            <!-- Context Section -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Contexte / Email reçu:</h5>
-                    <textarea id="contextText" class="form-control" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
+            <!-- Context and Input Section -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="mb-3">Contexte / Email reçu:</h5>
+                            <textarea id="contextText" class="form-control flex-grow-1" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Input Section -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Entre ton texte à reformuler:</h5>
-                    <textarea id="inputText" class="form-control" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="mb-3">Texte à reformuler:</h5>
+                            <textarea id="inputText" class="form-control flex-grow-1" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
+                                <div>
+                                    <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
+                                    <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -42,43 +46,45 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Options de reformulation</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="false" aria-controls="optionsCollapse">
+                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
                             <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
                     
-                    <div class="collapse" id="optionsCollapse">
-                        <!-- Tone Options -->
-                        <div class="mb-4">
-                            <h6 class="mb-2">Ton</h6>
-                            <div class="btn-group" role="group" id="toneGroup">
-                                <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                    <div class="collapse show" id="optionsCollapse">
+                        <div class="options-grid">
+                            <!-- Tone Options -->
+                            <div class="options-section">
+                                <h6>Ton</h6>
+                                <div class="compact-btn-group" role="group" id="toneGroup">
+                                    <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Format Options -->
-                        <div class="mb-4">
-                            <h6 class="mb-2">Format</h6>
-                            <div class="btn-group" role="group" id="formatGroup">
-                                <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                            <!-- Format Options -->
+                            <div class="options-section">
+                                <h6>Format</h6>
+                                <div class="compact-btn-group" role="group" id="formatGroup">
+                                    <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Length Options -->
-                        <div class="mb-4">
-                            <h6 class="mb-2">Longueur</h6>
-                            <div class="btn-group" role="group" id="lengthGroup">
-                                <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
-                                <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
-                                <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                            <!-- Length Options -->
+                            <div class="options-section">
+                                <h6>Longueur</h6>
+                                <div class="compact-btn-group" role="group" id="lengthGroup">
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
+                                    <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                                </div>
                             </div>
                         </div>
                     </div>
