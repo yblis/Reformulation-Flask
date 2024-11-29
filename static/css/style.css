@@ -587,3 +587,68 @@ h5 {
 #lengthGroup.compact-btn-group .btn {
     flex: 1 0 calc(33.333% - 0.5rem);
 }
+/* Styles spécifiques pour les sections Traduction et Correcteur */
+.translation-container,
+.correction-container {
+    height: 100%;
+}
+
+/* Gestion des hauteurs de textarea */
+.flex-grow-1 {
+    min-height: 200px;
+}
+
+@media (min-width: 768px) {
+    .flex-grow-1 {
+        min-height: 300px;
+    }
+}
+
+/* Ajustements responsifs pour les colonnes */
+@media (max-width: 767px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .correction-options,
+    .translation-options {
+        margin-top: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: row;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* Amélioration de l'ergonomie des options */
+.options-container {
+    background-color: rgba(45, 45, 45, 0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.options-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.options-content {
+    transition: max-height 0.3s ease-in-out;
+}
+
+/* Espacement des éléments de formulaire */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
