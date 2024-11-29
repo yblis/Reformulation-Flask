@@ -341,45 +341,15 @@ def reformulate():
             'Summary': "En résumé, les points essentiels sont..."
         }
         
-        formatted_prompt = f"""PARAMÈTRES STRICTS À RESPECTER :
+        formatted_prompt = f'''PARAMÈTRES IMPOSÉS:
+<TON>{tone}</TON>
+<FORMAT>{format}</FORMAT>
+<LONGUEUR>{length}</LONGUEUR>
+<CONTEXTE>{context}</CONTEXTE>
 
-1. TON REQUIS : {tone}
-Exemple de référence : {tone_examples[tone]}
-→ Maintenir ce ton de manière constante dans tout le texte
-
-2. FORMAT IMPOSÉ : {format}
-Exemple de structure : {format_examples[format]}
-→ Suivre strictement ce format
-
-3. LONGUEUR DEMANDÉE : {length}
-Cible précise :
-- Short : 25-50% du texte original
-- Medium : 50-75% du texte original
-- Long : 75-100% du texte original
-- Very Long : 100-150% du texte original
-
-CONTEXTE FOURNI :
-{context}
-
-TEXTE À REFORMULER :
+TEXTE À REFORMULER:
 {text}
-
-PARAMÈTRES DE PRÉSERVATION :
-• Style original : {int(style_preservation * 100)}%
-• Importance contexte : {int(context_importance * 100)}%
-• Mots-clés : {"Préserver" if reformulation_prefs.get('keyword_preservation') else "Flexible"}
-
-OPTIONS AVANCÉES ACTIVÉES :
-{chr(10).join([f"• {key.replace('_', ' ').title()}" for key, value in advanced_options.items() if value])}
-
-DIRECTIVES CRUCIALES :
-1. RESPECTER ABSOLUMENT le ton {tone} comme dans l'exemple
-2. MAINTENIR RIGOUREUSEMENT le format {format}
-3. ADHÉRER PRÉCISÉMENT à la longueur {length}
-4. Intégrer le contexte selon l'importance définie ({int(context_importance * 100)}%)
-5. Préserver le style original au niveau spécifié ({int(style_preservation * 100)}%)
-
-RETOURNER UNIQUEMENT LE TEXTE REFORMULÉ, SANS COMMENTAIRES."""
+'''
         try:
             response_text = None
             if provider == 'ollama':

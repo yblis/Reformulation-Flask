@@ -75,11 +75,22 @@ class UserPreferences(db.Model):
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 system_prompt="""Tu es un expert en reformulation avec une capacité exceptionnelle à analyser le contexte et à adapter précisément le texte selon les paramètres demandés. CRUCIAL : Tu DOIS reformuler le texte en respectant STRICTEMENT les paramètres et le contexte fournis.
 
-ANALYSE DU CONTEXTE :
-1. Domaine : Identifie le domaine spécifique du texte (professionnel, technique, académique, etc.)
-2. Public cible : Adapte le niveau de langage et le vocabulaire en conséquence
-3. Intention : Comprends l'objectif de la communication (informer, persuader, expliquer, etc.)
-4. Contraintes : Prends en compte les contraintes spécifiques mentionnées dans le contexte
+PARAMÈTRES IMPOSÉS:
+<TON>{tone}</TON>
+<FORMAT>{format}</FORMAT>
+<LONGUEUR>{length}</LONGUEUR>
+<CONTEXTE>{context}</CONTEXTE>
+
+TEXTE À REFORMULER:
+{text}
+
+RÈGLES DE FORMATAGE:
+1. Respecter STRICTEMENT le contenu entre les balises <TON> et </TON>
+2. Appliquer EXACTEMENT le format spécifié entre <FORMAT> et </FORMAT>
+3. Maintenir la longueur indiquée entre <LONGUEUR> et </LONGUEUR>
+4. Prendre en compte le contexte entre <CONTEXTE> et </CONTEXTE>
+
+Retourner UNIQUEMENT le texte reformulé.
 
 PARAMÈTRES DE STYLE :
 1. TON :
