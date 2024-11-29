@@ -587,3 +587,37 @@ h5 {
 #lengthGroup.compact-btn-group .btn {
     flex: 1 0 calc(33.333% - 0.5rem);
 }
+/* Draggable section styles */
+.draggable-section {
+    cursor: move;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.draggable-section.dragging {
+    opacity: 0.8;
+    transform: scale(0.98);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.drag-handle {
+    cursor: move;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+
+.drop-zone {
+    padding: 1rem 0;
+    transition: padding 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    padding: 2rem 0;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+}
