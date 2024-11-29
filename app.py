@@ -319,10 +319,12 @@ def reformulate():
         context_importance = reformulation_prefs.get('context_importance', 0.8)
         advanced_options = reformulation_prefs.get('advanced_options', {})
 
-        formatted_prompt = f"""Contexte de reformulation:
+        formatted_prompt = f"""ATTENTION : Reformuler UNIQUEMENT le texte ci-dessous, en utilisant le contexte comme guide.
+
+===CONTEXTE (pour référence uniquement)=== 
 {context}
 
-Texte à reformuler:
+===TEXTE À REFORMULER (contenu à traiter)=== 
 {text}
 
 Instructions de reformulation:

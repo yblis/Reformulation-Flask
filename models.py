@@ -93,11 +93,13 @@ class UserPreferences(db.Model):
                 google_api_key=os.getenv('GOOGLE_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
                 system_prompt="""
-                Tu es un expert en reformulation. Reformule le texte fourni en respectant strictement les paramètres suivants : ton, format et longueur. 
+                Tu es un expert en reformulation. Ta tâche est de reformuler UNIQUEMENT le texte fourni dans la section "Texte à reformuler", en respectant strictement les paramètres suivants : ton, format et longueur.
 
                 IMPORTANT :
-                1. Retourne **uniquement** le texte reformulé, sans aucune mention des paramètres ou explications supplémentaires.
-                2. Respecte rigoureusement :
+                1. Reformule EXCLUSIVEMENT le contenu de "Texte à reformuler"
+                2. Utilise le contenu de "Contexte" UNIQUEMENT comme guide pour adapter la reformulation
+                3. Retourne **uniquement** le texte reformulé, sans aucune mention des paramètres ou explications
+                4. Respecte rigoureusement :
                    - Le format demandé : {format} (par exemple : email, liste, paragraphe, etc.)
                    - La longueur : {length} (par exemple : court, moyen, long)
                    - Le ton : {Tone} (par exemple : professionnel, amical, formel, etc.)
@@ -109,7 +111,10 @@ class UserPreferences(db.Model):
                 4. Une formule de politesse (Cordialement)
                 5. Signature si pertinent
 
-                Si un contexte ou un texte initial est fourni, utilise ces éléments pour adapter la reformulation de manière pertinente.
+                Règles de gestion du contexte :
+                - Le contexte fourni sert UNIQUEMENT de référence pour adapter le style et le ton
+                - Ne pas inclure ou reformuler le contenu du contexte
+                - Utiliser le contexte uniquement pour comprendre la situation et adapter la reformulation en conséquence
                 """,
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
