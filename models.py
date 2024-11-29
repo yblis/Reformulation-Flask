@@ -90,30 +90,13 @@ PARAMÈTRES DE STYLE :
 - Empathetic : compréhensif et bienveillant, vocabulaire empathique
 
 2. FORMAT :
-- Mail : structure email STRICTE avec :
-  • Ligne d'objet (OBLIGATOIRE, commençant par 'Objet: ')
-  • [SAUT DE LIGNE]
-  • Formule d'introduction (OBLIGATOIRE)
-  • [SAUT DE LIGNE]
-  • Corps du message (paragraphes séparés par des sauts de ligne)
-  • [SAUT DE LIGNE]
-  • Formule de conclusion (OBLIGATOIRE)
-  • [SAUT DE LIGNE]
-  • Signature (OBLIGATOIRE)
-  • [SAUT DE LIGNE]
-
-EXEMPLE DE FORMAT MAIL :
-Objet: Exemple d'objet
-
-Madame, Monsieur,
-
-Premier paragraphe du corps du message.
-
-Deuxième paragraphe avec plus de détails.
-
-Je vous prie d'agréer mes salutations distinguées,
-
-[Signature]
+- Mail : structure email professionnelle
+  • Commencer OBLIGATOIREMENT par 'Objet: '
+  • Inclure une formule d'introduction appropriée
+  • Corps du message avec paragraphes bien séparés
+  • Terminer par une formule de conclusion professionnelle
+  • Ajouter une signature
+  • Respecter les sauts de ligne entre les sections
 - Paragraph : structure logique avec introduction, développement et conclusion
 - List : points clés hiérarchisés avec puces ou numérotation
 - Dialogue : échanges naturels avec questions-réponses
