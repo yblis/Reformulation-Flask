@@ -491,42 +491,10 @@
                     </h2>
                     <div id="reformulationHistory" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                            {% if reformulation_history %}
-                                <div class="list-group">
-                                    {% for entry in reformulation_history %}
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <small class="text-muted">{{ entry.created_at }}</small>
-                                            <button class="btn btn-sm btn-success reuse-history"
-                                                data-context="{{ entry.context }}"
-                                                data-text="{{ entry.original_text }}"
-                                                data-tone="{{ entry.tone }}"
-                                                data-format="{{ entry.format }}"
-                                                data-length="{{ entry.length }}">
-                                                Réutiliser
-                                            </button>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong>Original:</strong>
-                                            <pre class="mb-2">{{ entry.original_text }}</pre>
-                                            {% if entry.context %}
-                                            <strong>Contexte:</strong>
-                                            <pre class="mb-2">{{ entry.context }}</pre>
-                                            {% endif %}
-                                            <strong>Reformulation:</strong>
-                                            <pre>{{ entry.reformulated_text }}</pre>
-                                        </div>
-                                        <div>
-                                            <span class="badge bg-secondary me-1">{{ entry.tone }}</span>
-                                            <span class="badge bg-secondary me-1">{{ entry.format }}</span>
-                                            <span class="badge bg-secondary">{{ entry.length }}</span>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p class="text-muted">Aucun historique de reformulation</p>
-                            {% endif %}
+                            <div id="reformulationHistoryContainer" class="list-group">
+                                <!-- L'historique sera chargé dynamiquement via JavaScript -->
+                                <div class="text-center text-muted p-3">Chargement de l'historique...</div>
+                                            </div>
                         </div>
                     </div>
                 </div>
