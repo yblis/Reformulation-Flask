@@ -179,10 +179,17 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const text = this.dataset.text;
             let corrections = {};
-            try {
-                corrections = this.dataset.corrections ? JSON.parse(this.dataset.corrections) : {};
-            } catch (error) {
-                console.error('Error parsing corrections:', error);
+            if (this.dataset.corrections) {
+                try {
+                    const correctionData = this.dataset.corrections.replace(/&quot;/g, '"');
+                    corrections = JSON.parse(correctionData);
+                    if (typeof corrections !== 'object' || corrections === null) {
+                        throw new Error('Invalid corrections format');
+                    }
+                } catch (error) {
+                    console.error('Error parsing corrections:', error);
+                    corrections = {};
+                }
             }
             
             // Fill the input text

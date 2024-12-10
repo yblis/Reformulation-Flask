@@ -590,7 +590,7 @@
                                             <small class="text-muted">{{ entry.created_at }}</small>
                                             <button class="btn btn-sm btn-success reuse-correction"
                                                 data-text="{{ entry.original_text }}"
-                                                data-corrections="{{ entry.corrections|tojson }}">
+                                                data-corrections="{{ entry.corrections|tojson|safe }}">
                                                 Réutiliser
                                             </button>
                                         </div>
