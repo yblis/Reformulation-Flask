@@ -1,491 +1,123 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
+    <div class="row">
+        <!-- Panneau principal -->
+        <div class="col-md-9 main-panel">
+            <!-- Tabs de navigation -->
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="reformulation-tab" data-bs-toggle="tab" data-bs-target="#reformulation" type="button" role="tab">Reformulation</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="translation-tab" data-bs-toggle="tab" data-bs-target="#translation" type="button" role="tab">Traduction</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="correction-tab" data-bs-toggle="tab" data-bs-target="#correction" type="button" role="tab">Correction</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">Email</button>
+                </li>
+            </ul>
 
-    <!-- Tab content -->
-    <div class="tab-content">
-        <!-- Reformulation Tab -->
-        <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
-            <!-- Context and Input Section -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Contexte / Email reçu:</h5>
-                            <textarea id="contextText" class="form-control flex-grow-1" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Texte à reformuler:</h5>
-                            <textarea id="inputText" class="form-control flex-grow-1" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Options Section -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Options de reformulation</h5>
-                        <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="collapse show" id="optionsCollapse">
-                        <div class="options-grid">
-                            <!-- Tone Options -->
-                            <div class="options-section">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Ton</h6>
-                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="toneGroup">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </button>
-                                </div>
-                                <div class="tag-container" id="toneGroup"></div>
-                            </div>
-
-                            <!-- Format Options -->
-                            <div class="options-section">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Format</h6>
-                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="formatGroup">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </button>
-                                </div>
-                                <div class="tag-container" id="formatGroup"></div>
-                            </div>
-
-                            <!-- Length Options -->
-                            <div class="options-section">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Longueur</h6>
-                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="lengthGroup">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </button>
-                                </div>
-                                <div class="tag-container" id="lengthGroup"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Button -->
-            <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
-
-            <!-- Output Section -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Réponse:</h5>
-                    <textarea id="outputText" class="form-control mb-3" rows="10" readonly></textarea>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted">Caractères: <span id="outputCharCount">0</span></small>
-                        <div>
-                            <small class="text-muted me-3">Mots: <span id="outputWordCount">0</span></small>
-                            <small class="text-muted">Paragraphes: <span id="outputParaCount">0</span></small>
-                        </div>
-                    </div>
-                    <div class="btn-group w-100">
-                        <button id="copyBtn" class="btn btn-success">Copier</button>
-                        <button id="clearBtn" class="btn btn-success">Effacer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Translation Tab -->
-        <div class="tab-pane fade" id="translation" role="tabpanel">
-            <div class="row g-4">
-                <!-- Translation Input Card -->
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="mb-3">Texte source</h5>
-                            <textarea id="translationInput" class="form-control flex-grow-1" rows="10" placeholder="Entrez votre texte ici..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="translationInputWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="translationInputParaCount">0</span></small>
-                                </div>
-                            </div>
-
-                            <!-- Translation Options -->
-                            <div class="mt-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0">Options de traduction</h5>
-                                    <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationOptions" aria-expanded="true">
-                                        <i class="bi bi-chevron-down"></i>
-                                    </button>
-                                </div>
-                                <div class="collapse show" id="translationOptions">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Langue cible:</label>
-                                                <select id="targetLanguage" class="form-select mb-3">
-                                                    <option value="Anglais">Anglais</option>
-                                                    <option value="Français">Français</option>
-                                                    <option value="Espagnol">Espagnol</option>
-                                                    <option value="Allemand">Allemand</option>
-                                                    <option value="Italien">Italien</option>
-                                                    <option value="Portugais">Portugais</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button id="translateText" class="btn btn-success w-100 mt-4">Traduire</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Translation Output Card -->
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="mb-3">Traduction</h5>
-                            <textarea id="translationOutput" class="form-control flex-grow-1 mb-3" rows="10" readonly></textarea>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="translationOutputWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
-                                </div>
-                            </div>
-                            <div class="btn-group w-100">
-                                <button id="copyTranslation" class="btn btn-success">Copier</button>
-                                <button id="clearTranslation" class="btn btn-success">Effacer</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Correcteur Tab -->
-        <div class="tab-pane fade" id="correction" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5 class="mb-3">Texte à corriger:</h5>
-                        <textarea id="correctionInput" class="form-control" rows="5" placeholder="Collez votre texte ici pour correction..."></textarea>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <small class="text-muted">Caractères: <span id="correctionInputCharCount">0</span></small>
-                            <div>
-                                <small class="text-muted me-3">Mots: <span id="correctionInputWordCount">0</span></small>
-                                <small class="text-muted">Paragraphes: <span id="correctionInputParaCount">0</span></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">Options de correction</h5>
-                            <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#correctionOptions" aria-expanded="true" aria-controls="correctionOptions">
-                                <i class="bi bi-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div class="collapse" id="correctionOptions">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <!-- Syntax Section -->
-                                        <div class="col-12 mb-3">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <div class="form-check mb-0">
-                                                    <input class="form-check-input" type="checkbox" id="checkSyntax" checked>
-                                                    <label class="form-check-label h6 mb-0" for="checkSyntax">
-                                                        Syntaxe
-                                                    </label>
-                                                </div>
-                                                <button class="btn btn-sm btn-link text-white ms-2 syntax-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#syntaxRules">
-                                                    <i class="bi bi-chevron-down"></i>
-                                                </button>
-                                            </div>
-                                            <div class="collapse" id="syntaxRules">
-                                                <div class="card card-body bg-dark">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input syntax-rule" type="checkbox" id="wordOrder" checked>
-                                                                <label class="form-check-label" for="wordOrder">
-                                                                    Ordre des mots
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input syntax-rule" type="checkbox" id="subjectVerb" checked>
-                                                                <label class="form-check-label" for="subjectVerb">
-                                                                    Accord sujet-verbe
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input syntax-rule" type="checkbox" id="verbTense" checked>
-                                                                <label class="form-check-label" for="verbTense">
-                                                                    Temps verbaux
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input syntax-rule" type="checkbox" id="genderNumber" checked>
-                                                                <label class="form-check-label" for="genderNumber">
-                                                                    Accord en genre et nombre
-                                                                </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input syntax-rule" type="checkbox" id="relativePronouns" checked>
-                                                                <label class="form-check-label" for="relativePronouns">
-                                                                    Pronoms relatifs
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Other Options -->
-                                        <div class="col-md-6">
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input" type="checkbox" id="checkGrammar" checked>
-                                                <label class="form-check-label" for="checkGrammar">
-                                                    Grammaire
-                                                </label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input" type="checkbox" id="checkSpelling" checked>
-                                                <label class="form-check-label" for="checkSpelling">
-                                                    Orthographe
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="checkStyle" checked>
-                                                <label class="form-check-label" for="checkStyle">
-                                                    Style
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input" type="checkbox" id="checkPunctuation" checked>
-                                                <label class="form-check-label" for="checkPunctuation">
-                                                    Ponctuation
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="checkSynonyms">
-                                                <label class="form-check-label" for="checkSynonyms">
-                                                    Suggestions de synonymes
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="correctText" class="btn btn-success w-100 mb-4">Corriger</button>
-
+            <!-- Contenu des tabs -->
+            <div class="tab-content mt-3" id="mainTabsContent">
+                <!-- Reformulation -->
+                <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
                     <div class="mb-3">
-                        <h5 class="mb-3">Texte corrigé:</h5>
-                        <textarea id="correctionOutput" class="form-control mb-3" rows="10" readonly></textarea>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <small class="text-muted">Caractères: <span id="correctionOutputCharCount">0</span></small>
-                            <div>
-                                <small class="text-muted me-3">Mots: <span id="correctionOutputWordCount">0</span></small>
-                                <small class="text-muted">Paragraphes: <span id="correctionOutputParaCount">0</span></small>
-                            </div>
+                        <textarea class="form-control" id="reformulationText" rows="5" placeholder="Entrez votre texte à reformuler..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" id="reformulationContext" rows="2" placeholder="Contexte (optionnel)"></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="reformulationTone">
+                                <option value="formal">Formel</option>
+                                <option value="casual">Décontracté</option>
+                                <option value="professional">Professionnel</option>
+                                <option value="friendly">Amical</option>
+                            </select>
                         </div>
-
-                        <div class="btn-group w-100">
-                            <button id="copyCorrection" class="btn btn-success">Copier</button>
-                            <button id="clearCorrection" class="btn btn-success">Effacer</button>
+                        <div class="col-md-4">
+                            <select class="form-select" id="reformulationFormat">
+                                <option value="paragraph">Paragraphe</option>
+                                <option value="bullet">Liste à puces</option>
+                                <option value="numbered">Liste numérotée</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="reformulationLength">
+                                <option value="shorter">Plus court</option>
+                                <option value="similar">Similaire</option>
+                                <option value="longer">Plus long</option>
+                            </select>
                         </div>
                     </div>
+                    <button class="btn btn-primary" id="reformulateBtn">Reformuler</button>
+                    <div id="reformulationResult" class="mt-3"></div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Configuration Tab -->
-        <div class="tab-pane fade" id="config" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="mb-4">
-                        <label class="form-label">Fournisseur d'IA:</label>
-                        <select id="aiProvider" class="form-select">
-                            <option value="ollama">Ollama (Local)</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="anthropic">Anthropic</option>
-                            <option value="gemini">Google Gemini</option>
-                            <option value="groq">Groq</option>
+                <!-- Translation -->
+                <div class="tab-pane fade" id="translation" role="tabpanel">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="translationText" rows="5" placeholder="Entrez votre texte à traduire..."></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <select class="form-select" id="targetLanguage">
+                                <option value="fr">Français</option>
+                                <option value="en">Anglais</option>
+                                <option value="es">Espagnol</option>
+                                <option value="de">Allemand</option>
+                                <option value="it">Italien</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="translateBtn">Traduire</button>
+                    <div id="translationResult" class="mt-3"></div>
+                </div>
+
+                <!-- Correction -->
+                <div class="tab-pane fade" id="correction" role="tabpanel">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="correctionText" rows="5" placeholder="Entrez votre texte à corriger..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" id="correctBtn">Corriger</button>
+                    <div id="correctionResult" class="mt-3"></div>
+                </div>
+
+                <!-- Email -->
+                <div class="tab-pane fade" id="email" role="tabpanel">
+                    <div class="mb-3">
+                        <select class="form-select" id="emailType">
+                            <option value="professional">Email professionnel</option>
+                            <option value="complaint">Réclamation</option>
+                            <option value="request">Demande</option>
+                            <option value="thanks">Remerciement</option>
                         </select>
                     </div>
-
-                    <!-- Provider-specific configurations -->
-                    <div id="ollamaConfig" class="provider-config mb-4">
-                        <label class="form-label">URL d'Ollama:</label>
-                        <input type="text" id="ollamaUrl" class="form-control mb-3" placeholder="http://localhost:11434">
-                        <label class="form-label">Modèle:</label>
-                        <select id="modelSelect" class="form-select mb-3"></select>
-                        <button id="refreshModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    <div class="mb-3">
+                        <textarea class="form-control" id="emailContent" rows="5" placeholder="Décrivez le contenu de votre email..."></textarea>
                     </div>
-
-                    <div id="openaiConfig" class="provider-config mb-4" style="display: none;">
-                        <label class="form-label">Clé API OpenAI:</label>
-                        <input type="password" id="openaiKey" class="form-control mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="openaiModel" class="form-select mb-3"></select>
-                        <button id="refreshOpenaiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="emailSender" placeholder="Votre nom (optionnel)">
                     </div>
-
-                    <div id="anthropicConfig" class="provider-config mb-4" style="display: none;">
-                        <label class="form-label">Clé API Anthropic:</label>
-                        <input type="password" id="anthropicKey" class="form-control mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="anthropicModel" class="form-select mb-3"></select>
-                        <button id="refreshAnthropicModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                    </div>
-
-                    <div id="geminiConfig" class="provider-config mb-4" style="display: none;">
-                        <label class="form-label">Clé API Google:</label>
-                        <input type="password" id="geminiKey" class="form-control mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="geminiModel" class="form-select mb-3"></select>
-                        <button id="refreshGeminiModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                    </div>
-
-                    <div id="groqConfig" class="provider-config mb-4" style="display: none;">
-                        <label class="form-label">Clé API Groq:</label>
-                        <input type="password" id="groqKey" class="form-control mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="groqModel" class="form-select mb-3"></select>
-                        <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                    </div>
-
-                    <!-- Prompts configuration -->
-                    <div class="mb-4">
-                        <label class="form-label">Prompt système:</label>
-                        <textarea id="systemPrompt" class="form-control" rows="5">{{ system_prompt }}</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Prompt de traduction:</label>
-                        <textarea id="translationPrompt" class="form-control" rows="5">{{ translation_prompt }}</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Prompt du correcteur:</label>
-                        <textarea id="correctionPrompt" class="form-control" rows="5">{{ correction_prompt }}</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Prompt du générateur d'email:</label>
-                        <textarea id="emailPrompt" class="form-control" rows="5">{{ email_prompt }}</textarea>
-                    </div>
-
-                    <button id="saveConfig" class="btn btn-success w-100">Enregistrer</button>
+                    <button class="btn btn-primary" id="generateEmailBtn">Générer l'email</button>
+                    <div id="emailResult" class="mt-3"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Email Generator Tab -->
-        <div class="tab-pane fade" id="email" role="tabpanel">
-            <div class="row g-4">
-                <!-- Left Block - Input Fields -->
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Type d'email:</h5>
-                            <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
-                            
-                            <h5 class="mb-3">Ton:</h5>
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Sélectionnez le ton</h6>
-                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="emailToneGroup">
-                                        <i class="bi bi-plus-lg"></i>
-                                    </button>
-                                </div>
-                                <div class="tag-container" id="emailToneGroup">
-                                    <span class="tag active" data-value="Professionnel">
-                                        Professionnel <i class="bi bi-x tag-remove"></i>
-                                    </span>
-                                    <span class="tag" data-value="Informatif">
-                                        Informatif <i class="bi bi-x tag-remove"></i>
-                                    </span>
-                                    <span class="tag" data-value="Cordial">
-                                        Cordial <i class="bi bi-x tag-remove"></i>
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <h5 class="mb-3">Contenu et contexte:</h5>
-                            <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
-                            
-                            <h5 class="mb-3">Prénom NOM:</h5>
-                            <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
-                            
-                            <button id="generateEmail" class="btn btn-success w-100">Générer l'email</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Right Block - Generated Email -->
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Objet:</h5>
-                            <div class="input-group mb-4">
-                                <input type="text" id="emailSubject" class="form-control" readonly>
-                                <button class="btn btn-outline-success" type="button" id="copySubject" title="Copier l'objet">
-                                    <i class="bi bi-files"></i>
-                                </button>
-                            </div>
-                            
-                            <h5 class="mb-3">Email généré:</h5>
-                            <textarea id="emailOutput" class="form-control mb-4" rows="22" readonly></textarea>
-                            
-                            <div class="btn-group w-100">
-                                <button id="copyEmail" class="btn btn-success">Copier</button>
-                                <button id="clearEmail" class="btn btn-success">Effacer</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- History Tab -->
-        <div class="tab-pane fade" id="history" role="tabpanel">
+        <!-- Panneau latéral (historique) -->
+        <div class="col-md-3 side-panel">
+            <h3>Historique</h3>
             <div class="accordion" id="historyAccordion">
                 <!-- Reformulation History -->
-                <div class="accordion-item mb-4">
+                <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#reformulationHistory">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reformulationHistory">
                             Historique des reformulations
                         </button>
                     </h2>
@@ -493,96 +125,7 @@
                         <div class="accordion-body">
                             <div id="reformulationHistoryContainer" class="list-group">
                                 <!-- L'historique sera chargé dynamiquement via JavaScript -->
-                                <div class="text-center text-muted p-3">Chargement de l'historique...</div>
-                                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Email History -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailHistory">
-                            Historique des emails
-                        </button>
-                    </h2>
-                    <div id="emailHistory" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            {% if email_history %}
-                                <div class="list-group">
-                                    {% for entry in email_history %}
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <small class="text-muted">{{ entry.created_at }}</small>
-                                            <button class="btn btn-sm btn-success reuse-email"
-                                                data-type="{{ entry.email_type }}"
-                                                data-content="{{ entry.content }}"
-                                                data-sender="{{ entry.sender }}">
-                                                Réutiliser
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <strong>Type:</strong> {{ entry.email_type }}<br>
-                                            {% if entry.sender %}
-                                            <strong>Expéditeur:</strong> {{ entry.sender }}<br>
-                                            {% endif %}
-                                            <strong>Contenu:</strong>
-                                            <pre class="mb-2">{{ entry.content }}</pre>
-                                            <strong>Email généré:</strong>
-                                            <pre>{{ entry.generated_email }}</pre>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p class="text-muted">Aucun historique d'email</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Correction History -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#correctionHistory">
-                            Historique des corrections
-                        </button>
-                    </h2>
-                    <div id="correctionHistory" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            {% if correction_history %}
-                                <div class="list-group">
-                                    {% for entry in correction_history %}
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <small class="text-muted">{{ entry.created_at }}</small>
-                                            <button class="btn btn-sm btn-success reuse-correction"
-                                                data-text="{{ entry.original_text }}"
-                                                data-corrections='{{ entry.corrections|tojson|safe }}'
-                                                data-type="correction">
-                                                Réutiliser
-                                            </button>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong>Texte original:</strong>
-                                            <pre class="mb-2">{{ entry.original_text }}</pre>
-                                            <strong>Texte corrigé:</strong>
-                                            <pre>{{ entry.corrected_text }}</pre>
-                                        </div>
-                                        <div>
-                                            <strong>Corrections appliquées:</strong>
-                                            <ul class="list-unstyled">
-                                            {% for type, details in entry.corrections.items() %}
-                                                <li><span class="badge bg-info">{{ type }}</span> {{ details }}</li>
-                                            {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p class="text-muted">Aucun historique de correction</p>
-                            {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -596,39 +139,45 @@
                     </h2>
                     <div id="translationHistory" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                            {% if translation_history %}
-                                <div class="list-group">
-                                    {% for entry in translation_history %}
-                                    <div class="list-group-item">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <small class="text-muted">{{ entry.created_at }}</small>
-                                            <button class="btn btn-sm btn-success reuse-translation"
-                                                data-text="{{ entry.original_text }}"
-                                                data-target-language="{{ entry.target_language }}">
-                                                Réutiliser
-                                            </button>
-                                        </div>
-                                        <div class="mb-2">
-                                            <strong>Texte original:</strong>
-                                            <pre class="mb-2">{{ entry.original_text }}</pre>
-                                            <strong>Traduction ({{ entry.target_language }}):</strong>
-                                            <pre>{{ entry.translated_text }}</pre>
-                                        </div>
-                                        {% if entry.source_language %}
-                                        <div>
-                                            <span class="badge bg-secondary">{{ entry.source_language }} ➔ {{ entry.target_language }}</span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p class="text-muted">Aucun historique de traduction</p>
-                            {% endif %}
+                            <div id="translationHistoryContainer" class="list-group">
+                                <!-- L'historique sera chargé dynamiquement via JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Correction History -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#correctionHistory">
+                            Historique des corrections
+                        </button>
+                    </h2>
+                    <div id="correctionHistory" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div id="correctionHistoryContainer" class="list-group">
+                                <!-- L'historique sera chargé dynamiquement via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Email History -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailHistory">
+                            Historique des emails
+                        </button>
+                    </h2>
+                    <div id="emailHistory" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div id="emailHistoryContainer" class="list-group">
+                                <!-- L'historique sera chargé dynamiquement via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <button id="resetHistory" class="btn btn-danger w-100 mt-4">Réinitialiser l'historique</button>
         </div>

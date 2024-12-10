@@ -13,85 +13,145 @@ const STORAGE_KEYS = {
 // Gestionnaire d'historique local
 class LocalStorageManager {
     static getHistory(type) {
-        const data = localStorage.getItem(type);
-        return data ? JSON.parse(data) : [];
+        try {
+            const data = localStorage.getItem(type);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error(`Erreur lors de la récupération de l'historique ${type}:`, error);
+            return [];
+        }
     }
 
     static addToHistory(type, entry) {
-        const history = this.getHistory(type);
-        history.unshift({...entry, id: Date.now()}); // Ajouter un ID unique
-        localStorage.setItem(type, JSON.stringify(history));
-        return history;
+        try {
+            const history = this.getHistory(type);
+            if (!entry || typeof entry !== 'object') {
+                throw new Error('Invalid entry format');
+            }
+
+            // Ajouter un timestamp si non présent
+            const newEntry = {
+                ...entry,
+                id: Date.now(),
+                created_at: entry.created_at || new Date().toISOString()
+            };
+
+            // Limiter la taille de l'historique à 50 entrées
+            history.unshift(newEntry);
+            if (history.length > 50) {
+                history.pop();
+            }
+
+            localStorage.setItem(type, JSON.stringify(history));
+            return history;
+        } catch (error) {
+            console.error(`Erreur lors de l'ajout à l'historique ${type}:`, error);
+            return this.getHistory(type);
+        }
     }
 
     static removeFromHistory(type, id) {
-        const history = this.getHistory(type);
-        const updatedHistory = history.filter(entry => entry.id !== id);
-        localStorage.setItem(type, JSON.stringify(updatedHistory));
-        return updatedHistory;
+        try {
+            const history = this.getHistory(type);
+            const updatedHistory = history.filter(entry => entry.id !== id);
+            localStorage.setItem(type, JSON.stringify(updatedHistory));
+            return updatedHistory;
+        } catch (error) {
+            console.error(`Erreur lors de la suppression de l'historique ${type}:`, error);
+            return this.getHistory(type);
+        }
     }
 
     static clearHistory(type) {
-        localStorage.removeItem(type);
-        return [];
+        try {
+            localStorage.removeItem(type);
+            return [];
+        } catch (error) {
+            console.error(`Erreur lors de la réinitialisation de l'historique ${type}:`, error);
+            return [];
+        }
     }
 
     static getPrompt(type) {
-        return localStorage.getItem(type);
+        try {
+            return localStorage.getItem(type);
+        } catch (error) {
+            console.error(`Erreur lors de la récupération du prompt ${type}:`, error);
+            return null;
+        }
     }
 
     static setPrompt(type, prompt) {
-        localStorage.setItem(type, prompt);
+        try {
+            if (typeof prompt !== 'string') {
+                throw new Error('Invalid prompt format');
+            }
+            localStorage.setItem(type, prompt.trim());
+        } catch (error) {
+            console.error(`Erreur lors de la définition du prompt ${type}:`, error);
+        }
     }
 }
 
 // Fonction pour mettre à jour l'affichage de l'historique
-function updateHistoryDisplay(type, entries, containerId) {
+function updateHistoryDisplay(type, entries) {
+    const containerId = `${type}Container`;
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) {
+        console.error(`Container not found: ${containerId}`);
+        return;
+    }
+
+    if (!Array.isArray(entries)) {
+        console.error('Invalid entries format:', entries);
+        return;
+    }
 
     const getHistoryItemHtml = (entry) => {
         let content = '';
+        const timestamp = entry.created_at ? new Date(entry.created_at).toLocaleString() : 'Date inconnue';
+
         switch (type) {
             case STORAGE_KEYS.REFORMULATION_HISTORY:
                 content = `
                     <div class="mb-2">
                         <strong>Original:</strong>
-                        <pre class="mb-2">${entry.original_text}</pre>
+                        <pre class="mb-2">${entry.original_text || ''}</pre>
                         ${entry.context ? `<strong>Contexte:</strong><pre class="mb-2">${entry.context}</pre>` : ''}
                         <strong>Reformulation:</strong>
-                        <pre>${entry.reformulated_text}</pre>
+                        <pre>${entry.reformulated_text || ''}</pre>
                     </div>
-                    <div class="badge bg-secondary me-1">${entry.tone}</div>
-                    <div class="badge bg-secondary me-1">${entry.format}</div>
-                    <div class="badge bg-secondary">${entry.length}</div>`;
+                    ${entry.tone ? `<div class="badge bg-secondary me-1">${entry.tone}</div>` : ''}
+                    ${entry.format ? `<div class="badge bg-secondary me-1">${entry.format}</div>` : ''}
+                    ${entry.length ? `<div class="badge bg-secondary">${entry.length}</div>` : ''}`;
                 break;
             case STORAGE_KEYS.TRANSLATION_HISTORY:
                 content = `
                     <div class="mb-2">
-                        <strong>Original (${entry.source_language}):</strong>
-                        <pre class="mb-2">${entry.original_text}</pre>
-                        <strong>Traduction (${entry.target_language}):</strong>
-                        <pre>${entry.translated_text}</pre>
+                        <strong>Original (${entry.source_language || 'inconnu'}):</strong>
+                        <pre class="mb-2">${entry.original_text || ''}</pre>
+                        <strong>Traduction (${entry.target_language || 'inconnu'}):</strong>
+                        <pre>${entry.translated_text || ''}</pre>
                     </div>`;
                 break;
             case STORAGE_KEYS.CORRECTION_HISTORY:
                 content = `
                     <div class="mb-2">
                         <strong>Original:</strong>
-                        <pre class="mb-2">${entry.original_text}</pre>
+                        <pre class="mb-2">${entry.original_text || ''}</pre>
                         <strong>Correction:</strong>
-                        <pre>${entry.corrected_text}</pre>
+                        <pre>${entry.corrected_text || ''}</pre>
                     </div>`;
                 break;
             case STORAGE_KEYS.EMAIL_HISTORY:
                 content = `
                     <div class="mb-2">
-                        <strong>Type:</strong> ${entry.email_type}<br>
+                        <strong>Type:</strong> ${entry.email_type || ''}<br>
+                        ${entry.sender ? `<strong>Expéditeur:</strong> ${entry.sender}<br>` : ''}
                         <strong>Contenu original:</strong>
-                        <pre class="mb-2">${entry.content}</pre>
+                        <pre class="mb-2">${entry.content || ''}</pre>
                         <strong>Email généré:</strong>
-                        <pre>${entry.generated_email}</pre>
+                        <pre>${entry.generated_email || ''}</pre>
                     </div>`;
                 break;
         }
@@ -99,7 +159,7 @@ function updateHistoryDisplay(type, entries, containerId) {
         return `
             <div class="list-group-item" data-entry-id="${entry.id}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted">${new Date(entry.created_at).toLocaleString()}</small>
+                    <small class="text-muted">${timestamp}</small>
                     <div>
                         <button class="btn btn-sm btn-success me-2 reuse-history" 
                                 data-type="${type}" 
@@ -152,19 +212,8 @@ function handleHistoryDelete(event) {
 
     if (confirm('Voulez-vous vraiment supprimer cet élément de l\'historique ?')) {
         const updatedHistory = LocalStorageManager.removeFromHistory(type, entryId);
-        updateHistoryDisplay(type, updatedHistory, getContainerId(type));
+        updateHistoryDisplay(type, updatedHistory);
     }
-}
-
-// Fonction utilitaire pour obtenir l'ID du conteneur
-function getContainerId(type) {
-    const mapping = {
-        [STORAGE_KEYS.REFORMULATION_HISTORY]: 'reformulationHistory',
-        [STORAGE_KEYS.TRANSLATION_HISTORY]: 'translationHistory',
-        [STORAGE_KEYS.CORRECTION_HISTORY]: 'correctionHistory',
-        [STORAGE_KEYS.EMAIL_HISTORY]: 'emailHistory'
-    };
-    return mapping[type];
 }
 
 // Initialisation des prompts depuis la base de données
@@ -195,89 +244,17 @@ async function initializePrompts() {
     }
 }
 
-// Fonction pour vérifier si une valeur est une chaîne valide
-function isValidString(text) {
-    return typeof text === 'string' && text.trim().length > 0;
-}
-
-// Étendre la classe LocalStorageManager avec des validations
-class LocalStorageManager {
-    static getHistory(type) {
-        try {
-            const data = localStorage.getItem(type);
-            return data ? JSON.parse(data) : [];
-        } catch (error) {
-            console.error(`Erreur lors de la récupération de l'historique ${type}:`, error);
-            return [];
-        }
-    }
-
-    static addToHistory(type, entry) {
-        try {
-            const history = this.getHistory(type);
-            if (!entry || typeof entry !== 'object') {
-                throw new Error('Invalid entry format');
+// Réinitialisation de l'historique
+document.getElementById('resetHistory')?.addEventListener('click', function() {
+    if (confirm('Voulez-vous vraiment réinitialiser tout l\'historique ? Cette action est irréversible.')) {
+        Object.values(STORAGE_KEYS).forEach(type => {
+            if (type.includes('HISTORY')) {
+                LocalStorageManager.clearHistory(type);
+                updateHistoryDisplay(type, []);
             }
-            const validatedEntry = {...entry};
-            // Valider et nettoyer les champs textuels
-            if (validatedEntry.original_text) {
-                validatedEntry.original_text = String(validatedEntry.original_text);
-            }
-            if (validatedEntry.reformulated_text) {
-                validatedEntry.reformulated_text = String(validatedEntry.reformulated_text);
-            }
-            history.unshift({...validatedEntry, id: Date.now()});
-            localStorage.setItem(type, JSON.stringify(history));
-            return history;
-        } catch (error) {
-            console.error(`Erreur lors de l'ajout à l'historique ${type}:`, error);
-            return this.getHistory(type);
-        }
+        });
     }
-
-    static removeFromHistory(type, id) {
-        try {
-            const history = this.getHistory(type);
-            const updatedHistory = history.filter(entry => entry.id !== id);
-            localStorage.setItem(type, JSON.stringify(updatedHistory));
-            return updatedHistory;
-        } catch (error) {
-            console.error(`Erreur lors de la suppression de l'historique ${type}:`, error);
-            return this.getHistory(type);
-        }
-    }
-
-    static clearHistory(type) {
-        try {
-            localStorage.removeItem(type);
-            return [];
-        } catch (error) {
-            console.error(`Erreur lors de la réinitialisation de l'historique ${type}:`, error);
-            return [];
-        }
-    }
-
-    static getPrompt(type) {
-        try {
-            const prompt = localStorage.getItem(type);
-            return isValidString(prompt) ? prompt : null;
-        } catch (error) {
-            console.error(`Erreur lors de la récupération du prompt ${type}:`, error);
-            return null;
-        }
-    }
-
-    static setPrompt(type, prompt) {
-        try {
-            if (!isValidString(prompt)) {
-                throw new Error('Invalid prompt format');
-            }
-            localStorage.setItem(type, prompt.trim());
-        } catch (error) {
-            console.error(`Erreur lors de la définition du prompt ${type}:`, error);
-        }
-    }
-}
+});
 
 // Exportation pour utilisation dans d'autres fichiers
 window.LocalStorageManager = LocalStorageManager;

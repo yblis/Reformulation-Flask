@@ -54,7 +54,12 @@ function updateTextStats(text, charCountId, wordCountId, paraCountId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-// Gestion de l'historique
+    // Initialiser l'historique pour tous les types
+    ['reformulation', 'email', 'correction', 'translation'].forEach(type => {
+        loadHistory(type);
+    });
+
+    // Gestion de l'historique
 function formatDate(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString('fr-FR', {
@@ -239,13 +244,7 @@ function updateAllTextStats() {
     });
 }
 
-// Charger l'historique au chargement de la page
-document.addEventListener('DOMContentLoaded', function() {
-    ['reformulation', 'email', 'correction', 'translation'].forEach(type => {
-        loadHistory(type);
-    });
-});
-    // Navigation functionality with improved mobile handling
+// Navigation functionality with improved mobile handling
     const navbar = document.querySelector('.navbar-collapse');
     const navLinks = document.querySelectorAll('.nav-link');
     const navbarToggler = document.querySelector('.navbar-toggler');
