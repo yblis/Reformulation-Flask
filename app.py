@@ -56,6 +56,12 @@ def get_settings():
                 "anthropic_api_key": preferences.anthropic_api_key,
                 "google_api_key": preferences.google_api_key,
                 "groq_api_key": preferences.groq_api_key
+            },
+            "prompts": {
+                "system_prompt": preferences.system_prompt,
+                "translation_prompt": preferences.translation_prompt,
+                "correction_prompt": preferences.correction_prompt,
+                "email_prompt": preferences.email_prompt
             }
         })
     except Exception as e:
