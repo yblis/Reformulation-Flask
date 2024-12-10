@@ -55,35 +55,76 @@
                         <div class="options-grid">
                             <!-- Tone Options -->
                             <div class="options-section">
-                                <h6>Ton</h6>
-                                <div class="compact-btn-group" role="group" id="toneGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Professionnel">Professionnel</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Informatif">Informatif</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Décontracté">Décontracté</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Enthousiaste">Enthousiaste</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Drôle">Drôle</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Sarcastique">Sarcastique</button>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Ton</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="toneGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="tag-container" id="toneGroup">
+                                    <span class="tag active" data-value="Professionnel">
+                                        Professionnel <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Informatif">
+                                        Informatif <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Décontracté">
+                                        Décontracté <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Enthousiaste">
+                                        Enthousiaste <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Drôle">
+                                        Drôle <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Sarcastique">
+                                        Sarcastique <i class="bi bi-x tag-remove"></i>
+                                    </span>
                                 </div>
                             </div>
 
                             <!-- Format Options -->
                             <div class="options-section">
-                                <h6>Format</h6>
-                                <div class="compact-btn-group" role="group" id="formatGroup">
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Mail">Mail</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Paragraphe">Paragraphe</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Idées">Idées</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Article de blog">Article de blog</button>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Format</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="formatGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="tag-container" id="formatGroup">
+                                    <span class="tag active" data-value="Mail">
+                                        Mail <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Paragraphe">
+                                        Paragraphe <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Idées">
+                                        Idées <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Article de blog">
+                                        Article de blog <i class="bi bi-x tag-remove"></i>
+                                    </span>
                                 </div>
                             </div>
 
                             <!-- Length Options -->
                             <div class="options-section">
-                                <h6>Longueur</h6>
-                                <div class="compact-btn-group" role="group" id="lengthGroup">
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Court">Court</button>
-                                    <button type="button" class="btn btn-outline-secondary active" data-value="Moyen">Moyen</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-value="Long">Long</button>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Longueur</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="lengthGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="tag-container" id="lengthGroup">
+                                    <span class="tag" data-value="Court">
+                                        Court <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag active" data-value="Moyen">
+                                        Moyen <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Long">
+                                        Long <i class="bi bi-x tag-remove"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -439,7 +480,12 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="mb-3">Objet:</h5>
-                            <input type="text" id="emailSubject" class="form-control mb-4" readonly>
+                            <div class="input-group mb-4">
+                                <input type="text" id="emailSubject" class="form-control" readonly>
+                                <button class="btn btn-outline-success" type="button" id="copySubject" title="Copier l'objet">
+                                    <i class="bi bi-files"></i>
+                                </button>
+                            </div>
                             
                             <h5 class="mb-3">Email généré:</h5>
                             <textarea id="emailOutput" class="form-control mb-4" rows="22" readonly></textarea>

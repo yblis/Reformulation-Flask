@@ -16,9 +16,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load saved email prompt from localStorage
     if (emailPrompt) {
+        // Load saved email prompt
         const savedEmailPrompt = localStorage.getItem('emailPrompt');
         if (savedEmailPrompt) {
             emailPrompt.value = savedEmailPrompt;
+        }
+
+        // Load saved sender name
+        const savedSenderName = localStorage.getItem('emailSenderName');
+        // Save sender name when it changes
+        if (emailSender) {
+            emailSender.addEventListener('change', function() {
+                localStorage.setItem('emailSenderName', this.value);
+            });
+        }
+        if (savedSenderName && emailSender) {
+            emailSender.value = savedSenderName;
         }
     }
 
@@ -96,6 +109,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle subject copy button
+    if (document.getElementById('copySubject')) {
+        document.getElementById('copySubject').addEventListener('click', async function() {
+            const subject = document.getElementById('emailSubject');
+            if (!subject || !subject.value) return;
+
+            try {
+                await navigator.clipboard.writeText(subject.value);
+                const icon = this.querySelector('i');
+                icon.classList.remove('bi-files');
+                icon.classList.add('bi-check2');
+                setTimeout(() => {
+                    icon.classList.remove('bi-check2');
+                    icon.classList.add('bi-files');
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+        });
+    }
     if (copyEmail) {
         copyEmail.addEventListener('click', async () => {
             if (!emailOutput) return;
@@ -119,7 +152,10 @@ document.addEventListener('DOMContentLoaded', function() {
         clearEmail.addEventListener('click', () => {
             if (emailType) emailType.value = '';
             if (emailContent) emailContent.value = '';
-            if (emailSender) emailSender.value = '';
+            if (emailSender) {
+                const savedName = localStorage.getItem('emailSenderName');
+                emailSender.value = savedName || '';
+            }
             if (emailSubject) emailSubject.value = '';
             if (emailOutput) emailOutput.value = '';
         });

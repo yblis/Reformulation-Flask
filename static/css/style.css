@@ -587,3 +587,70 @@ h5 {
 #lengthGroup.compact-btn-group .btn {
     flex: 1 0 calc(33.333% - 0.5rem);
 }
+/* Tag Container and Tags */
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: #FFFFFF;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.tag.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.tag i.tag-remove {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.tag:hover i.tag-remove {
+    opacity: 1;
+}
+
+.add-tag-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.add-tag-btn i {
+    font-size: 0.8rem;
+}
+
+/* Animation pour l'ajout/suppression de tags */
+@keyframes tagAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag {
+    animation: tagAppear 0.2s ease-out;
+}

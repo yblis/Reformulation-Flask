@@ -155,26 +155,106 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function setupTagGroup(groupId) {
-        const group = document.getElementById(groupId);
-        if (!group) return;
-        
-        const buttons = group.querySelectorAll('.btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', function() {
-                buttons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
+    // Load saved tags from localStorage
+    function loadSavedTags() {
+        const groups = ['toneGroup', 'formatGroup', 'lengthGroup'];
+        groups.forEach(groupId => {
+            const savedTags = JSON.parse(localStorage.getItem(`${groupId}Tags`) || '[]');
+            const container = document.getElementById(groupId);
+            if (container && savedTags.length > 0) {
+                container.innerHTML = savedTags.map(tag => `
+                    <span class="tag" data-value="${tag}">
+                        ${tag} <i class="bi bi-x tag-remove"></i>
+                    </span>
+                `).join('');
+                
+                // Restore active states
+                const savedActive = JSON.parse(localStorage.getItem(`${groupId}Active`) || '[]');
+                savedActive.forEach(value => {
+                    const tag = container.querySelector(`[data-value="${value}"]`);
+                    if (tag) tag.classList.add('active');
+                });
+            }
         });
     }
 
-    setupTagGroup('toneGroup');
-    setupTagGroup('formatGroup');
-    setupTagGroup('lengthGroup');
+    // Save tags to localStorage
+    function saveTags(groupId) {
+        const container = document.getElementById(groupId);
+        if (!container) return;
 
-    function getSelectedValue(groupId) {
-        const activeButton = document.querySelector(`#${groupId} .btn.active`);
-        return activeButton ? activeButton.dataset.value : '';
+        const tags = Array.from(container.querySelectorAll('.tag')).map(tag => tag.dataset.value);
+        localStorage.setItem(`${groupId}Tags`, JSON.stringify(tags));
+
+        const activeTags = Array.from(container.querySelectorAll('.tag.active')).map(tag => tag.dataset.value);
+        localStorage.setItem(`${groupId}Active`, JSON.stringify(activeTags));
+    }
+
+    function setupTagGroup(groupId) {
+        const group = document.getElementById(groupId);
+        if (!group) return;
+
+        // Handle tag clicks
+        group.addEventListener('click', function(e) {
+            const tag = e.target.closest('.tag');
+            if (!tag) return;
+
+            // Handle multiple selection for toneGroup
+            if (groupId === 'toneGroup') {
+                tag.classList.toggle('active');
+            } else {
+                // Single selection for other groups
+                group.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+                tag.classList.add('active');
+            }
+
+            saveTags(groupId);
+        });
+
+        // Handle tag removal
+        group.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tag-remove')) {
+                const tag = e.target.closest('.tag');
+                if (tag) {
+                    tag.remove();
+                    saveTags(groupId);
+                }
+            }
+        });
+
+        // Handle adding new tags
+        const addButton = document.querySelector(`[data-target="${groupId}"]`);
+        if (addButton) {
+            addButton.addEventListener('click', function() {
+                const value = prompt('Entrez une nouvelle valeur :');
+                if (value && value.trim()) {
+                    const newTag = document.createElement('span');
+                    newTag.className = 'tag';
+                    newTag.dataset.value = value.trim();
+                    newTag.innerHTML = `${value.trim()} <i class="bi bi-x tag-remove"></i>`;
+                    group.appendChild(newTag);
+                    saveTags(groupId);
+                }
+            });
+        }
+    }
+
+    // Initialize tag groups
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSavedTags();
+        setupTagGroup('toneGroup');
+        setupTagGroup('formatGroup');
+        setupTagGroup('lengthGroup');
+    });
+
+    function getSelectedValues(groupId) {
+        const container = document.getElementById(groupId);
+        if (!container) return groupId === 'toneGroup' ? [] : '';
+
+        const activeTags = Array.from(container.querySelectorAll('.tag.active')).map(tag => tag.dataset.value);
+        
+        // Return array for toneGroup, single value for others
+        return groupId === 'toneGroup' ? activeTags : (activeTags[0] || '');
     }
 
     document.querySelectorAll('.reuse-history').forEach(button => {
@@ -292,9 +372,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const tone = getSelectedValue('toneGroup');
-            const format = getSelectedValue('formatGroup');
-            const length = getSelectedValue('lengthGroup');
+            const tones = getSelectedValues('toneGroup');
+            const format = getSelectedValues('formatGroup');
+            const length = getSelectedValues('lengthGroup');
 
             setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
@@ -308,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         context: context,
                         text: text,
-                        tone: tone,
+                        tones: tones,
                         format: format,
                         length: length
                     })
