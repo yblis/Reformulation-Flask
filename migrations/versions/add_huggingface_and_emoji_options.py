@@ -36,17 +36,22 @@ def upgrade():
         batch_op.add_column(sa.Column('huggingface_model', sa.String(100)))
     
     # Update reformulation_preferences to include use_emojis option
-    op.execute(f"""
+    # Using SQLite JSON functions
+    op.execute("""
     UPDATE user_preferences
     SET reformulation_preferences = 
         CASE 
-            WHEN reformulation_preferences IS NULL THEN '{json.dumps(default_preferences)}'
-            ELSE json_patch(
-                reformulation_preferences::jsonb, 
-                '{{"use_emojis": false}}'::jsonb
-            )::text
-        END
-    """)
+            WHEN reformulation_preferences IS NULL 
+            THEN '%s'
+            ELSE (
+                SELECT json_set(
+                    reformulation_preferences,
+                    '$.use_emojis',
+                    json('false')
+                )
+            )
+        END;
+    """ % json.dumps(default_preferences))
 
 def downgrade():
     # Remove Hugging Face columns
