@@ -354,12 +354,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getSelectedValues(groupId) {
         const container = document.getElementById(groupId);
-        if (!container) return groupId === 'toneGroup' ? [] : '';
+        if (!container) return groupId.includes('tone') ? [] : '';
 
         const activeTags = Array.from(container.querySelectorAll('.tag.active')).map(tag => tag.dataset.value);
         
-        // Return array for toneGroup, single value for others
-        return groupId === 'toneGroup' ? activeTags : (activeTags[0] || '');
+        // Return array for tone groups, single value for others
+        return groupId.includes('tone') ? activeTags : (activeTags[0] || '');
     }
 
     document.querySelectorAll('.reuse-history').forEach(button => {

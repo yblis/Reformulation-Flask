@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (emailSubject) emailSubject.value = "";
 
             try {
+                const tones = Array.from(document.querySelectorAll('#emailToneGroup .tag.active'))
+                    .map(tag => tag.dataset.value);
+                    
                 const response = await fetch('/api/generate-email', {
                     method: 'POST',
                     headers: {
@@ -62,7 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         type: type,
                         content: content,
-                        sender: sender
+                        sender: sender,
+                        tones: tones
                     })
                 });
 
