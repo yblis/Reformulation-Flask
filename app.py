@@ -207,24 +207,12 @@ def get_ollama_models():
 @app.route('/')
 def index():
     preferences = reload_env_config()
-    reformulation_history = ReformulationHistory.query.order_by(
-        ReformulationHistory.created_at.desc()).limit(10).all()
-    email_history = EmailHistory.query.order_by(
-        EmailHistory.created_at.desc()).limit(10).all()
-    correction_history = CorrectionHistory.query.order_by(
-        CorrectionHistory.created_at.desc()).limit(10).all()
-    translation_history = TranslationHistory.query.order_by(
-        TranslationHistory.created_at.desc()).limit(10).all()
     return render_template(
         'index.html',
         system_prompt=preferences.system_prompt,
         translation_prompt=preferences.translation_prompt,
         email_prompt=preferences.email_prompt,
-        correction_prompt=preferences.correction_prompt,
-        reformulation_history=[h.to_dict() for h in reformulation_history],
-        email_history=[h.to_dict() for h in email_history],
-        correction_history=[h.to_dict() for h in correction_history],
-        translation_history=[h.to_dict() for h in translation_history])
+        correction_prompt=preferences.correction_prompt)
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
@@ -398,15 +386,7 @@ Instructions spécifiques pour le ton {tone}:
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            history = ReformulationHistory(
-                original_text=text,
-                context=context,
-                reformulated_text=response_text,
-                tone=tone,
-                format=format,
-                length=length)
-            db.session.add(history)
-            db.session.commit()
+            # L'historique est maintenant géré côté client via localStorage
 
             return jsonify({"text": response_text})
         except Exception as e:
@@ -535,13 +515,7 @@ mot2: synonyme1, synonyme2, synonyme3"""
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
-            history = CorrectionHistory(
-                original_text=text,
-                corrected_text=response_text,
-                corrections=options
-            )
-            db.session.add(history)
-            db.session.commit()
+            # L'historique est maintenant géré côté client via localStorage
 
             return jsonify({"text": response_text})
         except Exception as e:
@@ -629,13 +603,7 @@ def translate():
             if not response_text:
                 raise Exception(f"No response from {provider}")
             
-            history = TranslationHistory(
-                original_text=text,
-                translated_text=response_text,
-                target_language=target_language
-            )
-            db.session.add(history)
-            db.session.commit()
+            # L'historique est maintenant géré côté client via localStorage
             
             return jsonify({"text": response_text})
         except Exception as e:
@@ -756,13 +724,7 @@ Cordialement,
                 if line.lower().startswith('objet:'):
                     subject = line[6:].strip()
                     break
-            history = EmailHistory(email_type=email_type,
-                                   content=content,
-                                   sender=sender,
-                                   generated_subject=subject,
-                                   generated_email=response_text)
-            db.session.add(history)
-            db.session.commit()
+            # L'historique est maintenant géré côté client via localStorage
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Error generating email: {str(e)}"}), 500
