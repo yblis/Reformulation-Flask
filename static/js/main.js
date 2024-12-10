@@ -157,23 +157,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load saved tags from localStorage
     function loadSavedTags() {
-        const groups = ['toneGroup', 'formatGroup', 'lengthGroup'];
+        const groups = ['toneGroup', 'formatGroup', 'lengthGroup', 'emailToneGroup'];
         groups.forEach(groupId => {
-            const savedTags = JSON.parse(localStorage.getItem(`${groupId}Tags`) || '[]');
             const container = document.getElementById(groupId);
-            if (container && savedTags.length > 0) {
-                container.innerHTML = savedTags.map(tag => `
-                    <span class="tag" data-value="${tag}">
-                        ${tag} <i class="bi bi-x tag-remove"></i>
-                    </span>
-                `).join('');
+            if (!container) return;
+
+            try {
+                const savedTags = JSON.parse(localStorage.getItem(`${groupId}Tags`) || '[]');
                 
-                // Restore active states
-                const savedActive = JSON.parse(localStorage.getItem(`${groupId}Active`) || '[]');
-                savedActive.forEach(value => {
-                    const tag = container.querySelector(`[data-value="${value}"]`);
-                    if (tag) tag.classList.add('active');
-                });
+                if (savedTags.length > 0) {
+                    container.innerHTML = savedTags.map(tag => `
+                        <span class="tag ${tag.isActive ? 'active' : ''}" data-value="${tag.value}">
+                            ${tag.value} <i class="bi bi-x tag-remove"></i>
+                        </span>
+                    `).join('');
+                } else {
+                    // Default tags if none are saved
+                    const defaultTags = {
+                        'toneGroup': [
+                            { value: 'Professionnel', isActive: true },
+                            { value: 'Informatif', isActive: false },
+                            { value: 'Décontracté', isActive: false }
+                        ],
+                        'formatGroup': [
+                            { value: 'Mail', isActive: true },
+                            { value: 'Paragraphe', isActive: false },
+                            { value: 'Article de blog', isActive: false }
+                        ],
+                        'lengthGroup': [
+                            { value: 'Court', isActive: false },
+                            { value: 'Moyen', isActive: true },
+                            { value: 'Long', isActive: false }
+                        ],
+                        'emailToneGroup': [
+                            { value: 'Professionnel', isActive: true },
+                            { value: 'Informatif', isActive: false },
+                            { value: 'Cordial', isActive: false }
+                        ]
+                    };
+
+                    if (defaultTags[groupId]) {
+                        container.innerHTML = defaultTags[groupId].map(tag => `
+                            <span class="tag ${tag.isActive ? 'active' : ''}" data-value="${tag.value}">
+                                ${tag.value} <i class="bi bi-x tag-remove"></i>
+                            </span>
+                        `).join('');
+                        // Save default tags
+                        localStorage.setItem(`${groupId}Tags`, JSON.stringify(defaultTags[groupId]));
+                    }
+                }
+            } catch (error) {
+                console.error(`Error loading tags for ${groupId}:`, error);
             }
         });
     }
@@ -183,42 +217,57 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById(groupId);
         if (!container) return;
 
-        const tags = Array.from(container.querySelectorAll('.tag')).map(tag => tag.dataset.value);
+        // Save all tags and their values
+        const tags = Array.from(container.querySelectorAll('.tag')).map(tag => ({
+            value: tag.dataset.value,
+            isActive: tag.classList.contains('active')
+        }));
+        
         localStorage.setItem(`${groupId}Tags`, JSON.stringify(tags));
-
-        const activeTags = Array.from(container.querySelectorAll('.tag.active')).map(tag => tag.dataset.value);
-        localStorage.setItem(`${groupId}Active`, JSON.stringify(activeTags));
+        
+        // Trigger a custom event to notify any listeners
+        const event = new CustomEvent('tagsUpdated', {
+            detail: { groupId, tags }
+        });
+        document.dispatchEvent(event);
     }
 
     function setupTagGroup(groupId) {
         const group = document.getElementById(groupId);
         if (!group) return;
 
-        // Handle tag clicks
-        group.addEventListener('click', function(e) {
-            const tag = e.target.closest('.tag');
-            if (!tag) return;
+        function handleTagClick(tag, isRemoveClick = false) {
+            if (isRemoveClick) {
+                tag.classList.add('removing');
+                setTimeout(() => {
+                    tag.remove();
+                    saveTags(groupId);
+                }, 150);
+                return;
+            }
 
-            // Handle multiple selection for toneGroup
-            if (groupId === 'toneGroup') {
+            if (groupId === 'toneGroup' || groupId === 'emailToneGroup') {
+                // Multiple selection for tone groups
                 tag.classList.toggle('active');
             } else {
                 // Single selection for other groups
-                group.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+                group.querySelectorAll('.tag').forEach(t => {
+                    if (t !== tag) t.classList.remove('active');
+                });
                 tag.classList.add('active');
             }
-
             saveTags(groupId);
-        });
+        }
 
-        // Handle tag removal
+        // Handle tag clicks
         group.addEventListener('click', function(e) {
-            if (e.target.classList.contains('tag-remove')) {
-                const tag = e.target.closest('.tag');
-                if (tag) {
-                    tag.remove();
-                    saveTags(groupId);
-                }
+            const removeIcon = e.target.closest('.tag-remove');
+            const tag = e.target.closest('.tag');
+            
+            if (removeIcon) {
+                handleTagClick(tag, true);
+            } else if (tag) {
+                handleTagClick(tag);
             }
         });
 
@@ -233,6 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     newTag.dataset.value = value.trim();
                     newTag.innerHTML = `${value.trim()} <i class="bi bi-x tag-remove"></i>`;
                     group.appendChild(newTag);
+                    
+                    // Trigger animation
+                    requestAnimationFrame(() => {
+                        newTag.classList.add('tag-appear');
+                    });
+                    
                     saveTags(groupId);
                 }
             });
