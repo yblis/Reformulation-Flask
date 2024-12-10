@@ -665,29 +665,42 @@ h5 {
 
 /* Add tag input styles */
 .tag-input-container {
-    display: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+    opacity: 0;
+    margin: 0.25rem 0;
+    display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    width: 100%;
+    background: rgba(45, 45, 45, 0.5);
+    border-radius: 6px;
+    padding: 0 0.5rem;
 }
 
 .tag-input-container.active {
-    display: flex;
+    max-height: 50px;
+    opacity: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tag-input {
     flex: 1;
     padding: 0.5rem;
     border-radius: 4px;
-    background-color: #2D2D2D;
+    background-color: rgba(45, 45, 45, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #FFFFFF;
     font-size: 0.9rem;
+    transition: border-color 0.2s ease;
 }
 
 .tag-input:focus {
     border-color: #4CAF50;
     outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
 .tag-input-buttons {
@@ -698,6 +711,15 @@ h5 {
 .tag-input-buttons .btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.tag-input-buttons .btn-success:hover {
+    background-color: #3d8b40;
+}
+
+.tag-input-buttons .btn-secondary:hover {
+    background-color: #4a4a4a;
 }
 /* Animation pour l'ajout/suppression de tags */
 @keyframes tagAppear {
