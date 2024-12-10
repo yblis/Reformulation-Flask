@@ -194,15 +194,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         createTagElement(tag) {
-            console.log('Creating tag element:', tag);
             const element = document.createElement('span');
             element.className = `tag${tag.isActive ? ' active' : ''}`;
             element.dataset.value = tag.value;
+            element.dataset.timestamp = tag.timestamp || new Date().toISOString();
+            element.dataset.usageCount = tag.usageCount || '0';
+            
+            const usageCount = parseInt(element.dataset.usageCount, 10);
+            const tagClass = usageCount > 10 ? 'frequently-used' : usageCount > 5 ? 'moderately-used' : '';
+            if (tagClass) {
+                element.classList.add(tagClass);
+            }
+            
             element.innerHTML = `
                 ${tag.value}
+                ${usageCount > 0 ? `<span class="tag-usage-count" title="${usageCount} utilisations">${usageCount}</span>` : ''}
                 <i class="bi bi-x tag-remove" aria-label="Supprimer le tag"></i>
             `.trim();
-            console.log('Created element:', element.outerHTML);
+            
             return element;
         }
 
@@ -239,13 +248,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const tags = Array.from(container.querySelectorAll('.tag')).map(tag => ({
                 value: tag.dataset.value,
-                isActive: tag.classList.contains('active')
+                isActive: tag.classList.contains('active'),
+                timestamp: tag.dataset.timestamp || new Date().toISOString(),
+                usageCount: parseInt(tag.dataset.usageCount || '0', 10)
             }));
 
             localStorage.setItem(`${groupId}Tags`, JSON.stringify(tags));
             
+            // Sauvegarder l'historique des tags utilisés
+            const tagsHistory = JSON.parse(localStorage.getItem(`${groupId}History`) || '[]');
+            const activeTags = tags.filter(tag => tag.isActive);
+            if (activeTags.length > 0) {
+                tagsHistory.push({
+                    tags: activeTags,
+                    timestamp: new Date().toISOString()
+                });
+                // Garder seulement les 50 dernières utilisations
+                if (tagsHistory.length > 50) {
+                    tagsHistory.shift();
+                }
+                localStorage.setItem(`${groupId}History`, JSON.stringify(tagsHistory));
+            }
+            
             document.dispatchEvent(new CustomEvent('tagsUpdated', {
-                detail: { groupId, tags }
+                detail: { groupId, tags, history: tagsHistory }
             }));
         }
 

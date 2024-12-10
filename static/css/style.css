@@ -240,6 +240,25 @@ h5 {
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    position: relative;
+}
+
+.tag .tag-usage-count {
+    font-size: 0.7rem;
+    background-color: rgba(76, 175, 80, 0.2);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+}
+
+.tag.frequently-used {
+    background-color: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.tag.moderately-used {
+    background-color: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.2);
 }
 
 .tag:hover {
@@ -251,6 +270,31 @@ h5 {
     background-color: #4CAF50;
     border-color: #4CAF50;
     box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.tag.frequently-used:hover {
+    background-color: rgba(76, 175, 80, 0.25);
+}
+
+.tag.moderately-used:hover {
+    background-color: rgba(76, 175, 80, 0.2);
+}
+
+.tag.frequently-used.active,
+.tag.moderately-used.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes tagPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.tag.tag-appear {
+    animation: tagAppear 0.3s ease-out, tagPulse 0.5s ease-in-out;
 }
 
 .tag i.tag-remove {
