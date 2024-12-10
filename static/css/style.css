@@ -593,6 +593,10 @@ h5 {
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.5rem;
+    min-height: 45px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .tag {
@@ -607,6 +611,7 @@ h5 {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    user-select: none;
 }
 
 .tag:hover {
@@ -617,40 +622,75 @@ h5 {
 .tag.active {
     background-color: #4CAF50;
     border-color: #4CAF50;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
 .tag i.tag-remove {
     font-size: 0.8rem;
     opacity: 0.7;
     transition: opacity 0.2s ease;
+    cursor: pointer;
+    padding: 2px;
 }
 
 .tag:hover i.tag-remove {
     opacity: 1;
 }
 
+.tag i.tag-remove:hover {
+    color: #ff4444;
+    transform: scale(1.1);
+}
+
 .add-tag-btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
     border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.add-tag-btn:hover {
+    background-color: rgba(76, 175, 80, 0.2);
+    transform: translateY(-1px);
 }
 
 .add-tag-btn i {
     font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.add-tag-btn:hover i {
+    transform: rotate(90deg);
 }
 
 /* Animation pour l'ajout/suppression de tags */
 @keyframes tagAppear {
     from {
         opacity: 0;
-        transform: scale(0.8);
+        transform: scale(0.8) translateY(5px);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) translateY(0);
     }
 }
 
 .tag {
-    animation: tagAppear 0.2s ease-out;
+    animation: tagAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animation pour la suppression des tags */
+@keyframes tagRemove {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+.tag.removing {
+    animation: tagRemove 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }

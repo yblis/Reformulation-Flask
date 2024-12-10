@@ -464,6 +464,27 @@
                             <h5 class="mb-3">Type d'email:</h5>
                             <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
                             
+                            <h5 class="mb-3">Ton:</h5>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Sélectionnez le ton</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="emailToneGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="tag-container" id="emailToneGroup">
+                                    <span class="tag active" data-value="Professionnel">
+                                        Professionnel <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Informatif">
+                                        Informatif <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Cordial">
+                                        Cordial <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            
                             <h5 class="mb-3">Contenu et contexte:</h5>
                             <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
                             
