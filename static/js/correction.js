@@ -178,12 +178,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.reuse-correction').forEach(button => {
         button.addEventListener('click', function() {
             const text = this.dataset.text;
-            const corrections = JSON.parse(this.dataset.corrections);
+            let corrections = {};
+            try {
+                corrections = this.dataset.corrections ? JSON.parse(this.dataset.corrections) : {};
+            } catch (error) {
+                console.error('Error parsing corrections:', error);
+            }
             
             // Fill the input text
+            const correctionInput = document.getElementById('correctionInput');
             if (correctionInput) {
-                correctionInput.value = text;
-                updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
+                correctionInput.value = text || '';
+                updateTextStats(correctionInput.value, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
             }
             
             // Set correction options based on saved corrections

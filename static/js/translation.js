@@ -63,9 +63,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetLanguage = this.dataset.targetLanguage;
             
             // Fill the input text
+            const translationInput = document.getElementById('translationInput');
             if (translationInput) {
-                translationInput.value = text;
-                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+                translationInput.value = text || '';
+                updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
             }
             
             // Set target language if it exists

@@ -1,3 +1,58 @@
+// Enhanced text statistics functions
+// Number animation function
+function animateValue(element, start, end, duration) {
+    if (start === end) return;
+    const range = end - start;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        const value = Math.floor(start + (range * progress));
+        element.textContent = value;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function countWords(text) {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+}
+
+function countParagraphs(text) {
+    return text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
+}
+
+// Improved statistics update with animations
+function updateTextStats(text, charCountId, wordCountId, paraCountId) {
+    const elements = {
+        char: document.getElementById(charCountId),
+        word: document.getElementById(wordCountId),
+        para: document.getElementById(paraCountId)
+    };
+
+    const stats = {
+        char: text.length,
+        word: countWords(text),
+        para: countParagraphs(text)
+    };
+
+    Object.entries(elements).forEach(([type, element]) => {
+        if (element) {
+            const currentValue = parseInt(element.textContent) || 0;
+            const targetValue = stats[type];
+            
+            // Animate the number change
+            animateValue(element, currentValue, targetValue, 200);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Navigation functionality with improved mobile handling
     const navbar = document.querySelector('.navbar-collapse');
@@ -24,60 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced text statistics functions
-    function countWords(text) {
-        return text.trim().split(/\s+/).filter(word => word.length > 0).length;
-    }
-
-    function countParagraphs(text) {
-        return text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
-    }
-
-    // Improved statistics update with animations
-    function updateTextStats(text, charCountId, wordCountId, paraCountId) {
-        const elements = {
-            char: document.getElementById(charCountId),
-            word: document.getElementById(wordCountId),
-            para: document.getElementById(paraCountId)
-        };
-
-        const stats = {
-            char: text.length,
-            word: countWords(text),
-            para: countParagraphs(text)
-        };
-
-        Object.entries(elements).forEach(([type, element]) => {
-            if (element) {
-                const currentValue = parseInt(element.textContent) || 0;
-                const targetValue = stats[type];
-                
-                // Animate the number change
-                animateValue(element, currentValue, targetValue, 200);
-            }
-        });
-    }
-
-    // Number animation function
-    function animateValue(element, start, end, duration) {
-        if (start === end) return;
-        const range = end - start;
-        const startTime = performance.now();
-        
-        function update(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            const value = Math.floor(start + (range * progress));
-            element.textContent = value;
-
-            if (progress < 1) {
-                requestAnimationFrame(update);
-            }
-        }
-
-        requestAnimationFrame(update);
-    }
+    
 
     // Enhanced alert system with animations
     function showAlert(message, type = 'danger', duration = 5000) {
