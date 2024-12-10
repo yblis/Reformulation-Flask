@@ -663,6 +663,42 @@ h5 {
     transform: rotate(90deg);
 }
 
+/* Add tag input styles */
+.tag-input-container {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-input-container.active {
+    display: flex;
+}
+
+.tag-input {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: #2D2D2D;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 0.9rem;
+}
+
+.tag-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.tag-input-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tag-input-buttons .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
 /* Animation pour l'ajout/suppression de tags */
 @keyframes tagAppear {
     from {

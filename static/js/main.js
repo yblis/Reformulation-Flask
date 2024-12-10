@@ -279,24 +279,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         setupAddButton(groupId) {
+            const container = document.getElementById(groupId);
             const addButton = document.querySelector(`[data-target="${groupId}"]`);
-            if (!addButton) return;
+            if (!addButton || !container) return;
+
+            // Create input container
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'tag-input-container';
+            inputContainer.innerHTML = `
+                <input type="text" class="tag-input" placeholder="Nouveau tag...">
+                <div class="tag-input-buttons">
+                    <button class="btn btn-success btn-sm confirm-tag">Ajouter</button>
+                    <button class="btn btn-secondary btn-sm cancel-tag">Annuler</button>
+                </div>
+            `;
+            container.parentNode.insertBefore(inputContainer, container.nextSibling);
+
+            const input = inputContainer.querySelector('.tag-input');
+            const confirmBtn = inputContainer.querySelector('.confirm-tag');
+            const cancelBtn = inputContainer.querySelector('.cancel-tag');
 
             addButton.addEventListener('click', () => {
-                const value = prompt('Entrez une nouvelle valeur :');
-                if (!value?.trim()) return;
+                inputContainer.classList.add('active');
+                input.focus();
+            });
 
-                const container = document.getElementById(groupId);
-                if (!container) return;
+            confirmBtn.addEventListener('click', () => {
+                const value = input.value.trim();
+                if (value) {
+                    const newTag = this.createTagElement({ value: value, isActive: false });
+                    container.appendChild(newTag);
+                    requestAnimationFrame(() => {
+                        newTag.classList.add('tag-appear');
+                    });
+                    this.saveTags(groupId);
+                }
+                input.value = '';
+                inputContainer.classList.remove('active');
+            });
 
-                const newTag = this.createTagElement({ value: value.trim(), isActive: false });
-                container.appendChild(newTag);
-                
-                requestAnimationFrame(() => {
-                    newTag.classList.add('tag-appear');
-                });
-                
-                this.saveTags(groupId);
+            cancelBtn.addEventListener('click', () => {
+                input.value = '';
+                inputContainer.classList.remove('active');
+            });
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    confirmBtn.click();
+                }
+            });
+
+            input.addEventListener('keyup', (e) => {
+                if (e.key === 'Escape') {
+                    cancelBtn.click();
+                }
             });
         }
     }
