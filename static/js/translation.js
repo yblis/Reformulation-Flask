@@ -66,13 +66,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const translationInput = document.getElementById('translationInput');
             if (translationInput) {
                 translationInput.value = text || '';
-                updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
             }
             
             // Set target language if it exists
             const languageSelect = document.getElementById('targetLanguage');
             if (languageSelect && targetLanguage) {
-                // Find and select the option that matches the target language
                 const option = Array.from(languageSelect.options).find(opt => opt.value === targetLanguage);
                 if (option) {
                     languageSelect.value = targetLanguage;
@@ -82,8 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Switch to translation tab and scroll to it
             const translationTab = document.querySelector('button[data-bs-target="#translation"]');
             if (translationTab) {
-                const translationTabInstance = new bootstrap.Tab(translationTab);
-                translationTabInstance.show();
+                const tabInstance = new bootstrap.Tab(translationTab);
+                tabInstance.show();
                 
                 setTimeout(() => {
                     document.getElementById('translation').scrollIntoView({ behavior: 'smooth' });
