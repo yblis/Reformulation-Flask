@@ -33,265 +33,111 @@ document.addEventListener('DOMContentLoaded', function() {
         return text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
     }
 
+    // Improved statistics update with animations
+    function updateTextStats(text, charCountId, wordCountId, paraCountId) {
+        const elements = {
+            char: document.getElementById(charCountId),
+            word: document.getElementById(wordCountId),
+            para: document.getElementById(paraCountId)
+        };
+
+        const stats = {
+            char: text.length,
+            word: countWords(text),
+            para: countParagraphs(text)
+        };
+
+        Object.entries(elements).forEach(([type, element]) => {
+            if (element) {
+                const currentValue = parseInt(element.textContent) || 0;
+                const targetValue = stats[type];
+                
+                // Animate the number change
+                animateValue(element, currentValue, targetValue, 200);
+            }
+        });
+    }
+
+    // Number animation function
+    function animateValue(element, start, end, duration) {
+        if (start === end) return;
+        const range = end - start;
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const value = Math.floor(start + (range * progress));
+            element.textContent = value;
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    // Enhanced alert system with animations
+    function showAlert(message, type = 'danger', duration = 5000) {
+        const existingAlerts = document.querySelectorAll('.floating-alert');
+        existingAlerts.forEach(alert => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+        });
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible floating-alert`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        setTimeout(() => alert.classList.add('show'), 10);
+
+        if (duration) {
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+    }
+
+    // Loading spinner management
+    function setLoading(button, isLoading, originalText) {
+        if (isLoading) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
+        } else {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
+
     // Setup text areas statistics tracking
     const textAreas = {
         'contextText': ['contextCharCount', 'contextWordCount', 'contextParaCount'],
         'inputText': ['inputCharCount', 'inputWordCount', 'inputParaCount'],
         'outputText': ['outputCharCount', 'outputWordCount', 'outputParaCount'],
-        'emailContent': ['emailContentCharCount', 'emailContentWordCount', 'emailContentParaCount']
+        'translationInput': ['translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount'],
+        'translationOutput': ['translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount']
     };
 
     Object.entries(textAreas).forEach(([textAreaId, countIds]) => {
         const textArea = document.getElementById(textAreaId);
         if (textArea) {
-            function updateStats() {
-                const text = textArea.value;
-                document.getElementById(countIds[0])?.textContent = text.length;
-                document.getElementById(countIds[1])?.textContent = countWords(text);
-                document.getElementById(countIds[2])?.textContent = countParagraphs(text);
-            }
+            updateTextStats(textArea.value, ...countIds);
             
-            textArea.addEventListener('input', updateStats);
-            updateStats(); // Initial update
-        }
-    });
-
-    // Select management functions
-    function setupSelect(selectId, addBtnId, removeBtnId) {
-        const select = document.getElementById(selectId);
-        const addBtn = document.getElementById(addBtnId);
-        const removeBtn = document.getElementById(removeBtnId);
-        
-        if (!select || !addBtn || !removeBtn) return;
-
-        // Load saved options from localStorage
-        const savedOptions = JSON.parse(localStorage.getItem(`${selectId}Options`) || '[]');
-        const savedSelections = JSON.parse(localStorage.getItem(`${selectId}Selections`) || '[]');
-        
-        if (savedOptions.length > 0) {
-            select.innerHTML = savedOptions.map(option => 
-                `<option value="${option}" ${savedSelections.includes(option) ? 'selected' : ''}>${option}</option>`
-            ).join('');
-        }
-
-        // Add new option
-        addBtn.addEventListener('click', () => {
-            const value = prompt('Entrez une nouvelle option :');
-            if (value && value.trim()) {
-                const option = document.createElement('option');
-                option.value = value.trim();
-                option.textContent = value.trim();
-                select.appendChild(option);
-                saveSelectState(select);
-            }
-        });
-
-        // Remove selected option(s)
-        removeBtn.addEventListener('click', () => {
-            Array.from(select.selectedOptions).forEach(option => option.remove());
-            saveSelectState(select);
-        });
-
-        // Save state when selection changes
-        select.addEventListener('change', () => {
-            saveSelectState(select);
-        });
-    }
-
-    function saveSelectState(select) {
-        const options = Array.from(select.options).map(option => option.value);
-        const selections = Array.from(select.selectedOptions).map(option => option.value);
-        
-        localStorage.setItem(`${select.id}Options`, JSON.stringify(options));
-        localStorage.setItem(`${select.id}Selections`, JSON.stringify(selections));
-    }
-
-    // Setup all selects
-    setupSelect('toneGroup', 'addTone', 'removeTone');
-    setupSelect('formatGroup', 'addFormat', 'removeFormat');
-    setupSelect('lengthGroup', 'addLength', 'removeLength');
-    setupSelect('emailToneGroup', 'addEmailTone', 'removeEmailTone');
-
-    function getSelectedValues(selectId) {
-        const select = document.getElementById(selectId);
-        if (!select) return [];
-        
-        return Array.from(select.selectedOptions).map(option => option.value);
-    }
-
-    // Reformulate functionality
-    const reformulateBtn = document.getElementById('reformulateBtn');
-    if (reformulateBtn) {
-        reformulateBtn.addEventListener('click', async function() {
-            const inputText = document.getElementById('inputText')?.value.trim();
-            const contextText = document.getElementById('contextText')?.value.trim();
-            const outputText = document.getElementById('outputText');
-            
-            if (!inputText) {
-                alert("Veuillez entrer un texte à reformuler.");
-                return;
-            }
-
-            const tones = getSelectedValues('toneGroup');
-            const format = getSelectedValues('formatGroup')[0];
-            const length = getSelectedValues('lengthGroup')[0];
-
-            reformulateBtn.disabled = true;
-            reformulateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
-            if (outputText) outputText.value = "Reformulation en cours...";
-
-            try {
-                const response = await fetch('/api/reformulate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        context: contextText,
-                        text: inputText,
-                        tones: tones,
-                        format: format,
-                        length: length
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok && outputText) {
-                    outputText.value = data.text;
-                    const stats = document.getElementById('outputStats');
-                    if (stats) {
-                        stats.textContent = `${data.text.length} caractères, ${countWords(data.text)} mots`;
-                    }
-                } else if (outputText) {
-                    outputText.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                if (outputText) outputText.value = "Erreur de connexion. Veuillez réessayer.";
-            } finally {
-                reformulateBtn.disabled = false;
-                reformulateBtn.textContent = "Reformuler";
-            }
-        });
-    }
-
-    // Email generation functionality
-    const generateEmailBtn = document.getElementById('generateEmail');
-    if (generateEmailBtn) {
-        generateEmailBtn.addEventListener('click', async function() {
-            const emailType = document.getElementById('emailType')?.value.trim();
-            const emailContent = document.getElementById('emailContent')?.value.trim();
-            const emailSender = document.getElementById('emailSender')?.value.trim();
-            const emailOutput = document.getElementById('emailOutput');
-            const emailSubject = document.getElementById('emailSubject');
-            
-            if (!emailType || !emailContent) {
-                alert("Veuillez remplir tous les champs requis.");
-                return;
-            }
-
-            const tones = getSelectedValues('emailToneGroup');
-
-            generateEmailBtn.disabled = true;
-            generateEmailBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
-            if (emailOutput) emailOutput.value = "Génération de l'email en cours...";
-            if (emailSubject) emailSubject.value = "";
-
-            try {
-                const response = await fetch('/api/generate-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        type: emailType,
-                        content: emailContent,
-                        sender: emailSender,
-                        tones: tones
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    // Enhanced email parsing
-                    const lines = data.text.split('\n');
-                    const subjectLine = lines.find(line => 
-                        line.toLowerCase().startsWith('objet:') || 
-                        line.toLowerCase().startsWith('object:') ||
-                        line.toLowerCase().startsWith('sujet:')
-                    );
-                    
-                    if (subjectLine && emailSubject) {
-                        const subjectText = subjectLine.substring(subjectLine.indexOf(':') + 1).trim();
-                        emailSubject.value = subjectText;
-                        
-                        if (emailOutput) {
-                            const bodyLines = lines
-                                .filter(line => !line.toLowerCase().match(/^(objet|object|sujet):/))
-                                .join('\n')
-                                .trim()
-                                .replace(/\n{3,}/g, '\n\n');
-                            emailOutput.value = bodyLines;
-                        }
-                    } else {
-                        if (emailSubject) emailSubject.value = "";
-                        if (emailOutput) emailOutput.value = data.text;
-                    }
-                } else {
-                    if (emailOutput) emailOutput.value = `Erreur: ${data.error || 'Une erreur est survenue'}`;
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                if (emailOutput) emailOutput.value = "Erreur de connexion. Veuillez réessayer.";
-            } finally {
-                generateEmailBtn.disabled = false;
-                generateEmailBtn.textContent = "Générer l'email";
-            }
-        });
-    }
-
-    // Copy functionality
-    document.querySelectorAll('[id^="copy"]').forEach(button => {
-        button.addEventListener('click', async function() {
-            const targetId = this.id.replace('copy', '').toLowerCase();
-            const targetElement = document.getElementById(targetId);
-            
-            if (!targetElement || !targetElement.value) return;
-
-            try {
-                await navigator.clipboard.writeText(targetElement.value);
-                const originalText = this.textContent;
-                this.innerHTML = '<i class="bi bi-check2"></i> Copié!';
-                setTimeout(() => {
-                    this.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Erreur lors de la copie:', err);
-            }
-        });
-    });
-
-    // Clear functionality
-    document.querySelectorAll('[id^="clear"]').forEach(button => {
-        button.addEventListener('click', function() {
-            const targetId = this.id.replace('clear', '').toLowerCase();
-            const elements = document.querySelectorAll(`#${targetId}Type, #${targetId}Content, #${targetId}Output, #${targetId}Subject`);
-            
-            elements.forEach(element => {
-                if (element) {
-                    element.value = '';
-                    if (element.id.includes('Content')) {
-                        const countIds = textAreas[element.id];
-                        if (countIds) {
-                            countIds.forEach(id => {
-                                const countElement = document.getElementById(id);
-                                if (countElement) countElement.textContent = '0';
-                            });
-                        }
-                    }
-                }
+            textArea.addEventListener('input', () => {
+                updateTextStats(textArea.value, ...countIds);
             });
-        });
+        }
     });
 
     // Close menu when clicking outside
@@ -454,9 +300,17 @@ document.addEventListener('DOMContentLoaded', function() {
         setupTagGroup('toneGroup');
         setupTagGroup('formatGroup');
         setupTagGroup('lengthGroup');
-        setupTagGroup('emailToneGroup');
     });
 
+    function getSelectedValues(groupId) {
+        const container = document.getElementById(groupId);
+        if (!container) return groupId === 'toneGroup' ? [] : '';
+
+        const activeTags = Array.from(container.querySelectorAll('.tag.active')).map(tag => tag.dataset.value);
+        
+        // Return array for toneGroup, single value for others
+        return groupId === 'toneGroup' ? activeTags : (activeTags[0] || '');
+    }
 
     document.querySelectorAll('.reuse-history').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -557,45 +411,99 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Enhanced alert system with animations
-    function showAlert(message, type = 'danger', duration = 5000) {
-        const existingAlerts = document.querySelectorAll('.floating-alert');
-        existingAlerts.forEach(alert => {
-            alert.classList.remove('show');
-            setTimeout(() => alert.remove(), 300);
+    // Enhanced reformulate functionality
+    const reformulateBtn = document.getElementById('reformulateBtn');
+    if (reformulateBtn) {
+        reformulateBtn.addEventListener('click', async function() {
+            const inputText = document.getElementById('inputText');
+            const contextText = document.getElementById('contextText');
+            const outputText = document.getElementById('outputText');
+            
+            const text = inputText.value.trim();
+            const context = contextText.value.trim();
+            
+            if (!text) {
+                showAlert("Veuillez entrer un texte à reformuler.", "warning");
+                return;
+            }
+
+            const tones = getSelectedValues('toneGroup');
+            const format = getSelectedValues('formatGroup');
+            const length = getSelectedValues('lengthGroup');
+
+            setLoading(reformulateBtn, true, "Reformuler");
+            outputText.value = "Reformulation en cours...";
+
+            try {
+                const response = await fetch('/api/reformulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        context: context,
+                        text: text,
+                        tones: tones,
+                        format: format,
+                        length: length
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    outputText.value = data.text;
+                    updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
+                    showAlert("Reformulation terminée avec succès!", "success", 3000);
+                } else {
+                    outputText.value = "";
+                    showAlert(`Erreur: ${data.error || 'Une erreur est survenue'}`, "danger");
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                outputText.value = "";
+                showAlert("Erreur de connexion. Veuillez réessayer.", "danger");
+            } finally {
+                setLoading(reformulateBtn, false, "Reformuler");
+            }
         });
-
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible floating-alert`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(alert);
-        setTimeout(() => alert.classList.add('show'), 10);
-
-        if (duration) {
-            setTimeout(() => {
-                alert.classList.remove('show');
-                setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
-                    }
-                }, 300);
-            }, duration);
-        }
     }
 
-    // Loading spinner management
-    function setLoading(button, isLoading, originalText) {
-        if (isLoading) {
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>En cours...';
-        } else {
-            button.disabled = false;
-            button.textContent = originalText;
-        }
+    // Enhanced copy functionality
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+            const outputText = document.getElementById('outputText');
+            const text = outputText.value;
+            if (!text) return;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = copyBtn.textContent;
+                copyBtn.innerHTML = '<i class="bi bi-check2"></i> Copié!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+                showAlert("Erreur lors de la copie du texte", "danger");
+            }
+        });
+    }
+
+    // Enhanced clear functionality
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            ['contextText', 'inputText', 'outputText'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = '';
+                    const [charId, wordId, paraId] = textAreas[id];
+                    updateTextStats('', charId, wordId, paraId);
+                }
+            });
+            showAlert("Tous les champs ont été effacés", "info", 2000);
+        });
     }
 
     let lastStatus = 'unknown';

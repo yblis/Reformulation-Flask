@@ -55,66 +55,35 @@
                         <div class="options-grid">
                             <!-- Tone Options -->
                             <div class="options-section">
-                                <div class="mb-3">
-                                    <label class="form-label">Ton (sélection multiple)</label>
-                                    <div class="input-group">
-                                        <select id="toneGroup" class="form-select" multiple size="4">
-                                            <option value="Professionnel" selected>Professionnel</option>
-                                            <option value="Informatif">Informatif</option>
-                                            <option value="Décontracté">Décontracté</option>
-                                            <option value="Enthousiaste">Enthousiaste</option>
-                                            <option value="Drôle">Drôle</option>
-                                        </select>
-                                        <button class="btn btn-outline-success" type="button" id="addTone">
-                                            <i class="bi bi-plus-lg"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" type="button" id="removeTone">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                    <small class="text-muted">Maintenez Ctrl/Cmd pour sélectionner plusieurs tons</small>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Ton</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="toneGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
                                 </div>
+                                <div class="tag-container" id="toneGroup"></div>
                             </div>
 
                             <!-- Format Options -->
                             <div class="options-section">
-                                <div class="mb-3">
-                                    <label class="form-label">Format</label>
-                                    <div class="input-group">
-                                        <select id="formatGroup" class="form-select">
-                                            <option value="Mail" selected>Mail</option>
-                                            <option value="Paragraphe">Paragraphe</option>
-                                            <option value="Article de blog">Article de blog</option>
-                                            <option value="Idées">Idées</option>
-                                        </select>
-                                        <button class="btn btn-outline-success" type="button" id="addFormat">
-                                            <i class="bi bi-plus-lg"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" type="button" id="removeFormat">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Format</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="formatGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
                                 </div>
+                                <div class="tag-container" id="formatGroup"></div>
                             </div>
 
                             <!-- Length Options -->
                             <div class="options-section">
-                                <div class="mb-3">
-                                    <label class="form-label">Longueur</label>
-                                    <div class="input-group">
-                                        <select id="lengthGroup" class="form-select">
-                                            <option value="Court">Court</option>
-                                            <option value="Moyen" selected>Moyen</option>
-                                            <option value="Long">Long</option>
-                                        </select>
-                                        <button class="btn btn-outline-success" type="button" id="addLength">
-                                            <i class="bi bi-plus-lg"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" type="button" id="removeLength">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Longueur</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="lengthGroup">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
                                 </div>
+                                <div class="tag-container" id="lengthGroup"></div>
                             </div>
                         </div>
                     </div>
@@ -455,23 +424,23 @@
                             
                             <h5 class="mb-3">Ton:</h5>
                             <div class="mb-4">
-                                <label class="form-label">Ton (sélection multiple)</label>
-                                <div class="input-group">
-                                    <select id="emailToneGroup" class="form-select" multiple size="4">
-                                        <option value="Professionnel" selected>Professionnel</option>
-                                        <option value="Informatif">Informatif</option>
-                                        <option value="Cordial">Cordial</option>
-                                        <option value="Formel">Formel</option>
-                                        <option value="Amical">Amical</option>
-                                    </select>
-                                    <button class="btn btn-outline-success" type="button" id="addEmailTone">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Sélectionnez le ton</h6>
+                                    <button class="btn btn-sm btn-outline-success add-tag-btn" data-target="emailToneGroup">
                                         <i class="bi bi-plus-lg"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger" type="button" id="removeEmailTone">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
                                 </div>
-                                <small class="text-muted">Maintenez Ctrl/Cmd pour sélectionner plusieurs tons</small>
+                                <div class="tag-container" id="emailToneGroup">
+                                    <span class="tag active" data-value="Professionnel">
+                                        Professionnel <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Informatif">
+                                        Informatif <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                    <span class="tag" data-value="Cordial">
+                                        Cordial <i class="bi bi-x tag-remove"></i>
+                                    </span>
+                                </div>
                             </div>
                             
                             <h5 class="mb-3">Contenu et contexte:</h5>
