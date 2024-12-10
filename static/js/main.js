@@ -490,6 +490,14 @@ document.addEventListener('DOMContentLoaded', function() {
             outputText.value = "Reformulation en cours...";
 
             try {
+                const selectedTones = getSelectedValues('toneGroup');
+                const tone = Array.isArray(selectedTones) ? selectedTones[0] : selectedTones;
+                
+                if (!tone) {
+                    showAlert("Veuillez sélectionner un ton", "warning", 3000);
+                    return;
+                }
+
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
                     headers: {
@@ -498,21 +506,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         context: context,
                         text: text,
-                        tone: tones[0] || 'Professionnel', // Use first selected tone or default
+                        tone: tone,
                         format: format,
                         length: length
                     })
                 });
 
-                const data = await response.json();
-                if (response.ok) {
-                    outputText.value = data.text;
-                    updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
-                    showAlert("Reformulation terminée avec succès!", "success", 3000);
-                } else {
-                    outputText.value = "";
-                    showAlert(`Erreur: ${data.error || 'Une erreur est survenue'}`, "danger");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        throw new Error(errorData.error || 'Une erreur est survenue');
+                    } catch (e) {
+                        throw new Error('Erreur de communication avec le serveur');
+                    }
                 }
+
+                const data = await response.json();
+                outputText.value = data.text;
+                updateTextStats(data.text, 'outputCharCount', 'outputWordCount', 'outputParaCount');
+                showAlert("Reformulation terminée avec succès!", "success", 3000);
             } catch (error) {
                 console.error('Erreur:', error);
                 outputText.value = "";
@@ -567,10 +580,19 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const savedUrl = localStorage.getItem('ollamaUrl');
             const url = savedUrl ? `/api/status?url=${encodeURIComponent(savedUrl)}` : '/api/status';
-            const response = await fetch(url);
             
+            const response = await fetch(url);
             if (!response.ok) {
-                throw new Error('Status check failed');
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || 'Status check failed');
+                } catch (e) {
+                    if (response.status === 404) {
+                        return true; // Consider non-Ollama providers as valid
+                    }
+                    throw new Error('Service indisponible');
+                }
             }
             
             const data = await response.json();
@@ -595,12 +617,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return status.state === 'connected';
         } catch (error) {
             console.error('Error checking status:', error);
-            updateUIForStatus({
-                state: 'disconnected',
-                provider: 'unknown',
-                error: error.message
-            });
-            return false;
+            // Don't block the UI for status check errors
+            return true;
         }
     }
 
