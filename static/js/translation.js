@@ -11,25 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return select ? select.value : 'Anglais';
     }
 
-    // Initialize text statistics
-    function updateTextStats(element, charCountId, wordCountId, paraCountId) {
-        const text = element.value;
-        const charCount = document.getElementById(charCountId);
-        const wordCount = document.getElementById(wordCountId);
-        const paraCount = document.getElementById(paraCountId);
-
-        if (charCount) charCount.textContent = text.length;
-        if (wordCount) wordCount.textContent = text.trim().split(/\s+/).filter(word => word.length > 0).length;
-        if (paraCount) paraCount.textContent = text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
-    }
-
-    // Setup input statistics tracking
+    // Initialize text statistics for input
     if (translationInput) {
         translationInput.addEventListener('input', () => {
-            updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+            updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
         });
     }
 
+    // Handle translation request
     if (translateText) {
         translateText.addEventListener('click', async function() {
             const text = translationInput.value.trim();
@@ -55,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     translationOutput.value = `Erreur: ${data.error}`;
                 } else {
                     translationOutput.value = data.text;
-                    updateTextStats(translationOutput, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+                    updateTextStats(translationOutput.value, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
                 }
             } catch (error) {
                 translationOutput.value = `Erreur: ${error.message}`;
@@ -66,8 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Copy translation
     if (copyTranslation) {
-        copyTranslation.addEventListener('click', async function() {
+        copyTranslation.addEventListener('click', async () => {
             const text = translationOutput.value;
             if (!text) return;
 
@@ -84,54 +74,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Clear all fields
     if (clearTranslation) {
         clearTranslation.addEventListener('click', () => {
             if (translationInput) {
                 translationInput.value = '';
-                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+                updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
             }
             if (translationOutput) {
                 translationOutput.value = '';
-                updateTextStats(translationOutput, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+                updateTextStats(translationOutput.value, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
             }
         });
     }
 
     // Handle reuse translation button
     document.querySelectorAll('.reuse-translation').forEach(button => {
-        button.addEventListener('click', function() {
-            const text = this.dataset.text;
-            const targetLanguage = this.dataset.targetLanguage;
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
             
-            // Fill the input text
-            const translationInput = document.getElementById('translationInput');
-            if (translationInput) {
-                translationInput.value = text || '';
-                // Use the element's value property
-                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
-            }
-            
-            // Set target language if it exists
-            const languageSelect = document.getElementById('targetLanguage');
-            if (languageSelect && targetLanguage) {
-                const option = Array.from(languageSelect.options).find(opt => opt.value === targetLanguage);
-                if (option) {
-                    languageSelect.value = targetLanguage;
-                }
-            }
-            
-            // Switch to translation tab and scroll to it
-            const translationTab = document.querySelector('button[data-bs-target="#translation"]');
+            const translationTab = document.querySelector('#translation-tab');
             if (translationTab) {
-                const tabInstance = new bootstrap.Tab(translationTab);
-                tabInstance.show();
+                const tab = new bootstrap.Tab(translationTab);
+                tab.show();
                 
+                // Wait for the tab transition
                 setTimeout(() => {
-                    document.getElementById('translation').scrollIntoView({ behavior: 'smooth' });
+                    const translationInput = document.getElementById('translationInput');
                     if (translationInput) {
-                        translationInput.focus();
+                        translationInput.value = this.dataset.text || '';
+                        updateTextStats(translationInput.value, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
                     }
-                }, 100);
+                    
+                    // Set target language if it exists
+                    const languageSelect = document.getElementById('targetLanguage');
+                    if (languageSelect && this.dataset.targetLanguage) {
+                        const option = Array.from(languageSelect.options).find(opt => opt.value === this.dataset.targetLanguage);
+                        if (option) {
+                            languageSelect.value = this.dataset.targetLanguage;
+                        }
+                    }
+                    
+                    // Reset translation output
+                    const translationOutput = document.getElementById('translationOutput');
+                    if (translationOutput) {
+                        translationOutput.value = '';
+                        updateTextStats(translationOutput.value, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+                    }
+                }, 150);
             }
         });
     });

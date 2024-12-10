@@ -10,21 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     synonymsContainer.style.display = 'none';
 
     // Initialize text statistics for both input and output
-    function updateTextStats(element, charCountId, wordCountId, paraCountId) {
-        const text = element.value;
-        const charCount = document.getElementById(charCountId);
-        const wordCount = document.getElementById(wordCountId);
-        const paraCount = document.getElementById(paraCountId);
-
-        if (charCount) charCount.textContent = text.length;
-        if (wordCount) wordCount.textContent = text.trim().split(/\s+/).filter(word => word.length > 0).length;
-        if (paraCount) paraCount.textContent = text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
-    }
-
-    // Setup input statistics tracking
     if (correctionInput) {
         correctionInput.addEventListener('input', () => {
-            updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
+            updateTextStats(correctionInput.value, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
         });
     }
 
@@ -122,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     const { text: correctedText, synonyms } = parseResponse(data.text);
                     correctionOutput.value = correctedText;
-                    updateTextStats(correctionOutput, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
+                    updateTextStats(correctionOutput.value, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
                     
                     if (options.synonyms) {
                         displaySynonyms(synonyms);
@@ -164,11 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
         clearCorrection.addEventListener('click', () => {
             if (correctionInput) {
                 correctionInput.value = '';
-                updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
+                updateTextStats(correctionInput.value, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
             }
             if (correctionOutput) {
                 correctionOutput.value = '';
-                updateTextStats(correctionOutput, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
+                updateTextStats(correctionOutput.value, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
             }
             synonymsContainer.style.display = 'none';
         });
@@ -176,60 +164,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle reuse correction button
     document.querySelectorAll('.reuse-correction').forEach(button => {
-        button.addEventListener('click', function() {
-            const text = this.dataset.text;
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
             
-            // Fill the input text
-            if (correctionInput) {
-                correctionInput.value = text || '';
-                // Use the element's value property
-                updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
-            }
-            
-            // Set correction options if they exist in dataset
-            if (this.dataset.corrections) {
-                try {
-                    const corrections = JSON.parse(this.dataset.corrections);
-                    if (corrections) {
-                        // Update checkboxes
-                        const checkboxIds = ['checkSyntax', 'checkGrammar', 'checkSpelling', 
-                                          'checkStyle', 'checkPunctuation', 'checkSynonyms'];
-                        checkboxIds.forEach(id => {
-                            const checkbox = document.getElementById(id);
-                            if (checkbox && corrections[id.toLowerCase().replace('check', '')]) {
-                                checkbox.checked = true;
-                            }
-                        });
-                        
-                        // Update syntax rules if they exist
-                        if (corrections.syntax_rules) {
-                            const ruleIds = ['wordOrder', 'subjectVerb', 'verbTense', 
-                                          'genderNumber', 'relativePronouns'];
-                            ruleIds.forEach(id => {
-                                const checkbox = document.getElementById(id);
-                                if (checkbox && corrections.syntax_rules[id.toLowerCase()]) {
-                                    checkbox.checked = true;
+            const correctionTab = document.querySelector('#correction-tab');
+            if (correctionTab) {
+                const tab = new bootstrap.Tab(correctionTab);
+                tab.show();
+                
+                // Wait for the tab transition
+                setTimeout(() => {
+                    const correctionInput = document.getElementById('correctionInput');
+                    if (correctionInput) {
+                        correctionInput.value = this.dataset.text || '';
+                        updateTextStats(correctionInput.value, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
+                    }
+
+                    // Reset correction output
+                    const correctionOutput = document.getElementById('correctionOutput');
+                    if (correctionOutput) {
+                        correctionOutput.value = '';
+                        updateTextStats(correctionOutput.value, 'correctionOutputCharCount', 'correctionOutputWordCount', 'correctionOutputParaCount');
+                    }
+                    
+                    // Set correction options if they exist
+                    if (this.dataset.corrections) {
+                        try {
+                            const corrections = JSON.parse(this.dataset.corrections);
+                            if (corrections) {
+                                ['checkSyntax', 'checkGrammar', 'checkSpelling', 'checkStyle', 'checkPunctuation', 'checkSynonyms'].forEach(id => {
+                                    const checkbox = document.getElementById(id);
+                                    if (checkbox) {
+                                        checkbox.checked = corrections[id.replace('check', '').toLowerCase()] || false;
+                                    }
+                                });
+                                
+                                if (corrections.syntax_rules) {
+                                    ['wordOrder', 'subjectVerb', 'verbTense', 'genderNumber', 'relativePronouns'].forEach(id => {
+                                        const checkbox = document.getElementById(id);
+                                        if (checkbox) {
+                                            checkbox.checked = corrections.syntax_rules[id.toLowerCase()] || false;
+                                        }
+                                    });
                                 }
-                            });
+                            }
+                        } catch (error) {
+                            console.error('Error parsing corrections:', error);
                         }
                     }
-                } catch (error) {
-                    console.error('Error parsing corrections:', error);
-                }
-            }
-            
-            // Switch to correction tab and scroll to it
-            const correctionTab = document.querySelector('button[data-bs-target="#correction"]');
-            if (correctionTab) {
-                const tabInstance = new bootstrap.Tab(correctionTab);
-                tabInstance.show();
-                
-                setTimeout(() => {
-                    document.getElementById('correction').scrollIntoView({ behavior: 'smooth' });
-                    if (correctionInput) {
-                        correctionInput.focus();
-                    }
-                }, 100);
+                }, 150);
             }
         });
     });
