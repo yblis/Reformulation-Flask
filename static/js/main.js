@@ -192,10 +192,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         createTagElement(tag) {
+            console.log('Creating tag element:', tag);
             const element = document.createElement('span');
-            element.className = `tag ${tag.isActive ? 'active' : ''}`;
+            element.className = `tag${tag.isActive ? ' active' : ''}`;
             element.dataset.value = tag.value;
-            element.innerHTML = `${tag.value} <i class="bi bi-x tag-remove"></i>`;
+            element.innerHTML = `
+                ${tag.value}
+                <i class="bi bi-x tag-remove" aria-label="Supprimer le tag"></i>
+            `.trim();
+            console.log('Created element:', element.outerHTML);
             return element;
         }
 
@@ -298,9 +303,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize tag system
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM Content Loaded - Initializing TagManager');
         const tagManager = new TagManager();
         tagManager.init();
+        console.log('TagManager initialized');
     });
+
+    // Immediately create an instance for external use
+    const globalTagManager = new TagManager();
+    
+    // Also initialize when the script loads
+    console.log('Initializing TagManager on script load');
+    globalTagManager.init();
 
     function getSelectedValues(groupId) {
         const container = document.getElementById(groupId);
