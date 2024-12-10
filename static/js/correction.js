@@ -174,3 +174,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+    // Handle reuse correction button
+    document.querySelectorAll('.reuse-correction').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.dataset.text;
+            const corrections = JSON.parse(this.dataset.corrections);
+            
+            // Fill the input text
+            if (correctionInput) {
+                correctionInput.value = text;
+                updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
+            }
+            
+            // Set correction options based on saved corrections
+            if (corrections) {
+                document.getElementById('checkSyntax').checked = corrections.syntax || false;
+                document.getElementById('checkGrammar').checked = corrections.grammar || false;
+                document.getElementById('checkSpelling').checked = corrections.spelling || false;
+                document.getElementById('checkStyle').checked = corrections.style || false;
+                document.getElementById('checkPunctuation').checked = corrections.punctuation || false;
+                document.getElementById('checkSynonyms').checked = corrections.synonyms || false;
+                
+                // Set syntax rules if they exist
+                if (corrections.syntax_rules) {
+                    document.getElementById('wordOrder').checked = corrections.syntax_rules.word_order || false;
+                    document.getElementById('subjectVerb').checked = corrections.syntax_rules.subject_verb_agreement || false;
+                    document.getElementById('verbTense').checked = corrections.syntax_rules.verb_tense || false;
+                    document.getElementById('genderNumber').checked = corrections.syntax_rules.gender_number || false;
+                    document.getElementById('relativePronouns').checked = corrections.syntax_rules.relative_pronouns || false;
+                }
+            }
+            
+            // Scroll to correction section
+            document.getElementById('correction').scrollIntoView({ behavior: 'smooth' });
+        });
+    });

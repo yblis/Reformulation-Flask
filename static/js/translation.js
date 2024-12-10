@@ -56,3 +56,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+    // Handle reuse translation button
+    document.querySelectorAll('.reuse-translation').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.dataset.text;
+            const targetLanguage = this.dataset.targetLanguage;
+            
+            // Fill the input text
+            if (translationInput) {
+                translationInput.value = text;
+                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+            }
+            
+            // Set target language if it exists
+            const languageSelect = document.getElementById('targetLanguage');
+            if (languageSelect && targetLanguage) {
+                // Find and select the option that matches the target language
+                const option = Array.from(languageSelect.options).find(opt => opt.value === targetLanguage);
+                if (option) {
+                    languageSelect.value = targetLanguage;
+                }
+            }
+            
+            // Scroll to translation section and switch to translation tab
+            const translationTab = document.querySelector('a[href="#translation"]');
+            if (translationTab) {
+                translationTab.click(); // Activate the translation tab
+            }
+            document.getElementById('translation').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
