@@ -4,7 +4,7 @@ from flask_cors import CORS
 import requests
 import os
 from dotenv import load_dotenv
-from models import db, UserPreferences, ReformulationHistory, EmailHistory
+from models import db, UserPreferences, ReformulationHistory, EmailHistory, CorrectionHistory, TranslationHistory
 from openai import OpenAI
 from anthropic import Anthropic
 import google.generativeai as genai
@@ -205,6 +205,10 @@ def index():
         ReformulationHistory.created_at.desc()).limit(10).all()
     email_history = EmailHistory.query.order_by(
         EmailHistory.created_at.desc()).limit(10).all()
+    correction_history = CorrectionHistory.query.order_by(
+        CorrectionHistory.created_at.desc()).limit(10).all()
+    translation_history = TranslationHistory.query.order_by(
+        TranslationHistory.created_at.desc()).limit(10).all()
     return render_template(
         'index.html',
         system_prompt=preferences.system_prompt,
@@ -212,7 +216,9 @@ def index():
         email_prompt=preferences.email_prompt,
         correction_prompt=preferences.correction_prompt,
         reformulation_history=[h.to_dict() for h in reformulation_history],
-        email_history=[h.to_dict() for h in email_history])
+        email_history=[h.to_dict() for h in email_history],
+        correction_history=[h.to_dict() for h in correction_history],
+        translation_history=[h.to_dict() for h in translation_history])
 
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
@@ -746,6 +752,8 @@ def reset_history():
     try:
         ReformulationHistory.query.delete()
         EmailHistory.query.delete()
+        CorrectionHistory.query.delete()
+        TranslationHistory.query.delete()
         db.session.commit()
         return jsonify({"status": "success"})
     except Exception as e:

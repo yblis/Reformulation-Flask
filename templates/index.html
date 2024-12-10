@@ -51,7 +51,7 @@
                         </button>
                     </div>
                     
-                    <div class="collapse" id="optionsCollapse">
+                    <div class="collapse show" id="optionsCollapse">
                         <div class="options-grid">
                             <!-- Tone Options -->
                             <div class="options-section">
@@ -568,6 +568,92 @@
                                 </div>
                             {% else %}
                                 <p class="text-muted">Aucun historique d'email</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Correction History -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#correctionHistory">
+                            Historique des corrections
+                        </button>
+                    </h2>
+                    <div id="correctionHistory" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            {% if correction_history %}
+                                <div class="list-group">
+                                    {% for entry in correction_history %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">{{ entry.created_at }}</small>
+                                            <button class="btn btn-sm btn-success reuse-correction"
+                                                data-text="{{ entry.original_text }}"
+                                                data-corrections="{{ entry.corrections|tojson }}">
+                                                Réutiliser
+                                            </button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Texte original:</strong>
+                                            <pre class="mb-2">{{ entry.original_text }}</pre>
+                                            <strong>Texte corrigé:</strong>
+                                            <pre>{{ entry.corrected_text }}</pre>
+                                        </div>
+                                        <div>
+                                            <strong>Corrections appliquées:</strong>
+                                            <ul class="list-unstyled">
+                                            {% for type, details in entry.corrections.items() %}
+                                                <li><span class="badge bg-info">{{ type }}</span> {{ details }}</li>
+                                            {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun historique de correction</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Translation History -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#translationHistory">
+                            Historique des traductions
+                        </button>
+                    </h2>
+                    <div id="translationHistory" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            {% if translation_history %}
+                                <div class="list-group">
+                                    {% for entry in translation_history %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">{{ entry.created_at }}</small>
+                                            <button class="btn btn-sm btn-success reuse-translation"
+                                                data-text="{{ entry.original_text }}"
+                                                data-target-language="{{ entry.target_language }}">
+                                                Réutiliser
+                                            </button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Texte original:</strong>
+                                            <pre class="mb-2">{{ entry.original_text }}</pre>
+                                            <strong>Traduction ({{ entry.target_language }}):</strong>
+                                            <pre>{{ entry.translated_text }}</pre>
+                                        </div>
+                                        {% if entry.source_language %}
+                                        <div>
+                                            <span class="badge bg-secondary">{{ entry.source_language }} ➔ {{ entry.target_language }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun historique de traduction</p>
                             {% endif %}
                         </div>
                     </div>

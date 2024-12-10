@@ -235,3 +235,39 @@ class EmailHistory(db.Model):
             'generated_email': self.generated_email,
             'created_at': self.created_at.isoformat()
         }
+
+
+class TranslationHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    original_text = db.Column(db.Text, nullable=False)
+    translated_text = db.Column(db.Text, nullable=False)
+    source_language = db.Column(db.String(50))
+    target_language = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'original_text': self.original_text,
+            'translated_text': self.translated_text,
+            'source_language': self.source_language,
+            'target_language': self.target_language,
+            'created_at': self.created_at.isoformat()
+        }
+
+
+class CorrectionHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    original_text = db.Column(db.Text, nullable=False)
+    corrected_text = db.Column(db.Text, nullable=False)
+    corrections = db.Column(db.JSON, nullable=False)  # Store details about corrections made
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'original_text': self.original_text,
+            'corrected_text': self.corrected_text,
+            'corrections': self.corrections,
+            'created_at': self.created_at.isoformat()
+        }
