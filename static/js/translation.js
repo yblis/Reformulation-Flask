@@ -92,11 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.reuse-translation').forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             
             const translationTab = document.querySelector('#translation-tab');
             if (translationTab) {
-                const tab = new bootstrap.Tab(translationTab);
-                tab.show();
+                translationTab.click();
                 
                 // Wait for the tab transition
                 setTimeout(() => {

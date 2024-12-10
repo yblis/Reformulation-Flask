@@ -166,11 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.reuse-correction').forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             
             const correctionTab = document.querySelector('#correction-tab');
             if (correctionTab) {
-                const tab = new bootstrap.Tab(correctionTab);
-                tab.show();
+                correctionTab.click();
                 
                 // Wait for the tab transition
                 setTimeout(() => {
