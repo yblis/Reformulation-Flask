@@ -12,30 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailPrompt = document.getElementById('emailPrompt');
     const emailToneContainer = document.getElementById('emailToneContainer');
 
-    // Initialize tags if container exists
-    if (emailToneContainer) {
-        const tones = ['Professionnel', 'Décontracté', 'Informatif', 'Amical', 'Formel', 'Drôle', 'Sarcastique'];
-        tones.forEach(tone => {
-            console.log('Creating tag element:', { value: tone, isActive: false });
-            const tag = document.createElement('span');
-            tag.className = 'tag';
-            tag.dataset.value = tone;
-            tag.innerHTML = `${tone}
-                <i class="bi bi-x tag-remove" aria-label="Supprimer le tag"></i>`;
-            console.log('Created element:', tag.outerHTML);
-            emailToneContainer.appendChild(tag);
-
-            // Add click event to toggle active state
-            tag.addEventListener('click', function() {
-                // Remove active class from all other tags
-                emailToneContainer.querySelectorAll('.tag').forEach(t => {
-                    if (t !== tag) t.classList.remove('active');
-                });
-                // Toggle active class on clicked tag
-                tag.classList.toggle('active');
-            });
-        });
-    }
+    // Tag management will be handled by TagManager from main.js
 
     // Only proceed if we're on the email tab
     if (!emailTab) return;
@@ -80,8 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (emailSubject) emailSubject.value = "";
 
             try {
-                const tones = window.getSelectedValues('emailToneGroup');
-                console.log('Email generation - Selected tones:', tones);
+                const selectedTone = window.getSelectedValues('emailToneGroup');
+                console.log('Email generation - Selected tone:', selectedTone);
                     
                 const response = await fetch('/api/generate-email', {
                     method: 'POST',
@@ -92,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: type,
                         content: content,
                         sender: sender,
-                        tone: tones[0] || 'Professionnel' // Use first selected tone or default
+                        tone: Array.isArray(selectedTone) ? selectedTone[0] : selectedTone || 'Professionnel' // Handle both array and single value
                     })
                 });
 

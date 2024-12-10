@@ -177,7 +177,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 'emailToneGroup': [
                     { value: 'Professionnel', isActive: true },
                     { value: 'Informatif', isActive: false },
-                    { value: 'Cordial', isActive: false }
+                    { value: 'Décontracté', isActive: false },
+                    { value: 'Amical', isActive: false },
+                    { value: 'Formel', isActive: false }
                 ]
             };
             this.groups = ['toneGroup', 'formatGroup', 'lengthGroup', 'emailToneGroup'];
