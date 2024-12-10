@@ -499,6 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
 
+            try {
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
                     headers: {
