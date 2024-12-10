@@ -476,27 +476,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const context = contextText.value.trim();
             
             if (!text) {
-                showAlert("Veuillez entrer un texte à reformuler.", "warning");
+                showAlert("Veuillez entrer un texte à reformuler dans le champ 'Texte à reformuler'.", "warning");
                 return;
             }
 
-            const tones = getSelectedValues('toneGroup');
+            const selectedTones = getSelectedValues('toneGroup');
+            const tone = Array.isArray(selectedTones) ? selectedTones[0] : selectedTones;
             const format = getSelectedValues('formatGroup');
             const length = getSelectedValues('lengthGroup');
 
-            console.log('Reformulation - Selected tones:', tones);
+            console.log('Reformulation - Texte à reformuler:', text);
+            console.log('Reformulation - Contexte:', context);
+            console.log('Reformulation - Ton sélectionné:', tone);
+            console.log('Reformulation - Format:', format);
+            console.log('Reformulation - Longueur:', length);
+
+            if (!tone) {
+                showAlert("Veuillez sélectionner un ton", "warning", 3000);
+                return;
+            }
 
             setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
-
-            try {
-                const selectedTones = getSelectedValues('toneGroup');
-                const tone = Array.isArray(selectedTones) ? selectedTones[0] : selectedTones;
-                
-                if (!tone) {
-                    showAlert("Veuillez sélectionner un ton", "warning", 3000);
-                    return;
-                }
 
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
