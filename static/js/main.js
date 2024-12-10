@@ -352,7 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing TagManager on script load');
     globalTagManager.init();
 
-    function getSelectedValues(groupId) {
+    // Make getSelectedValues available globally
+    window.getSelectedValues = function(groupId) {
         const container = document.getElementById(groupId);
         if (!container) return groupId.includes('tone') ? [] : '';
 
@@ -485,6 +486,10 @@ document.addEventListener('DOMContentLoaded', function() {
             outputText.value = "Reformulation en cours...";
 
             try {
+                // Get selected tones
+                const tones = getSelectedValues('toneGroup');
+                console.log('Selected tones:', tones);
+
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
                     headers: {

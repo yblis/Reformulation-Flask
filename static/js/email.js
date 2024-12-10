@@ -54,8 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (emailSubject) emailSubject.value = "";
 
             try {
-                const tones = Array.from(document.querySelectorAll('#emailToneGroup .tag.active'))
-                    .map(tag => tag.dataset.value);
+                // Use the same getSelectedValues function from main.js
+                const tones = window.getSelectedValues ? 
+                    window.getSelectedValues('emailToneGroup') :
+                    Array.from(document.querySelectorAll('#emailToneGroup .tag.active'))
+                        .map(tag => tag.dataset.value);
+                
+                console.log('Email selected tones:', tones);
                     
                 const response = await fetch('/api/generate-email', {
                     method: 'POST',
