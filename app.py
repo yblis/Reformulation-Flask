@@ -8,6 +8,7 @@ from models import db, UserPreferences, ReformulationHistory, EmailHistory, Corr
 from openai import OpenAI
 from anthropic import Anthropic
 import google.generativeai as genai
+from huggingface_hub import InferenceClient
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ def reload_env_config():
     preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', preferences.anthropic_api_key)
     preferences.google_api_key = os.getenv('GOOGLE_API_KEY', preferences.google_api_key)
     preferences.groq_api_key = os.getenv('GROQ_API_KEY', preferences.groq_api_key)
+    preferences.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY', preferences.huggingface_api_key)
     db.session.commit()
     return preferences
 
