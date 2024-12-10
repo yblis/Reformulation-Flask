@@ -166,12 +166,12 @@ body {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .nav-tabs::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
 }
 
 @media (min-width: 768px) {
@@ -201,6 +201,166 @@ body {
     border: none;
     border-bottom: 2px solid #4CAF50;
     color: #4CAF50;
+}
+
+/* Section headings */
+h5 {
+    color: #FFFFFF;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+/* Text utilities */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Tag Container and Tags */
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    min-height: 45px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: #FFFFFF;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.tag:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.tag.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.tag i.tag-remove {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.tag:hover i.tag-remove {
+    opacity: 1;
+}
+
+.tag i.tag-remove:hover {
+    color: #ff4444;
+    transform: scale(1.1);
+}
+
+/* Add tag button styles */
+.add-tag-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    flex: 0 0 32px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background-color: rgba(76, 175, 80, 0.2); /* Added background color */
+    border: none; /* Removed border */
+    cursor: pointer; /* Added cursor style */
+}
+
+.add-tag-btn i {
+    margin: 0;
+    font-size: 1.2rem;
+    color: white; /* Added icon color */
+}
+
+
+/* Add tag input styles */
+.tag-input-container {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-input-container.active {
+    display: flex;
+}
+
+.tag-input {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: #2D2D2D;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 0.9rem;
+}
+
+.tag-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.tag-input-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tag-input-buttons .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Animation pour l'ajout/suppression de tags */
+@keyframes tagAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tag {
+    animation: tagAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animation pour la suppression des tags */
+@keyframes tagRemove {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+.tag.removing {
+    animation: tagRemove 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Accordion styling */
@@ -246,18 +406,6 @@ body {
     .accordion-body {
         padding: 1.5rem;
     }
-}
-
-/* Section headings */
-h5 {
-    color: #FFFFFF;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-}
-
-/* Text utilities */
-.text-muted {
-    color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Animations */
@@ -366,6 +514,7 @@ h5 {
 
 .navbar {
     padding: 1rem;
+}
 .navbar .container-fluid {
     display: flex;
     justify-content: space-between;
@@ -379,7 +528,6 @@ h5 {
     .navbar .container-fluid {
         padding: 0.5rem;
     }
-}
 }
 
 .navbar-brand {
@@ -586,147 +734,4 @@ h5 {
 
 #lengthGroup.compact-btn-group .btn {
     flex: 1 0 calc(33.333% - 0.5rem);
-}
-/* Tag Container and Tags */
-.tag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    min-height: 45px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    color: #FFFFFF;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-.tag:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-}
-
-.tag.active {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
-}
-
-.tag i.tag-remove {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    cursor: pointer;
-    padding: 2px;
-}
-
-.tag:hover i.tag-remove {
-    opacity: 1;
-}
-
-.tag i.tag-remove:hover {
-    color: #ff4444;
-    transform: scale(1.1);
-}
-
-.add-tag-btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.add-tag-btn:hover {
-    background-color: rgba(76, 175, 80, 0.2);
-    transform: translateY(-1px);
-}
-
-.add-tag-btn i {
-    font-size: 0.8rem;
-    transition: transform 0.2s ease;
-}
-
-.add-tag-btn:hover i {
-    transform: rotate(90deg);
-}
-
-/* Add tag input styles */
-.tag-input-container {
-    display: none;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.tag-input-container.active {
-    display: flex;
-}
-
-.tag-input {
-    flex: 1;
-    padding: 0.5rem;
-    border-radius: 4px;
-    background-color: #2D2D2D;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #FFFFFF;
-    font-size: 0.9rem;
-}
-
-.tag-input:focus {
-    border-color: #4CAF50;
-    outline: none;
-}
-
-.tag-input-buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.tag-input-buttons .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-}
-/* Animation pour l'ajout/suppression de tags */
-@keyframes tagAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(5px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.tag {
-    animation: tagAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Animation pour la suppression des tags */
-@keyframes tagRemove {
-    from {
-        opacity: 1;
-        transform: scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-}
-
-.tag.removing {
-    animation: tagRemove 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             inputContainer.innerHTML = `
                 <input type="text" class="tag-input" placeholder="Nouveau tag...">
                 <div class="tag-input-buttons">
-                    <button class="btn btn-success btn-sm confirm-tag">Ajouter</button>
+                    <button class="btn btn-success btn-sm confirm-tag">+</button>
                     <button class="btn btn-secondary btn-sm cancel-tag">Annuler</button>
                 </div>
             `;
