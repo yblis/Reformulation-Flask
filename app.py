@@ -265,9 +265,9 @@ def reformulate():
         provider = preferences.current_provider
         text = data.get('text')
         context = data.get('context', '')
-        tone = data.get('tone', 'Professional')
-        format = data.get('format', 'Paragraph')
-        length = data.get('length', 'Medium')
+        tone = data.get('tone', 'Professionnel')  # Default to 'Professionnel' if not specified
+        format = data.get('format', 'Paragraphe')
+        length = data.get('length', 'Moyen')
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
@@ -311,9 +311,14 @@ RÈGLES STRICTES :
 3. Produire une réponse cohérente avec l'email reçu
 
 Paramètres de reformulation :
-- Ton désiré : {tone}
+- Ton désiré : {tone} (IMPORTANT: Adapter strictement le ton selon cette valeur)
 - Format souhaité : {format}
 - Longueur cible : {length}
+
+Instructions spécifiques pour le ton {tone}:
+- Si Professionnel : langage soutenu, formel et courtois
+- Si Informatif : style clair, précis et factuel
+- Si Décontracté : style plus relâché, familier tout en restant poli
 
 {email_format_instructions}"""
 

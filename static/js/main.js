@@ -482,14 +482,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const format = getSelectedValues('formatGroup');
             const length = getSelectedValues('lengthGroup');
 
+            console.log('Reformulation - Selected tones:', tones);
+
             setLoading(reformulateBtn, true, "Reformuler");
             outputText.value = "Reformulation en cours...";
 
             try {
-                // Get selected tones
-                const tones = getSelectedValues('toneGroup');
-                console.log('Selected tones:', tones);
-
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
                     headers: {
@@ -498,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         context: context,
                         text: text,
-                        tones: tones,
+                        tone: tones[0] || 'Professionnel', // Use first selected tone or default
                         format: format,
                         length: length
                     })
