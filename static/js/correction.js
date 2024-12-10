@@ -218,7 +218,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Scroll to correction section
-            document.getElementById('correction').scrollIntoView({ behavior: 'smooth' });
+            // Switch to correction tab and scroll to it
+            const correctionTab = document.querySelector('a[href="#correction"]');
+            if (correctionTab) {
+                correctionTab.click(); // Activate the correction tab
+                setTimeout(() => {
+                    document.getElementById('correction').scrollIntoView({ behavior: 'smooth' });
+                    if (correctionInput) {
+                        correctionInput.focus();
+                    }
+                }, 100);
+            }
         });
     });
