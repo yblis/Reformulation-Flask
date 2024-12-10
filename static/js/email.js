@@ -10,6 +10,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyEmail = document.getElementById('copyEmail');
     const clearEmail = document.getElementById('clearEmail');
     const emailPrompt = document.getElementById('emailPrompt');
+    const emailToneContainer = document.getElementById('emailToneContainer');
+
+    // Initialize tags if container exists
+    if (emailToneContainer) {
+        const tones = ['Professionnel', 'Décontracté', 'Informatif', 'Amical', 'Formel', 'Drôle', 'Sarcastique'];
+        tones.forEach(tone => {
+            console.log('Creating tag element:', { value: tone, isActive: false });
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.dataset.value = tone;
+            tag.innerHTML = `${tone}
+                <i class="bi bi-x tag-remove" aria-label="Supprimer le tag"></i>`;
+            console.log('Created element:', tag.outerHTML);
+            emailToneContainer.appendChild(tag);
+
+            // Add click event to toggle active state
+            tag.addEventListener('click', function() {
+                // Remove active class from all other tags
+                emailToneContainer.querySelectorAll('.tag').forEach(t => {
+                    if (t !== tag) t.classList.remove('active');
+                });
+                // Toggle active class on clicked tag
+                tag.classList.toggle('active');
+            });
+        });
+    }
 
     // Only proceed if we're on the email tab
     if (!emailTab) return;
