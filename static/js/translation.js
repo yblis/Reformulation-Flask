@@ -79,11 +79,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Scroll to translation section and switch to translation tab
-            const translationTab = document.querySelector('a[href="#translation"]');
+            // Switch to translation tab and scroll to it
+            const translationTab = document.querySelector('button[data-bs-target="#translation"]');
             if (translationTab) {
-                translationTab.click(); // Activate the translation tab
+                const translationTabInstance = new bootstrap.Tab(translationTab);
+                translationTabInstance.show();
+                
+                setTimeout(() => {
+                    document.getElementById('translation').scrollIntoView({ behavior: 'smooth' });
+                    if (translationInput) {
+                        translationInput.focus();
+                    }
+                }, 100);
             }
-            document.getElementById('translation').scrollIntoView({ behavior: 'smooth' });
         });
     });

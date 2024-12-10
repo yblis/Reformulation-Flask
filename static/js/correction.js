@@ -215,9 +215,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Switch to correction tab and scroll to it
-            const correctionTab = document.querySelector('a[href="#correction"]');
+            const correctionTab = document.querySelector('button[data-bs-target="#correction"]');
             if (correctionTab) {
-                correctionTab.click(); // Activate the correction tab
+                const correctionTabInstance = new bootstrap.Tab(correctionTab);
+                correctionTabInstance.show();
+                
                 setTimeout(() => {
                     document.getElementById('correction').scrollIntoView({ behavior: 'smooth' });
                     if (correctionInput) {
