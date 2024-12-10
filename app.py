@@ -629,7 +629,7 @@ def generate_email():
         if not email_type or not content:
             return jsonify({"error":
                             "Email type and content are required"}), 400
-        # Enhanced prompt with more context and structure
+        # Enhanced prompt with tone-specific instructions
         formatted_prompt = f"""Type d'email: {email_type}
 Contenu à inclure: {content}
 Expéditeur: {sender}
@@ -637,10 +637,15 @@ Expéditeur: {sender}
 Instructions spécifiques:
 - Format: Email professionnel
 - Type spécifique: {email_type}
+- Ton désiré: {data.get('tone', 'Professionnel')} (IMPORTANT: Adapter strictement le ton)
 - Structure: Objet, Salutation, Corps du message, Formule de politesse, Signature
-- Ton: Adapté au type d'email et au destinataire
-- Contenu:  Développer le contenu en incluant les points importants de "Contenu à inclure"
-- Mise en forme: Paragraphes clairs, concis et espacés.  L'objet doit être concis et informatif.
+- Contenu: Développer le contenu en incluant les points importants de "Contenu à inclure"
+- Mise en forme: Paragraphes clairs, concis et espacés. L'objet doit être concis et informatif.
+
+Instructions spécifiques pour le ton {data.get('tone', 'Professionnel')}:
+- Si Professionnel : langage soutenu, formel et courtois
+- Si Informatif : style clair, précis et factuel
+- Si Décontracté : style plus relâché, familier tout en restant poli
 
 Exemple de structure:
 

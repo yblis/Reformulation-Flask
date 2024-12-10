@@ -54,13 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (emailSubject) emailSubject.value = "";
 
             try {
-                // Use the same getSelectedValues function from main.js
-                const tones = window.getSelectedValues ? 
-                    window.getSelectedValues('emailToneGroup') :
-                    Array.from(document.querySelectorAll('#emailToneGroup .tag.active'))
-                        .map(tag => tag.dataset.value);
-                
-                console.log('Email selected tones:', tones);
+                const tones = window.getSelectedValues('emailToneGroup');
+                console.log('Email generation - Selected tones:', tones);
                     
                 const response = await fetch('/api/generate-email', {
                     method: 'POST',
@@ -71,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: type,
                         content: content,
                         sender: sender,
-                        tones: tones
+                        tone: tones[0] || 'Professionnel' // Use first selected tone or default
                     })
                 });
 
