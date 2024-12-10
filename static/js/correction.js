@@ -181,11 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let corrections = {};
             if (this.dataset.corrections) {
                 try {
-                    const correctionData = this.dataset.corrections.replace(/&quot;/g, '"');
-                    corrections = JSON.parse(correctionData);
-                    if (typeof corrections !== 'object' || corrections === null) {
-                        throw new Error('Invalid corrections format');
-                    }
+                    corrections = JSON.parse(this.dataset.corrections);
                 } catch (error) {
                     console.error('Error parsing corrections:', error);
                     corrections = {};
