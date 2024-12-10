@@ -538,7 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         text: text,
                         tone: tone,
                         format: format,
-                        length: length
+                        length: length,
+                        include_emojis: document.getElementById('includeEmojis').checked
                     })
                 });
 

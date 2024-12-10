@@ -308,6 +308,17 @@ Règles supplémentaires format mail:
 - La signature doit inclure les informations essentielles
 """ if format.lower() == 'mail' else ''
 
+        # Get emoji parameter from request
+        include_emojis = data.get('include_emojis', False)
+        
+        emoji_instructions = """
+INSTRUCTIONS POUR LES EMOJIS :
+- Ajouter des emojis pertinents pour illustrer les émotions et concepts clés
+- Utiliser les emojis avec modération (1-2 par phrase maximum)
+- Placer les emojis à la fin des phrases ou après les mots clés
+- Choisir des emojis qui renforcent le message sans le surcharger
+""" if include_emojis else ""
+
         formatted_prompt = f"""INSTRUCTIONS DE REFORMULATION :
 Ce message est une réponse à un email reçu.
 
@@ -326,12 +337,14 @@ Paramètres de reformulation :
 - Ton désiré : {tone} (IMPORTANT: Adapter strictement le ton selon cette valeur)
 - Format souhaité : {format}
 - Longueur cible : {length}
+- Emojis : {"Oui" if include_emojis else "Non"}
 
 Instructions spécifiques pour le ton {tone}:
 - Si Professionnel : langage soutenu, formel et courtois
 - Si Informatif : style clair, précis et factuel
 - Si Décontracté : style plus relâché, familier tout en restant poli
 
+{emoji_instructions}
 {email_format_instructions}"""
 
         try:
