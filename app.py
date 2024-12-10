@@ -3,50 +3,26 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 import requests
 import os
-import logging
 from dotenv import load_dotenv
 from models import db, UserPreferences, ReformulationHistory, EmailHistory, CorrectionHistory, TranslationHistory
 from openai import OpenAI
 from anthropic import Anthropic
 import google.generativeai as genai
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Load environment variables
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 
-logger.info("Initializing Flask application...")
-
-# Database configuration
-database_url = os.getenv('DATABASE_URL', 'sqlite:///reformulator.db')
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://")
-
-logger.info(f"Using database URL: {database_url.split('@')[1] if '@' in database_url else database_url}")
-
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+# Use SQLite for development
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reformulator.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize extensions
-logger.info("Initializing database...")
 db.init_app(app)
 migrate = Migrate(app, db)
 
-try:
-    with app.app_context():
-        logger.info("Creating database tables...")
-        db.create_all()
-        logger.info("Database tables created successfully")
-except Exception as e:
-    logger.error(f"Error initializing database: {str(e)}")
-    raise
+with app.app_context():
+    db.create_all()
 
 def reload_env_config():
     load_dotenv(override=True)
@@ -304,12 +280,9 @@ def reformulate():
         tone = data.get('tone', 'Professionnel')  # Default to 'Professionnel' if not specified
         format = data.get('format', 'Paragraphe')
         length = data.get('length', 'Moyen')
-        include_emojis = data.get('include_emojis', False)  # New parameter for emojis
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
-
-        logger.info(f"Reformulation request: tone={tone}, format={format}, length={length}, include_emojis={include_emojis}")
 
         # Construction d'un prompt plus détaillé avec meilleure intégration du contexte
         preferences = UserPreferences.get_or_create()
@@ -335,17 +308,6 @@ Règles supplémentaires format mail:
 - La signature doit inclure les informations essentielles
 """ if format.lower() == 'mail' else ''
 
-        # Get emoji parameter from request
-        include_emojis = data.get('include_emojis', False)
-        
-        emoji_instructions = """
-INSTRUCTIONS POUR LES EMOJIS :
-- Ajouter des emojis pertinents pour illustrer les émotions et concepts clés
-- Utiliser les emojis avec modération (1-2 par phrase maximum)
-- Placer les emojis à la fin des phrases ou après les mots clés
-- Choisir des emojis qui renforcent le message sans le surcharger
-""" if include_emojis else ""
-
         formatted_prompt = f"""INSTRUCTIONS DE REFORMULATION :
 Ce message est une réponse à un email reçu.
 
@@ -364,16 +326,12 @@ Paramètres de reformulation :
 - Ton désiré : {tone} (IMPORTANT: Adapter strictement le ton selon cette valeur)
 - Format souhaité : {format}
 - Longueur cible : {length}
-- Emojis : {"Oui" if include_emojis else "Non"}
 
 Instructions spécifiques pour le ton {tone}:
 - Si Professionnel : langage soutenu, formel et courtois
 - Si Informatif : style clair, précis et factuel
 - Si Décontracté : style plus relâché, familier tout en restant poli
 
-{emoji_instructions}
-
-{emoji_instructions}
 {email_format_instructions}"""
 
         try:
