@@ -11,51 +11,92 @@ document.addEventListener('DOMContentLoaded', function() {
         return select ? select.value : 'Anglais';
     }
 
-    translateText.addEventListener('click', async function() {
-        const text = translationInput.value.trim();
-        if (!text) return;
+    // Initialize text statistics
+    function updateTextStats(element, charCountId, wordCountId, paraCountId) {
+        const text = element.value;
+        const charCount = document.getElementById(charCountId);
+        const wordCount = document.getElementById(wordCountId);
+        const paraCount = document.getElementById(paraCountId);
 
-        translateText.disabled = true;
-        translateText.textContent = 'En cours...';
+        if (charCount) charCount.textContent = text.length;
+        if (wordCount) wordCount.textContent = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+        if (paraCount) paraCount.textContent = text.trim().split(/\n\s*\n/).filter(para => para.trim().length > 0).length;
+    }
 
-        try {
-            const response = await fetch('/api/translate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: text,
-                    language: getSelectedLanguage()
-                })
-            });
+    // Setup input statistics tracking
+    if (translationInput) {
+        translationInput.addEventListener('input', () => {
+            updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+        });
+    }
 
-            const data = await response.json();
-            if (data.error) {
-                translationOutput.value = `Erreur: ${data.error}`;
-            } else {
-                translationOutput.value = data.text;
+    if (translateText) {
+        translateText.addEventListener('click', async function() {
+            const text = translationInput.value.trim();
+            if (!text) return;
+
+            translateText.disabled = true;
+            translateText.textContent = 'En cours...';
+
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        language: getSelectedLanguage()
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    translationOutput.value = `Erreur: ${data.error}`;
+                } else {
+                    translationOutput.value = data.text;
+                    updateTextStats(translationOutput, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+                }
+            } catch (error) {
+                translationOutput.value = `Erreur: ${error.message}`;
+            } finally {
+                translateText.disabled = false;
+                translateText.textContent = 'Traduire';
             }
-        } catch (error) {
-            translationOutput.value = `Erreur: ${error.message}`;
-        } finally {
-            translateText.disabled = false;
-            translateText.textContent = 'Traduire';
-        }
-    });
+        });
+    }
 
-    copyTranslation.addEventListener('click', function() {
-        translationOutput.select();
-        document.execCommand('copy');
-    });
+    if (copyTranslation) {
+        copyTranslation.addEventListener('click', async function() {
+            const text = translationOutput.value;
+            if (!text) return;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = copyTranslation.textContent;
+                copyTranslation.textContent = 'Copié!';
+                setTimeout(() => {
+                    copyTranslation.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+            }
+        });
+    }
 
     if (clearTranslation) {
         clearTranslation.addEventListener('click', () => {
-            translationInput.value = '';
-            translationOutput.value = '';
+            if (translationInput) {
+                translationInput.value = '';
+                updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
+            }
+            if (translationOutput) {
+                translationOutput.value = '';
+                updateTextStats(translationOutput, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+            }
         });
     }
-});
+
     // Handle reuse translation button
     document.querySelectorAll('.reuse-translation').forEach(button => {
         button.addEventListener('click', function() {
@@ -66,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const translationInput = document.getElementById('translationInput');
             if (translationInput) {
                 translationInput.value = text || '';
+                // Use the element's value property
                 updateTextStats(translationInput, 'translationInputCharCount', 'translationInputWordCount', 'translationInputParaCount');
             }
             
@@ -93,3 +135,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});

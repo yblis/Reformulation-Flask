@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Elements
     const correctionInput = document.getElementById('correctionInput');
     const correctionOutput = document.getElementById('correctionOutput');
     const correctText = document.getElementById('correctText');
@@ -67,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
         synonymsContainer.innerHTML = synonymsHtml;
         synonymsContainer.style.display = 'block';
         
-        // Insert after correction output
         if (!synonymsContainer.isConnected) {
             correctionOutput.parentNode.insertBefore(synonymsContainer, correctionOutput.nextSibling);
         }
@@ -173,16 +173,16 @@ document.addEventListener('DOMContentLoaded', function() {
             synonymsContainer.style.display = 'none';
         });
     }
-});
+
     // Handle reuse correction button
     document.querySelectorAll('.reuse-correction').forEach(button => {
         button.addEventListener('click', function() {
             const text = this.dataset.text;
             
             // Fill the input text
-            const correctionInput = document.getElementById('correctionInput');
             if (correctionInput) {
                 correctionInput.value = text || '';
+                // Use the element's value property
                 updateTextStats(correctionInput, 'correctionInputCharCount', 'correctionInputWordCount', 'correctionInputParaCount');
             }
             
@@ -233,3 +233,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
