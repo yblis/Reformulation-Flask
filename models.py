@@ -4,29 +4,31 @@ import os
 
 db = SQLAlchemy()
 
+
 class UserPreferences(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # Syntax Rules
     syntax_rules = db.Column(db.JSON,
-                         nullable=False,
-                         default=lambda: {
-                             'word_order': True,
-                             'subject_verb_agreement': True,
-                             'verb_tense': True,
-                             'gender_number': True,
-                             'relative_pronouns': True
-                         })
+                          nullable=False,
+                          default=lambda: {
+                              'word_order': True,
+                              'subject_verb_agreement': True,
+                              'verb_tense': True,
+                              'gender_number': True,
+                              'relative_pronouns': True
+                          })
 
     # Reformulation Preferences
     reformulation_preferences = db.Column(
         db.JSON,
         nullable=False,
         default=lambda: {
-            'style_preservation': 0.7,  # 0-1: degré de conservation du style original
-            'context_importance': 0.8,  # 0-1: importance du contexte dans la reformulation
+            'style_preservation':
+            0.7,  # 0-1: degré de conservation du style original
+            'context_importance':
+            0.8,  # 0-1: importance du contexte dans la reformulation
             'keyword_preservation': True,  # conserver les mots-clés importants
-            'use_emojis': False,  # utiliser des emojis dans la réponse
             'advanced_options': {
                 'preserve_technical_terms': True,
                 'maintain_formal_level': True,
@@ -38,16 +40,16 @@ class UserPreferences(db.Model):
 
     # Current AI Provider
     current_provider = db.Column(db.String(50),
-                            nullable=False,
-                            default="ollama")
+                              nullable=False,
+                              default="ollama")
 
     # Ollama Settings
     ollama_url = db.Column(db.String(255),
-                       nullable=False,
-                       default="http://localhost:11434")
+                        nullable=False,
+                        default="http://localhost:11434")
     ollama_model = db.Column(db.String(100),
-                         nullable=False,
-                         default="qwen2.5:3b")
+                          nullable=False,
+                          default="qwen2.5:3b")
 
     # OpenAI Settings
     openai_api_key = db.Column(db.String(255))
@@ -65,10 +67,6 @@ class UserPreferences(db.Model):
     google_api_key = db.Column(db.String(255))
     gemini_model = db.Column(db.String(100))
 
-    # Hugging Face Settings
-    huggingface_api_key = db.Column(db.String(255))
-    huggingface_model = db.Column(db.String(100))
-
     # Prompts
     system_prompt = db.Column(db.Text, nullable=False)
     translation_prompt = db.Column(db.Text, nullable=False)
@@ -77,12 +75,12 @@ class UserPreferences(db.Model):
 
     # Timestamps
     created_at = db.Column(db.DateTime,
-                       nullable=False,
-                       default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,
-                       nullable=False,
-                       default=datetime.utcnow,
-                       onupdate=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
 
     @staticmethod
     def get_or_create():
@@ -94,7 +92,6 @@ class UserPreferences(db.Model):
                 anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
                 google_api_key=os.getenv('GOOGLE_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
-                huggingface_api_key=os.getenv('HUGGINGFACE_API_KEY', ''),
                 system_prompt="""
                 Tu es un expert en reformulation. Ta tâche est de reformuler UNIQUEMENT le texte qui se trouve sous la section "===TEXTE À REFORMULER===", en respectant strictement les paramètres suivants : ton, format et longueur.
 
@@ -188,8 +185,6 @@ Si l'option n'est pas activée, retourne UNIQUEMENT le texte corrigé.""")
                 pref.google_api_key = os.getenv('GOOGLE_API_KEY')
             if os.getenv('GROQ_API_KEY'):
                 pref.groq_api_key = os.getenv('GROQ_API_KEY')
-            if os.getenv('HUGGINGFACE_API_KEY'):
-                pref.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY')
             db.session.commit()
         return pref
 
@@ -203,8 +198,8 @@ class ReformulationHistory(db.Model):
     format = db.Column(db.String(50), nullable=False)
     length = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime,
-                       nullable=False,
-                       default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
 
     def to_dict(self):
         return {
@@ -227,8 +222,8 @@ class EmailHistory(db.Model):
     generated_subject = db.Column(db.Text)
     generated_email = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime,
-                       nullable=False,
-                       default=datetime.utcnow)
+                        nullable=False,
+                        default=datetime.utcnow)
 
     def to_dict(self):
         return {

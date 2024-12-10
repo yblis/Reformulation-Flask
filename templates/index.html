@@ -342,7 +342,6 @@
                             <option value="anthropic">Anthropic</option>
                             <option value="gemini">Google Gemini</option>
                             <option value="groq">Groq</option>
-                            <option value="huggingface">Hugging Face</option>
                         </select>
                     </div>
 
@@ -385,14 +384,6 @@
                         <label class="form-label">Modèle:</label>
                         <select id="groqModel" class="form-select mb-3"></select>
                         <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
-                    </div>
-
-                    <div id="huggingfaceConfig" class="provider-config mb-4" style="display: none;">
-                        <label class="form-label">Clé API Hugging Face:</label>
-                        <input type="password" id="huggingfaceKey" class="form-control mb-3">
-                        <label class="form-label">Modèle:</label>
-                        <select id="huggingfaceModel" class="form-select mb-3"></select>
-                        <button id="refreshHuggingfaceModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
                     </div>
 
                     <!-- Prompts configuration -->
