@@ -529,6 +529,14 @@ mot2: synonyme1, synonyme2, synonyme3"""
             if not response_text:
                 raise Exception(f"No response from {provider}")
 
+            history = CorrectionHistory(
+                original_text=text,
+                corrected_text=response_text,
+                corrections=options
+            )
+            db.session.add(history)
+            db.session.commit()
+
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Error correcting text: {str(e)}"}), 500
@@ -614,6 +622,15 @@ def translate():
                 response_text = response.text
             if not response_text:
                 raise Exception(f"No response from {provider}")
+            
+            history = TranslationHistory(
+                original_text=text,
+                translated_text=response_text,
+                target_language=target_language
+            )
+            db.session.add(history)
+            db.session.commit()
+            
             return jsonify({"text": response_text})
         except Exception as e:
             return jsonify({"error": f"Translation error: {str(e)}"}), 500
