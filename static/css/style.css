@@ -680,9 +680,9 @@ h5 {
 }
 
 .tag-input-container.active {
-    max-height: 50px;
+    max-height: 60px;
     opacity: 1;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
