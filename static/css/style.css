@@ -558,13 +558,13 @@ h5 {
 }
 
 .navbar {
-    padding: 1rem;
+    padding: 0.5rem;
 }
 .navbar .container-fluid {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 1rem;
     max-width: 1400px;
     margin: 0 auto;
 }
