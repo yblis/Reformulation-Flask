@@ -528,6 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
             outputText.value = "Reformulation en cours...";
 
             try {
+                const useEmojis = document.getElementById('useEmojis').checked;
                 const response = await fetch('/api/reformulate', {
                     method: 'POST',
                     headers: {
@@ -538,7 +539,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         text: text,
                         tone: tone,
                         format: format,
-                        length: length
+                        length: length,
+                        use_emojis: useEmojis
                     })
                 });
 

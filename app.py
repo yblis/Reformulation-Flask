@@ -280,6 +280,7 @@ def reformulate():
         tone = data.get('tone', 'Professionnel')  # Default to 'Professionnel' if not specified
         format = data.get('format', 'Paragraphe')
         length = data.get('length', 'Moyen')
+        use_emojis = data.get('use_emojis', False)  # Get emoji preference
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
@@ -321,16 +322,18 @@ RÈGLES STRICTES :
 1. REFORMULER UNIQUEMENT le texte sous "===RÉPONSE À REFORMULER==="
 2. NE PAS reformuler ni inclure l'email reçu
 3. Produire une réponse cohérente avec l'email reçu
+4. {" AJOUTER des emojis pertinents et appropriés au contexte" if use_emojis else "NE PAS ajouter d'emojis"}
 
 Paramètres de reformulation :
 - Ton désiré : {tone} (IMPORTANT: Adapter strictement le ton selon cette valeur)
 - Format souhaité : {format}
 - Longueur cible : {length}
+- Emojis : {"Oui, ajouter des emojis pertinents" if use_emojis else "Non"}
 
 Instructions spécifiques pour le ton {tone}:
-- Si Professionnel : langage soutenu, formel et courtois
-- Si Informatif : style clair, précis et factuel
-- Si Décontracté : style plus relâché, familier tout en restant poli
+- Si Professionnel : langage soutenu, formel et courtois {", emojis professionnels uniquement" if use_emojis else ""}
+- Si Informatif : style clair, précis et factuel {", emojis informatifs et pédagogiques" if use_emojis else ""}
+- Si Décontracté : style plus relâché, familier tout en restant poli {", emojis expressifs et amicaux" if use_emojis else ""}
 
 {email_format_instructions}"""
 
