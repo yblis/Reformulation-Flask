@@ -122,6 +122,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Context visibility management
+    const showContextCheckbox = document.getElementById('showContext');
+    const contextSection = document.getElementById('contextSection');
+    
+    if (showContextCheckbox && contextSection) {
+        // Restore saved preference
+        const showContext = localStorage.getItem('showContext') === 'true';
+        showContextCheckbox.checked = showContext;
+        contextSection.style.display = showContext ? 'block' : 'none';
+        
+        // Handle checkbox changes
+        showContextCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            contextSection.style.display = isChecked ? 'block' : 'none';
+            localStorage.setItem('showContext', isChecked);
+        });
+    }
+
     // Setup text areas statistics tracking
     const textAreas = {
         'contextText': ['contextCharCount', 'contextWordCount', 'contextParaCount'],

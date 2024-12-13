@@ -7,35 +7,39 @@
     <div class="tab-content">
         <!-- Reformulation Tab -->
         <div class="tab-pane fade show active" id="reformulation" role="tabpanel">
-            <!-- Context and Input Section -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Contexte / Email reçu:</h5>
-                            <textarea id="contextText" class="form-control flex-grow-1" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
-                                </div>
-                            </div>
+            <!-- Input Section with Context Toggle -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Texte à reformuler</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="showContext">
+                            <label class="form-check-label" for="showContext">
+                                Afficher le contexte/e-mail reçu
+                            </label>
+                        </div>
+                    </div>
+                    <textarea id="inputText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="mb-3">Texte à reformuler:</h5>
-                            <textarea id="inputText" class="form-control flex-grow-1" rows="5" placeholder="Entrez votre texte ici..."></textarea>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
-                                <div>
-                                    <small class="text-muted me-3">Mots: <span id="inputWordCount">0</span></small>
-                                    <small class="text-muted">Paragraphes: <span id="inputParaCount">0</span></small>
-                                </div>
-                            </div>
+            </div>
+
+            <!-- Context Section (Hidden by default) -->
+            <div id="contextSection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h5 class="mb-3">Contexte / Email reçu:</h5>
+                    <textarea id="contextText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
+                        <div>
+                            <small class="text-muted me-3">Mots: <span id="contextWordCount">0</span></small>
+                            <small class="text-muted">Paragraphes: <span id="contextParaCount">0</span></small>
                         </div>
                     </div>
                 </div>
