@@ -12,11 +12,13 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Texte à reformuler</h5>
-                        <div class="radio-switch">
-                            <input type="radio" id="showContext" name="contextVisibility" class="radio-switch-input">
-                            <label class="radio-switch-label" for="showContext">
-                                Afficher le contexte/e-mail reçu
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showContext" class="toggle-switch-checkbox">
+                            <label class="toggle-switch-label" for="showContext">
+                                <span class="toggle-switch-inner"></span>
+                                <span class="toggle-switch-switch"></span>
                             </label>
+                            <span class="toggle-switch-text">Afficher le contexte/e-mail reçu</span>
                         </div>
                     </div>
                     <textarea id="inputText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Entrez votre texte ici..."></textarea>
