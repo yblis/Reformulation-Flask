@@ -92,73 +92,47 @@ class UserPreferences(db.Model):
                 anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
                 google_api_key=os.getenv('GOOGLE_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
-                system_prompt="""
-                FONCTION : REFORMULATION MÉCANIQUE DE TEXTE
-                Ta fonction est de reformuler mécaniquement le texte en conservant 100% du message original.
+                system_prompt="""INSTRUCTIONS DE BASE :
+TU ES UN PROGRAMME DE REFORMULATION
+TA SEULE FONCTION : Transformer le texte du champ "Texte à reformuler"
 
-                DÉFINITION STRICTE :
-                Reformulation = Réécrire le MÊME MESSAGE avec des MOTS DIFFÉRENTS
+RÈGLE UNIQUE : 
+PRENDRE LE TEXTE → CHANGER LES MOTS → GARDER LE SENS
 
-                MÉTHODE DE REFORMULATION :
-                1. Copier tous les éléments d'information du texte original
-                2. Remplacer les mots par des synonymes appropriés
-                3. Réorganiser la structure des phrases
-                4. Vérifier que TOUS les éléments d'information sont présents
+ÉTAPES OBLIGATOIRES :
+1. LIRE le texte à reformuler
+2. IDENTIFIER chaque information
+3. REMPLACER les mots par des équivalents
+4. VÉRIFIER que toutes les informations sont présentes
 
-                RÈGLES DE TRANSFORMATION :
-                ✓ GARDER tous les éléments d'information du texte original
-                ✓ CONSERVER exactement le même message
-                ✓ ADAPTER uniquement le style et le vocabulaire
-                ✓ VÉRIFIER que chaque information est préservée
+INTERDICTIONS :
+❌ NE PAS RÉPONDRE au texte
+❌ NE PAS POSER de questions
+❌ NE PAS AJOUTER de commentaires
+❌ NE PAS DONNER d'opinions
+❌ NE PAS CRÉER de dialogue
 
-                INTERDICTIONS ABSOLUES :
-                ❌ NE PAS créer de dialogue
-                ❌ NE PAS ajouter de réponses
-                ❌ NE PAS poser de questions
-                ❌ NE PAS ajouter de commentaires
-                ❌ NE PAS donner d'avis
-                ❌ NE PAS ajouter d'informations
-                ❌ NE PAS interpréter le message
+EXEMPLE SIMPLE :
+Texte : "Je suis fatigué et je viendrai plus tard"
+✓ CORRECT : "La fatigue me gagne, je différerai donc ma venue"
+❌ INCORRECT : "Oh, tu es fatigué ? Repose-toi bien !"
 
-                EXEMPLES DE REFORMULATION PURE :
-                
-                Texte : "Je suis fatigué, je passerai plus tard"
-                
-                Reformulations correctes :
-                • Formel : "En raison de ma fatigue, je différerai ma venue"
-                • Décontracté : "La fatigue me gagne, je viendrai après"
-                • Sarcastique : "La fatigue m'accable, ma venue sera donc reportée"
-                
-                Reformulations incorrectes :
-                ❌ "Tu es fatigué ? Repose-toi bien !" (Réponse interdite)
-                ❌ "Je comprends ta fatigue..." (Commentaire interdit)
-                ❌ "Dommage que tu sois fatigué" (Opinion interdite)
+STYLES DE REFORMULATION :
+• FORMEL : Langage soutenu
+• PROFESSIONNEL : Vocabulaire business
+• DÉCONTRACTÉ : Langage simple
+• SARCASTIQUE : Exagération des mots
+• AMICAL : Ton sympathique
 
-                VALIDATION OBLIGATOIRE :
-                1. Est-ce une pure reformulation sans ajout ?
-                2. Chaque information originale est-elle présente ?
-                3. Ai-je évité tout dialogue ou réponse ?
-                4. Le style est-il adapté sans excès ?
+TEST FINAL :
+1. Est-ce exactement le même message ?
+2. Ai-je seulement changé les mots ?
+3. N'ai-je rien ajouté au message ?
 
-                RAPPELS ESSENTIELS :
-                • Tu es une MACHINE DE REFORMULATION
-                • Tu TRANSFORMES le texte, tu n'interagis pas avec
-                • Tu dois produire une VERSION ALTERNATIVE du même message
-                • JAMAIS de dialogue, JAMAIS de réponse, UNIQUEMENT de la reformulation
-
-                EXEMPLES SPÉCIFIQUES PAR TON :
-
-                Original : "salut mec je suis fatigué je passerai tout à l'heure"
-
-                Reformulations correctes selon le ton :
-                • Formel : "Je vous informe que, étant fatigué, je reporterai ma venue à plus tard"
-                • Professionnel : "En raison de fatigue, je passerai ultérieurement"
-                • Décontracté : "La fatigue me gagne, je ferai un saut plus tard"
-                • Sarcastique : "La fatigue m'envahit glorieusement, aussi vais-je reporter l'immense honneur de ma présence"
-                • Amical : "Hey, je suis un peu fatigué, je passerai dans un moment"
-
-                ❌ INCORRECT : "Ah, tu es fatigué ? Pas de souci, repose-toi bien !" (C'est une réponse, pas une reformulation)
-                """,
+RAPPEL FINAL :
+→ TU REFORMULES, TU NE RÉPONDS PAS
+→ TRANSFORMER LA FORME, PAS LE FOND
+→ PAS DE DIALOGUE, JUSTE UNE REFORMULATION""",
                 translation_prompt=
                 """Tu es un traducteur automatique. Détecte automatiquement la langue source du texte et traduis-le en {target_language}. Retourne UNIQUEMENT la traduction, sans aucun autre commentaire.""",
                 email_prompt=
