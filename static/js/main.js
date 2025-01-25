@@ -683,3 +683,182 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(checkOllamaStatus, 30000);
 
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons de langue
+    const languageButtons = document.querySelectorAll('#languageButtons button');
+
+    languageButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            // Retirer la classe active des autres boutons
+            languageButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Ajouter la classe active au bouton sélectionné
+            this.classList.add('active');
+
+            // Récupérer la langue sélectionnée
+            const selectedLanguage = this.getAttribute('data-lang');
+            console.log('Langue cible:', selectedLanguage);
+
+            // Sauvegarde dans localStorage si nécessaire
+            localStorage.setItem('selectedLanguage', selectedLanguage);
+        });
+    });
+
+    // Restaurer la sélection à partir du localStorage
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    if (savedLanguage) {
+        languageButtons.forEach(button => {
+            if (button.getAttribute('data-lang') === savedLanguage) {
+                button.classList.add('active');
+            }
+        });
+    }
+});
+
+function showNotification(message, isError = false) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.bottom = '10px';
+    notification.style.right = '10px';
+    notification.style.backgroundColor = isError ? '#f44336' : '#4CAF50';
+    notification.style.color = 'white';
+    notification.style.padding = '10px';
+    notification.style.borderRadius = '5px';
+    notification.style.boxShadow = '0px 2px 5px rgba(0, 0, 0, 0.3)';
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+
+// Gestion des événements de collage
+document.getElementById('pasteInputText').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('inputText').value = text;
+        showNotification('Texte collé avec succès !');
+    } catch (err) {
+        showNotification('Impossible de coller le texte. Vérifiez les permissions du navigateur.', true);
+    }
+});
+
+document.getElementById('pasteTranslationText').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('translationInput').value = text;
+        showNotification('Texte collé avec succès !');
+    } catch (err) {
+        showNotification('Impossible de coller le texte. Vérifiez les permissions du navigateur.', true);
+    }
+});
+
+document.getElementById('pasteCorrectionText').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('correctionInput').value = text;
+        showNotification('Texte collé avec succès !');
+    } catch (err) {
+        showNotification('Impossible de coller le texte. Vérifiez les permissions du navigateur.', true);
+    }
+});
+
+document.getElementById('pasteEmailContent').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('emailContent').value = text;
+        showNotification('Texte collé avec succès !');
+    } catch (err) {
+        showNotification('Impossible de coller le texte. Vérifiez les permissions du navigateur.', true);
+    }
+});
+
+document.getElementById('pasteContextText').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('contextText').value = text;
+        showNotification('Texte collé avec succès !');
+    } catch (err) {
+        showNotification('Impossible de coller le texte. Vérifiez les permissions du navigateur.', true);
+    }
+});
+
+document.getElementById('pasteEmailType').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('emailType').value = text;
+        showAlert('Texte collé avec succès !', 'success', 3000);
+    } catch (err) {
+        showAlert('Impossible de coller le texte. Vérifiez les permissions du navigateur.', 'danger', 3000);
+    }
+});
+document.getElementById('pasteEmailSender').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('emailSender').value = text;
+        showAlert('Texte collé avec succès !', 'success', 3000);
+    } catch (err) {
+        showAlert('Impossible de coller le texte. Vérifiez les permissions du navigateur.', 'danger', 3000);
+    }
+});
+
+// Gestion des événements de copie
+document.getElementById('copyCorrectionOutput').addEventListener('click', () => {
+    const correctionOutput = document.getElementById('correctionOutput');
+    correctionOutput.select();
+    navigator.clipboard.writeText(correctionOutput.value)
+        .then(() => {
+            showNotification('Texte copié dans le presse-papier !');
+        })
+        .catch(() => {
+            showNotification('Impossible de copier le texte. Vérifiez les permissions du navigateur.', true);
+        });
+});
+
+document.getElementById('copyTranslationOutput').addEventListener('click', () => {
+    const translationOutput = document.getElementById('translationOutput');
+    translationOutput.select();
+    navigator.clipboard.writeText(translationOutput.value)
+        .then(() => {
+            showNotification('Texte copié dans le presse-papier !');
+        })
+        .catch(() => {
+            showNotification('Impossible de copier le texte. Vérifiez les permissions du navigateur.', true);
+        });
+});
+
+document.getElementById('copyOutputText').addEventListener('click', () => {
+    const outputText = document.getElementById('outputText');
+    outputText.select();
+    navigator.clipboard.writeText(outputText.value)
+        .then(() => {
+            showNotification('Texte copié dans le presse-papier !');
+        })
+        .catch(() => {
+            showNotification('Impossible de copier le texte. Vérifiez les permissions du navigateur.', true);
+        });
+});
+
+document.getElementById('copyEmailOutput').addEventListener('click', () => {
+    const emailOutput = document.getElementById('emailOutput');
+    emailOutput.select();
+    navigator.clipboard.writeText(emailOutput.value)
+        .then(() => {
+            showNotification('Texte copié dans le presse-papier !');
+        })
+        .catch(() => {
+            showNotification('Impossible de copier le texte. Vérifiez les permissions du navigateur.', true);
+        });
+});
+
+
+document.getElementById('copySubject').addEventListener('click', () => {
+    const emailSubject = document.getElementById('emailSubject');
+    navigator.clipboard.writeText(emailSubject.value)
+        .then(() => {
+            showNotification('Texte copié dans le presse-papier !');
+        })
+        .catch(() => {
+            showNotification('Impossible de copier l\'objet. Vérifiez les permissions du navigateur.', true);
+        });
+});
+

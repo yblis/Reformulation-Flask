@@ -1,11 +1,11 @@
 {
     "name": "Reformulateur",
     "short_name": "Reformulateur",
-    "description": "Application de reformulation de texte avec Ollama",
+    "description": "Application de reformulation de texte boosté à l'IA",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#1E1E1E",
-    "theme_color": "#4CAF50",
+    "background_color": "#2D2D2D",
+    "theme_color": "#2D2D2D",
     "icons": [
         {
             "src": "/static/img/icon-192x192.png",

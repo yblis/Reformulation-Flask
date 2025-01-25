@@ -21,7 +21,12 @@
                             <span class="toggle-switch-text">Contexte</span>
                         </div>
                     </div>
-                    <textarea id="inputText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                    <div class="position-relative">
+                        <textarea id="inputText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Entrez votre texte ici..."></textarea>
+                        <button id="pasteInputText" class="btn paste-button" title="Coller">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>                                
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">Caractères: <span id="inputCharCount">0</span></small>
                         <div>
@@ -36,7 +41,12 @@
             <div id="contextSection" class="card mb-4" style="display: none;">
                 <div class="card-body">
                     <h5 class="mb-3">Contexte / Email reçu:</h5>
-                    <textarea id="contextText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                    <div class="textarea-container position-relative">
+                        <textarea id="contextText" class="form-control flex-grow-1 mb-3" rows="5" placeholder="Collez ici le contexte ou l'email reçu..."></textarea>
+                        <button id="pasteContextText" class="btn paste-button" title="Coller">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>                    
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">Caractères: <span id="contextCharCount">0</span></small>
                         <div>
@@ -51,13 +61,13 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Options de reformulation</h5>
+                        <h5 class="mb-0">Options</h5>
                         <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#optionsCollapse" aria-expanded="true" aria-controls="optionsCollapse">
                             <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
                     
-                    <div class="collapse show" id="optionsCollapse">
+                    <div class="collapse" id="optionsCollapse">
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="useEmojis" value="true">
                             <label class="form-check-label" for="useEmojis">
@@ -112,7 +122,12 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="mb-3">Texte reformulé:</h5>
-                    <textarea id="outputText" class="form-control mb-3" rows="10" readonly></textarea>
+                    <div class="textarea-container position-relative">
+                        <textarea id="outputText" class="form-control mb-3" rows="10" readonly></textarea>
+                        <button id="copyOutputText" class="btn copy-button" title="Copier">
+                            <i class="bi bi-files"></i>
+                        </button>
+                    </div>                    
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <small class="text-muted">Caractères: <span id="outputCharCount">0</span></small>
                         <div>
@@ -120,10 +135,7 @@
                             <small class="text-muted">Paragraphes: <span id="outputParaCount">0</span></small>
                         </div>
                     </div>
-                    <div class="btn-group w-100">
-                        <button id="copyBtn" class="btn btn-success">Copier</button>
-                        <button id="clearBtn" class="btn btn-success">Effacer</button>
-                    </div>
+                    <button id="clearBtn" class="btn btn-success w-100">Effacer</button>
                 </div>
             </div>
         </div>
@@ -136,7 +148,12 @@
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
                             <h5 class="mb-3">Texte source</h5>
-                            <textarea id="translationInput" class="form-control flex-grow-1" rows="10" placeholder="Entrez votre texte ici..."></textarea>
+                            <div class="textarea-container position-relative">
+                                <textarea id="translationInput" class="form-control flex-grow-1" rows="10" placeholder="Entrez votre texte ici..."></textarea>
+                                <button id="pasteTranslationText" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>                            
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <small class="text-muted">Caractères: <span id="translationInputCharCount">0</span></small>
                                 <div>
@@ -148,7 +165,7 @@
                             <!-- Translation Options -->
                             <div class="mt-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0">Options de traduction</h5>
+                                    <h5 class="mb-0">Options</h5>
                                     <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#translationOptions" aria-expanded="true">
                                         <i class="bi bi-chevron-down"></i>
                                     </button>
@@ -171,8 +188,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <button id="translateText" class="btn btn-success w-100 mt-4">Traduire</button>
+                            <button id="translateText" class="btn btn-success w-100 mt-4">Traduire</button>                          
                         </div>
                     </div>
                 </div>
@@ -182,7 +198,12 @@
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
                             <h5 class="mb-3">Traduction</h5>
-                            <textarea id="translationOutput" class="form-control flex-grow-1 mb-3" rows="10" readonly></textarea>
+                            <div class="textarea-container position-relative">
+                                <textarea id="translationOutput" class="form-control flex-grow-1 mb-3" rows="20" readonly></textarea>
+                                <button id="copyTranslationOutput" class="btn copy-button" title="Copier">
+                                    <i class="bi bi-files"></i>
+                                </button>
+                            </div>                            
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <small class="text-muted">Caractères: <span id="translationOutputCharCount">0</span></small>
                                 <div>
@@ -190,10 +211,7 @@
                                     <small class="text-muted">Paragraphes: <span id="translationOutputParaCount">0</span></small>
                                 </div>
                             </div>
-                            <div class="btn-group w-100">
-                                <button id="copyTranslation" class="btn btn-success">Copier</button>
-                                <button id="clearTranslation" class="btn btn-success">Effacer</button>
-                            </div>
+                            <button id="clearTranslation" class="btn btn-success w-100">Effacer</button>
                         </div>
                     </div>
                 </div>
@@ -206,7 +224,12 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h5 class="mb-3">Texte à corriger:</h5>
-                        <textarea id="correctionInput" class="form-control" rows="5" placeholder="Collez votre texte ici pour correction..."></textarea>
+                        <div class="textarea-container position-relative">
+                            <textarea id="correctionInput" class="form-control" rows="5" placeholder="Collez votre texte ici pour correction..."></textarea>
+                            <button id="pasteCorrectionText" class="btn paste-button" title="Coller">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>                        
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <small class="text-muted">Caractères: <span id="correctionInputCharCount">0</span></small>
                             <div>
@@ -218,7 +241,7 @@
 
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">Options de correction</h5>
+                            <h5 class="mb-0">Options</h5>
                             <button class="btn btn-link p-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#correctionOptions" aria-expanded="true" aria-controls="correctionOptions">
                                 <i class="bi bi-chevron-down"></i>
                             </button>
@@ -328,7 +351,12 @@
 
                     <div class="mb-3">
                         <h5 class="mb-3">Texte corrigé:</h5>
-                        <textarea id="correctionOutput" class="form-control mb-3" rows="10" readonly></textarea>
+                        <div class="textarea-container position-relative">
+                            <textarea id="correctionOutput" class="form-control mb-3" rows="10" readonly></textarea>
+                            <button id="copyCorrectionOutput" class="btn copy-button" title="Copier">
+                                <i class="bi bi-files"></i>
+                            </button>
+                        </div>                        
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <small class="text-muted">Caractères: <span id="correctionOutputCharCount">0</span></small>
                             <div>
@@ -336,11 +364,7 @@
                                 <small class="text-muted">Paragraphes: <span id="correctionOutputParaCount">0</span></small>
                             </div>
                         </div>
-
-                        <div class="btn-group w-100">
-                            <button id="copyCorrection" class="btn btn-success">Copier</button>
-                            <button id="clearCorrection" class="btn btn-success">Effacer</button>
-                        </div>
+                        <button id="clearCorrection" class="btn btn-success w-100">Effacer</button>
                     </div>
                 </div>
             </div>
@@ -358,6 +382,8 @@
                             <option value="anthropic">Anthropic</option>
                             <option value="gemini">Google Gemini</option>
                             <option value="groq">Groq</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="openrouter">Openrouter</option>
                         </select>
                     </div>
 
@@ -402,6 +428,21 @@
                         <button id="refreshGroqModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
                     </div>
 
+                    <div id="deepseekConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API Deepseek:</label>
+                        <input type="password" id="deepseekKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="deepseekModel" class="form-select mb-3"></select>
+                        <button id="refreshDeepseekModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
+
+                    <div id="openrouterConfig" class="provider-config mb-4" style="display: none;">
+                        <label class="form-label">Clé API Openrouter:</label>
+                        <input type="password" id="openrouterKey" class="form-control mb-3">
+                        <label class="form-label">Modèle:</label>
+                        <select id="openrouterModel" class="form-select mb-3"></select>
+                        <button id="refreshopenrouterModels" class="btn btn-success w-100">Rafraîchir les modèles</button>
+                    </div>
                     <!-- Prompts configuration -->
                     <div class="mb-4">
                         <label class="form-label">Prompt système:</label>
@@ -436,9 +477,13 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="mb-3">Type d'email:</h5>
-                            <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
-                            
-                            <h5 class="mb-3">Ton:</h5>
+                            <div class="textarea-container position-relative">
+                                <input type="text" id="emailType" class="form-control mb-4" placeholder="Ex: Email de réclamation, Demande de congés...">
+                                <button id="pasteEmailType" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>                            
+                            <!-- <h5 class="mb-3">Ton:</h5> -->
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="mb-0">Sélectionnez le ton</h6>
@@ -460,11 +505,19 @@
                             </div>
                             
                             <h5 class="mb-3">Contenu et contexte:</h5>
-                            <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
-                            
+                            <div class="textarea-container position-relative">
+                                <textarea id="emailContent" class="form-control mb-4" rows="5" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+                                <button id="pasteEmailContent" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>                            
                             <h5 class="mb-3">Prénom NOM:</h5>
-                            <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
-                            
+                            <div class="textarea-container position-relative">
+                                <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
+                                <button id="pasteEmailSender" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
                             <button id="generateEmail" class="btn btn-success w-100">Générer l'email</button>
                         </div>
                     </div>
@@ -475,20 +528,21 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="mb-3">Objet:</h5>
-                            <div class="input-group mb-4">
+                            <div class="textarea-container position-relative">
                                 <input type="text" id="emailSubject" class="form-control" readonly>
-                                <button class="btn btn-outline-success" type="button" id="copySubject" title="Copier l'objet">
+                                <button id="copySubject" class="btn copy-button" type="button" title="Copier l'objet">
                                     <i class="bi bi-files"></i>
                                 </button>
                             </div>
-                            
+                            <br>
                             <h5 class="mb-3">Email généré:</h5>
-                            <textarea id="emailOutput" class="form-control mb-4" rows="22" readonly></textarea>
-                            
-                            <div class="btn-group w-100">
-                                <button id="copyEmail" class="btn btn-success">Copier</button>
-                                <button id="clearEmail" class="btn btn-success">Effacer</button>
-                            </div>
+                            <div class="textarea-container position-relative">
+                                <textarea id="emailOutput" class="form-control mb-4" rows="21" readonly></textarea>
+                                <button id="copyEmailOutput" class="btn copy-button" title="Copier">
+                                    <i class="bi bi-files"></i>
+                                </button>
+                            </div>                            
+                            <button id="clearEmail" class="btn btn-success w-100">Effacer</button>
                         </div>
                     </div>
                 </div>

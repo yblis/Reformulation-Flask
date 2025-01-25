@@ -59,6 +59,14 @@ class UserPreferences(db.Model):
     groq_api_key = db.Column(db.String(255))
     groq_model = db.Column(db.String(100))
 
+    # Deepseek Settings
+    deepseek_api_key = db.Column(db.String(255))
+    deepseek_model = db.Column(db.String(100))
+
+    # Openrouter Settings
+    openrouter_api_key = db.Column(db.String(255))
+    openrouter_model = db.Column(db.String(100))
+
     # Anthropic Settings
     anthropic_api_key = db.Column(db.String(255))
     anthropic_model = db.Column(db.String(100))
@@ -92,6 +100,8 @@ class UserPreferences(db.Model):
                 anthropic_api_key=os.getenv('ANTHROPIC_API_KEY', ''),
                 google_api_key=os.getenv('GOOGLE_API_KEY', ''),
                 groq_api_key=os.getenv('GROQ_API_KEY', ''),
+                deepseek_api_key=os.getenv('DEEPSEEK_API_KEY', ''),
+                openrouter_api_key=os.getenv('OPENROUTER_API_KEY', ''),
                 system_prompt="""PROGRAMME DE TRANSFORMATION MÉCANIQUE V3.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FONCTION = Remplacer les mots sans changer le sens
@@ -229,6 +239,10 @@ Si l'option n'est pas activée, retourne UNIQUEMENT le texte corrigé.""")
                 pref.google_api_key = os.getenv('GOOGLE_API_KEY')
             if os.getenv('GROQ_API_KEY'):
                 pref.groq_api_key = os.getenv('GROQ_API_KEY')
+            if os.getenv('DEEPSEEK_API_KEY'):
+                pref.deepseek_api_key = os.getenv('DEEPSEEK_API_KEY')
+            if os.getenv('OPENROUTER_API_KEY'):
+                pref.openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
             db.session.commit()
         return pref
 

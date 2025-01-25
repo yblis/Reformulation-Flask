@@ -32,6 +32,8 @@ def reload_env_config():
     preferences.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', preferences.anthropic_api_key)
     preferences.google_api_key = os.getenv('GOOGLE_API_KEY', preferences.google_api_key)
     preferences.groq_api_key = os.getenv('GROQ_API_KEY', preferences.groq_api_key)
+    preferences.deepseek_api_key = os.getenv('DEEPSEEK_API_KEY', preferences.deepseek_api_key)
+    preferences.openrouter_api_key = os.getenv('OPENROUTER_API_KEY', preferences.openrouter_api_key)
     db.session.commit()
     return preferences
 
@@ -55,7 +57,9 @@ def get_settings():
                 "openai_api_key": preferences.openai_api_key,
                 "anthropic_api_key": preferences.anthropic_api_key,
                 "google_api_key": preferences.google_api_key,
-                "groq_api_key": preferences.groq_api_key
+                "groq_api_key": preferences.groq_api_key,
+                "deepseek_api_key": preferences.deepseek_api_key,
+                "openrouter_api_key": preferences.openrouter_api_key
             },
             "prompts": {
                 "system_prompt": preferences.system_prompt,
@@ -158,6 +162,87 @@ def get_groq_models():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/models/deepseek')
+def get_deepseek_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.deepseek_api_key:
+            return jsonify({"error": "deepseek API key not configured"}), 401
+        try:
+            response = requests.get(
+                "https://api.deepseek.com/v1/models",
+                headers={"Authorization": f"Bearer {preferences.deepseek_api_key}"})
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+            data = response.json()
+            return jsonify({
+                "models": [{
+                    "id": model["id"],
+                    "name": model["id"]
+                } for model in data["data"]]
+            })
+        except Exception as e:
+            return jsonify({"error": f"Failed to fetch deepseek models: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+## Display ALL free models from OpenRouter.
+# @app.route('/api/models/openrouter')
+# def get_openrouter_models():
+#     try:
+#         preferences = reload_env_config()
+#         if not preferences.openrouter_api_key:
+#             return jsonify({"error": "openrouter API key not configured"}), 401
+#         try:
+#             response = requests.get(
+#                 "https://openrouter.ai/api/v1/models",
+#                 headers={"Authorization": f"Bearer {preferences.openrouter_api_key}"})
+#             if response.status_code != 200:
+#                 return jsonify({"error": response.text}), response.status_code
+#             data = response.json()
+#             return jsonify({
+#                 "models": [{
+#                     "id": model["id"],
+#                     "name": model["id"]
+#                 } for model in data["data"]]
+#             })
+#         except Exception as e:
+#             return jsonify({"error": f"Failed to fetch openrouter models: {str(e)}"}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# Display ONLY free models from OpenRouter.
+@app.route('/api/models/openrouter')
+def get_openrouter_models():
+    try:
+        preferences = reload_env_config()
+        if not preferences.openrouter_api_key:
+            return jsonify({"error": "openrouter API key not configured"}), 401
+        try:
+            response = requests.get(
+                "https://openrouter.ai/api/v1/models",
+                headers={"Authorization": f"Bearer {preferences.openrouter_api_key}"}
+            )
+            if response.status_code != 200:
+                return jsonify({"error": response.text}), response.status_code
+            data = response.json()
+
+            # Filtrer les modèles dont l'ID se termine par ":free"
+            free_models = [
+                {
+                    "id": model["id"],
+                    "nom": "free"  # Définir le nom sur "free"
+                }
+                for model in data.get("data", [])
+                if model["id"].endswith(":free")
+            ]
+
+            return jsonify({"models": free_models})
+        except Exception as e:
+            return jsonify({"error": f"Failed to fetch openrouter models: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/models/openai')
 def get_openai_models():
     try:
@@ -256,6 +341,16 @@ def update_settings():
                 preferences.groq_api_key = api_key
             if model := settings.get('model'):
                 preferences.groq_model = model
+        elif provider == 'deepseek':
+            if api_key := settings.get('apiKey'):
+                preferences.deepseek_api_key = api_key
+            if model := settings.get('model'):
+                preferences.deepseek_model = model
+        elif provider == 'openrouter':
+            if api_key := settings.get('apiKey'):
+                preferences.openrouter_api_key = api_key
+            if model := settings.get('model'):
+                preferences.openrouter_model = model
         elif provider == 'gemini':
             if api_key := settings.get('apiKey'):
                 preferences.google_api_key = api_key
@@ -378,6 +473,34 @@ Instructions spécifiques pour le ton {tone}:
                     base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.system_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'deepseek':
+                client = OpenAI(
+                    api_key=preferences.deepseek_api_key,
+                    base_url="https://api.deepseek.com/v1")
+                response = client.chat.completions.create(
+                    model=preferences.deepseek_model,
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.system_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'openrouter':
+                client = OpenAI(
+                    api_key=preferences.openrouter_api_key,
+                    base_url="https://openrouter.ai/api/v1")
+                response = client.chat.completions.create(
+                    model=preferences.openrouter_model,
                     messages=[{
                         "role": "system",
                         "content": preferences.system_prompt
@@ -523,6 +646,32 @@ mot2: synonyme1, synonyme2, synonyme3"""
                         "content": formatted_prompt
                     }])
                 response_text = response.choices[0].message.content
+            elif provider == 'deepseek':
+                client = OpenAI(api_key=preferences.deepseek_api_key,
+                                base_url="https://api.deepseek.com/v1")
+                response = client.chat.completions.create(
+                    model=preferences.deepseek_model,
+                    messages=[{
+                        "role": "system",
+                        "content": correction_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'openrouter':
+                client = OpenAI(api_key=preferences.openrouter_api_key,
+                                base_url="https://openrouter.ai/api/v1")
+                response = client.chat.completions.create(
+                    model=preferences.openrouter_model,
+                    messages=[{
+                        "role": "system",
+                        "content": correction_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
             elif provider == 'gemini':
                 genai.configure(api_key=preferences.google_api_key)
                 model = genai.GenerativeModel(preferences.gemini_model)
@@ -609,6 +758,32 @@ def translate():
                                 base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
+                    messages=[{
+                        "role": "system",
+                        "content": translation_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'deepseek':
+                client = OpenAI(api_key=preferences.deepseek_api_key,
+                                base_url="https://api.deepseek.com/v1")
+                response = client.chat.completions.create(
+                    model=preferences.deepseek_model,
+                    messages=[{
+                        "role": "system",
+                        "content": translation_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'openrouter':
+                client = OpenAI(api_key=preferences.openrouter_api_key,
+                                base_url="https://openrouter.ai/api/v1")
+                response = client.chat.completions.create(
+                    model=preferences.openrouter_model,
                     messages=[{
                         "role": "system",
                         "content": translation_prompt
@@ -731,6 +906,32 @@ Cordialement,
                                 base_url="https://api.groq.com/openai/v1")
                 response = client.chat.completions.create(
                     model=preferences.groq_model,
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.email_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'deepseek':
+                client = OpenAI(api_key=preferences.deepseek_api_key,
+                                base_url="https://api.deepseek.com/v1")
+                response = client.chat.completions.create(
+                    model=preferences.deepseek_model,
+                    messages=[{
+                        "role": "system",
+                        "content": preferences.email_prompt
+                    }, {
+                        "role": "user",
+                        "content": formatted_prompt
+                    }])
+                response_text = response.choices[0].message.content
+            elif provider == 'openrouter':
+                client = OpenAI(api_key=preferences.openrouter_api_key,
+                                base_url="https://openrouter.ai/api/v1")
+                response = client.chat.completions.create(
+                    model=preferences.openrouter_model,
                     messages=[{
                         "role": "system",
                         "content": preferences.email_prompt

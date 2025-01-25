@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Elements
     const configTab = document.getElementById('config');
     const aiProvider = document.getElementById('aiProvider');
     const providerConfigs = document.querySelectorAll('.provider-config');
@@ -9,59 +8,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const correctionPrompt = document.getElementById('correctionPrompt');
     const emailPrompt = document.getElementById('emailPrompt');
 
-    // Only proceed if we're on the config tab
     if (!configTab) return;
 
     async function loadSavedSettings() {
         try {
-            // Fetch current settings from backend
             const response = await fetch('/api/settings');
             const data = await response.json();
-            
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to load settings');
             }
-
-            // Update provider dropdown
             if (aiProvider) {
                 const savedProvider = data.provider || localStorage.getItem('aiProvider') || 'ollama';
                 aiProvider.value = savedProvider;
-                
-                // Show correct provider config
                 showProviderConfig(savedProvider);
                 await loadProviderModels(savedProvider);
             }
-            
-            // Update API keys and URLs
             if (data.settings) {
-                // Ollama URL
                 const ollamaUrl = document.getElementById('ollamaUrl');
                 if (ollamaUrl && data.settings.ollama_url) {
                     ollamaUrl.value = data.settings.ollama_url;
                 }
-                
-                // OpenAI
                 const openaiKey = document.getElementById('openaiKey');
                 if (openaiKey && data.settings.openai_api_key) {
                     openaiKey.value = data.settings.openai_api_key;
                 }
-                
-                // Anthropic
                 const anthropicKey = document.getElementById('anthropicKey');
                 if (anthropicKey && data.settings.anthropic_api_key) {
                     anthropicKey.value = data.settings.anthropic_api_key;
                 }
-                
-                // Gemini
                 const geminiKey = document.getElementById('geminiKey');
                 if (geminiKey && data.settings.google_api_key) {
                     geminiKey.value = data.settings.google_api_key;
                 }
-                
-                // Groq
                 const groqKey = document.getElementById('groqKey');
                 if (groqKey && data.settings.groq_api_key) {
                     groqKey.value = data.settings.groq_api_key;
+                }
+                const deepseekKey = document.getElementById('deepseekKey');
+                if (deepseekKey && data.settings.deepseek_api_key) {
+                    deepseekKey.value = data.settings.deepseek_api_key;
+                }
+                const openrouterKey = document.getElementById('openrouterKey');
+                if (openrouterKey && data.settings.openrouter_api_key) {
+                    openrouterKey.value = data.settings.openrouter_api_key;
                 }
             }
         } catch (error) {
@@ -82,26 +71,19 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadProviderModels(provider, button = null) {
         let modelSelect;
         let originalButtonText = '';
-        
         try {
             if (button) {
                 originalButtonText = button.textContent;
                 button.disabled = true;
                 button.textContent = 'Chargement...';
             }
-
-            // Get the correct model select element based on provider
             modelSelect = provider === 'ollama' ? 
                 document.getElementById('modelSelect') : 
                 document.getElementById(`${provider}Model`);
-
             if (!modelSelect) {
                 throw new Error(`Model select element not found for ${provider}`);
             }
-
-            // Clear existing options first
             modelSelect.innerHTML = '<option value="">Loading models...</option>';
-
             let url = `/api/models/${provider}`;
             if (provider === 'ollama') {
                 const ollamaUrlInput = document.getElementById('ollamaUrl');
@@ -109,19 +91,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     url += `?url=${encodeURIComponent(ollamaUrlInput.value)}`;
                 }
             }
-
             const response = await fetch(url);
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.error || `Failed to fetch ${provider} models`);
             }
-
             if (!data.models || !Array.isArray(data.models) || data.models.length === 0) {
                 throw new Error(`No models available for ${provider}`);
             }
-
-            // Clear and add the models
             modelSelect.innerHTML = '';
             data.models.forEach(model => {
                 const option = document.createElement('option');
@@ -129,22 +106,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.textContent = model.name || model.id;
                 modelSelect.appendChild(option);
             });
-
-            // Select the saved model if available
             const savedModel = localStorage.getItem(`${provider}Model`);
             if (savedModel && modelSelect.querySelector(`option[value="${savedModel}"]`)) {
                 modelSelect.value = savedModel;
             }
-
             showAlert(`Models refreshed successfully for ${provider}`, 'success', 3000);
-
         } catch (error) {
             console.error(`Error loading ${provider} models:`, error);
-            
             if (modelSelect) {
                 modelSelect.innerHTML = `<option value="">${error.message}</option>`;
             }
-            
             showAlert(error.message, 'danger', 5000);
         } finally {
             if (button) {
@@ -154,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Event listeners
     if (aiProvider) {
         aiProvider.addEventListener('change', async function() {
             const selectedProvider = this.value;
@@ -224,13 +194,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add event listeners for refresh buttons
+
     const refreshButtons = {
         'ollama': document.getElementById('refreshModels'),
         'openai': document.getElementById('refreshOpenaiModels'),
         'groq': document.getElementById('refreshGroqModels'),
         'anthropic': document.getElementById('refreshAnthropicModels'),
-        'gemini': document.getElementById('refreshGeminiModels')
+        'gemini': document.getElementById('refreshGeminiModels'),
+        'deepseek': document.getElementById('refreshDeepseekModels'),
+        'openrouter': document.getElementById('refreshopenrouterModels')
     };
 
     Object.entries(refreshButtons).forEach(([provider, button]) => {
@@ -246,19 +218,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function showAlert(message, type = 'danger', duration = 5000) {
+    function showAlert(message, type = 'success', duration = 5000) {
+        // Supprimer les alertes existantes
         const existingAlerts = document.querySelectorAll('.floating-alert');
         existingAlerts.forEach(alert => alert.remove());
-
+    
+        // Créer une nouvelle alerte
         const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
+        alert.className = 'floating-alert';
+        alert.textContent = message;
+    
+        // Styles de l'alerte
+        alert.style.position = 'fixed';
+        alert.style.bottom = '10px'; // Toujours en bas
+        alert.style.right = '10px'; // Toujours à droite
+        alert.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336'; // Vert pour success, rouge pour danger
+        alert.style.color = 'white';
+        alert.style.padding = '10px 20px';
+        alert.style.borderRadius = '5px';
+        alert.style.boxShadow = '0px 2px 5px rgba(0, 0, 0, 0.3)';
+        alert.style.fontSize = '14px';
+        alert.style.zIndex = '9999';
+        alert.style.maxWidth = '300px';
+        alert.style.textAlign = 'center';
+        alert.style.wordWrap = 'break-word';
+    
+        // Ajouter l'alerte au document
         document.body.appendChild(alert);
-
+    
+        // Supprimer automatiquement après la durée spécifiée
         if (duration) {
             setTimeout(() => {
                 if (alert.parentNode) {
@@ -267,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, duration);
         }
     }
+    
 
-    // Initialize settings only if we're on the config tab
     loadSavedSettings();
 });
