@@ -273,6 +273,7 @@ h5 {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     background-color: rgba(255, 255, 255, 0.05);
+    width: 100%;
 }
 
 .tag {
@@ -289,6 +290,10 @@ h5 {
     transition: all 0.2s ease;
     user-select: none;
     position: relative;
+    flex: 0 1 auto;
+    min-width: fit-content;
+    max-width: 100%;
+    margin: 0.25rem;
 }
 
 .tag .tag-usage-count {
@@ -498,6 +503,55 @@ h5 {
     .accordion-body {
         padding: 1.5rem;
     }
+}
+
+/* History section styling */
+#historyAccordion .accordion-item {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#historyAccordion .accordion-button {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 8px;
+    color: #4CAF50;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+#historyAccordion .accordion-button:not(.collapsed) {
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#historyAccordion .accordion-button::after {
+    transition: transform 0.3s ease;
+    filter: invert(1);
+}
+
+#historyAccordion .accordion-collapse {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#historyAccordion .accordion-body {
+    background-color: rgba(255, 255, 255, 0.02);
+    padding: 1rem;
+}
+
+/* Appliquer le même style de hover que les sections options */
+#historyAccordion .accordion-button:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+#historyAccordion .accordion-button:not(.collapsed)::after {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(70deg);
 }
 
 /* Animations */
@@ -844,6 +898,21 @@ h5 {
     flex: 1 0 calc(33.333% - 0.5rem);
 }
 
+@media (max-width: 768px) {
+    #lengthGroup.compact-btn-group .btn {
+        flex: 1 0 100%;
+        min-width: 100%;
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+    }
+    
+    #lengthGroup.compact-btn-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
 /* bouton coller depuis le presse papier "reformulé" */
 .textarea-container {
     position: relative;
@@ -915,6 +984,396 @@ textarea.form-control {
         top: 4px; /* Légèrement plus bas pour l'alignement */
         padding: 4px 8px; /* Réduit le padding pour un style compact */
         min-width: auto; /* Désactive la largeur minimale pour économiser de l'espace */
+    }
+}
+
+/* Prevent horizontal scrolling */
+.container,
+.row,
+.card,
+.card-body,
+.tab-content,
+.tab-pane,
+.options-grid,
+.options-section,
+.tag-container,
+.accordion,
+.accordion-body,
+textarea,
+.form-control {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure text areas and inputs handle long content properly */
+textarea,
+input[type="text"],
+.form-control {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+/* Ensure buttons and tags wrap properly */
+.btn-group,
+.tag-container {
+    flex-wrap: wrap;
+}
+
+/* Adjust tab navigation for touch devices */
+.nav-tabs {
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+}
+
+/* Ensure proper touch handling for all interactive elements */
+button,
+.btn,
+.nav-link,
+.tag,
+.accordion-button {
+    touch-action: manipulation;
+}
+
+/* Ensure proper width constraints */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .col-md-6 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+/* Email tone tags collapsible styling */
+.collapsible-tag-section {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: auto;
+}
+
+.collapsible-tag-section.collapsed {
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+}
+
+.collapsible-tag-section.expanded {
+    max-height: none; /* Remplace la hauteur fixe par 'none' */
+    height: auto;
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .collapsible-tag-section.expanded {
+        height: auto !important; /* Force l'auto-hauteur sur mobile */
+        max-height: none !important;
+        overflow: visible;
+    }
+
+    #optionsSection {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible;
+        width: 100%;
+        padding: 1rem;
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+/* Email tone header button styling */
+.tag-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.tag-section-header:hover h6 {
+    color: #5bc460;
+}
+
+.tag-section-header .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.tag-section-header .toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* Email tone header button styling */
+.tag-section-header .paste-button {
+    position: relative;
+    top: auto;
+    right: auto;
+    padding: 4px 8px;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag-section-header .paste-button i {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* Style ajusté pour le bouton d'ajout de tags dans le conteneur de tags */
+.tag-container.position-relative .paste-button {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 10;
+    background-color: rgba(76, 175, 80, 0.2);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.tag-container.position-relative .paste-button:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+/* Ajustement de l'espacement pour éviter que le dernier tag ne soit caché par le bouton */
+.tag-container.position-relative {
+    padding-right: 45px;
+}
+
+/* Email tone section styling */
+.tag-section-header {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 8px;
+    transition: border-radius 0.3s ease, background-color 0.3s ease;
+}
+
+/* Quand la section est dépliée */
+.tag-section-header:has(+ .collapsible-tag-section.expanded) {
+    border-radius: 8px 8px 0 0;
+}
+
+/* Quand la section est repliée */
+.tag-section-header:has(+ .collapsible-tag-section.collapsed) {
+    border-radius: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.collapsible-tag-section {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 0 8px 8px;
+    padding: 1rem;
+    transition: all 0.3s ease, border-radius 0.3s ease;
+}
+
+.collapsible-tag-section.expanded {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Support pour les navigateurs qui ne supportent pas :has */
+@supports not (selector(:has(*))) {
+    .tag-section-header {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .tag-section-header.all-corners {
+        border-radius: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+.add-tag-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-tag-btn:hover {
+    background-color: rgba(76, 175, 80, 0.2);
+    border-color: #4CAF50;
+    transform: translateY(-1px);
+}
+
+.toggle-icon {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-icon:hover {
+    color: #4CAF50;
+}
+
+.toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* Updated tag styling */
+.tag {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    margin: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tag i:not(.tag-remove) {
+    color: #4CAF50;
+    font-size: 0.9rem;
+}
+
+.tag.active {
+    background-color: rgba(76, 175, 80, 0.15);
+    border-color: #4CAF50;
+}
+
+/* Ajustements pour la section Options */
+#optionsHeader {
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+#optionsSection {
+    padding: 1rem;
+    margin-top: 0;
+}
+
+#optionsSection .form-check {
+    margin-left: 0.5rem;
+}
+
+#optionsSection hr {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 1rem 0.5rem;
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+    gap: 3px;  /* Réduit l'espacement de 0.5rem à 3px */
+}
+
+.button-group .copy-button {
+    position: static;
+}
+
+@media (max-width: 768px) {
+    .options-grid {
+        display: block; /* Change grid to block display */
+    }
+
+    .options-section {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    #optionsSection {
+        width: 100%;
+        padding: 1rem;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    /* Ensure the tag containers take full width */
+    .tag-container {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: auto;
+    }
+
+    /* Adjust tag layout */
+    .tag {
+        margin: 0.25rem;
+        flex: 0 1 auto;
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .options-section {
+        width: 100%;
+    }
+    
+    .tag-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .tag {
+        flex: 0 1 auto;
+        width: auto;
+        min-width: fit-content;
+    }
+}
+
+/* Language buttons styling */
+.language-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.language-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    border-width: 1px;
+    white-space: nowrap;
+}
+
+.language-btn:hover {
+    transform: translateY(-1px);
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.language-btn.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .language-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .language-btn {
+        padding: 0.5rem;
+        font-size: 0.85rem;
     }
 }
 

@@ -347,7 +347,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirmBtn = inputContainer.querySelector('.confirm-tag');
             const cancelBtn = inputContainer.querySelector('.cancel-tag');
 
-            addButton.addEventListener('click', () => {
+            addButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent the collapsible section from collapsing
+                // Ensure the collapsible section is expanded before showing the input
+                const collapsibleSection = container.closest('.collapsible-tag-section');
+                if (collapsibleSection && collapsibleSection.classList.contains('collapsed')) {
+                    collapsibleSection.classList.remove('collapsed');
+                    collapsibleSection.classList.add('expanded');
+                    const toggleIcon = collapsibleSection.querySelector('.toggle-icon');
+                    if (toggleIcon) {
+                        toggleIcon.classList.remove('collapsed');
+                    }
+                }
                 inputContainer.classList.add('active');
                 input.focus();
             });
@@ -682,6 +693,117 @@ document.addEventListener('DOMContentLoaded', function() {
     checkOllamaStatus();
     setInterval(checkOllamaStatus, 30000);
 
+    // Email tone tags collapse functionality
+    const emailToneHeader = document.getElementById('emailToneHeader');
+    const emailToneSection = document.getElementById('emailToneSection');
+    const toggleIcon = emailToneHeader.querySelector('.toggle-icon');
+
+    if (emailToneHeader && emailToneSection) {
+        // Restaurer l'état depuis localStorage
+        const isCollapsed = localStorage.getItem('emailToneSectionCollapsed') !== 'false';
+        
+        if (isCollapsed) {
+            emailToneSection.classList.remove('expanded');
+            emailToneSection.classList.add('collapsed');
+            toggleIcon.classList.add('collapsed');
+            emailToneHeader.classList.add('all-corners'); // Ajout pour support navigateurs anciens
+        } else {
+            emailToneSection.classList.add('expanded');
+            emailToneSection.classList.remove('collapsed');
+            toggleIcon.classList.remove('collapsed');
+        }
+
+        // Mise à jour de localStorage pour forcer l'état
+        localStorage.setItem('emailToneSectionCollapsed', 'false');
+
+        emailToneHeader.addEventListener('click', () => {
+            const isExpanded = emailToneSection.classList.contains('expanded');
+            
+            if (isExpanded) {
+                emailToneSection.classList.remove('expanded');
+                emailToneSection.classList.add('collapsed');
+                toggleIcon.classList.add('collapsed');
+            } else {
+                emailToneSection.classList.remove('collapsed');
+                emailToneSection.classList.add('expanded');
+                toggleIcon.classList.remove('collapsed');
+            }
+
+            // Sauvegarder l'état dans localStorage
+            localStorage.setItem('emailToneSectionCollapsed', !isExpanded);
+        });
+    }
+
+    // Options section collapse functionality
+    const optionsHeader = document.getElementById('optionsHeader');
+    const optionsSection = document.getElementById('optionsSection');
+    const optionsToggleIcon = optionsHeader.querySelector('.toggle-icon');
+
+    if (optionsHeader && optionsSection) {
+        // Restaurer l'état depuis localStorage
+        const isCollapsed = localStorage.getItem('optionsSectionCollapsed') === 'true';
+        
+        if (isCollapsed) {
+            optionsSection.classList.remove('expanded');
+            optionsSection.classList.add('collapsed');
+            toggleIcon.classList.add('collapsed');
+            optionsHeader.classList.add('all-corners'); // Ajout pour support navigateurs anciens
+        } else {
+            optionsSection.classList.add('expanded');
+            optionsSection.classList.remove('collapsed');
+            toggleIcon.classList.remove('collapsed');
+            optionsHeader.classList.remove('all-corners'); // Retrait pour support navigateurs anciens
+        }
+
+        optionsHeader.addEventListener('click', () => {
+            const isExpanded = optionsSection.classList.contains('expanded');
+            
+            if (isExpanded) {
+                optionsSection.classList.remove('expanded');
+                optionsSection.classList.add('collapsed');
+                toggleIcon.classList.add('collapsed');
+                optionsHeader.classList.add('all-corners'); // Ajout pour support navigateurs anciens
+            } else {
+                optionsSection.classList.remove('collapsed');
+                optionsSection.classList.add('expanded');
+                toggleIcon.classList.remove('collapsed');
+                optionsHeader.classList.remove('all-corners'); // Retrait pour support navigateurs anciens
+            }
+
+            localStorage.setItem('optionsSectionCollapsed', isExpanded);
+        });
+    }
+
+    // Configuration des prompts rétractables
+    const promptHeaders = [
+        'systemPromptHeader',
+        'translationPromptHeader',
+        'correctionPromptHeader',
+        'emailPromptHeader'
+    ];
+
+    promptHeaders.forEach(headerId => {
+        const header = document.getElementById(headerId);
+        const section = document.getElementById(headerId.replace('Header', 'Section'));
+        const toggleIcon = header.querySelector('.toggle-icon');
+
+        if (header && section) {
+            header.addEventListener('click', () => {
+                const isExpanded = !section.classList.contains('collapsed');
+                
+                if (isExpanded) {
+                    section.classList.add('collapsed');
+                    section.classList.remove('expanded');
+                    toggleIcon.classList.add('collapsed');
+                } else {
+                    section.classList.remove('collapsed');
+                    section.classList.add('expanded');
+                    toggleIcon.classList.remove('collapsed');
+                }
+            });
+        }
+    });
+
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -700,20 +822,73 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedLanguage = this.getAttribute('data-lang');
             console.log('Langue cible:', selectedLanguage);
 
-            // Sauvegarde dans localStorage si nécessaire
+            // Sauvegarde dans localStorage
             localStorage.setItem('selectedLanguage', selectedLanguage);
         });
     });
 
-    // Restaurer la sélection à partir du localStorage
-    const savedLanguage = localStorage.getItem('selectedLanguage');
-    if (savedLanguage) {
-        languageButtons.forEach(button => {
-            if (button.getAttribute('data-lang') === savedLanguage) {
-                button.classList.add('active');
-            }
+    // Supprimer ces lignes qui restauraient la sélection précédente
+    // const savedLanguage = localStorage.getItem('selectedLanguage');
+    // if (savedLanguage) {
+    //     languageButtons.forEach(button => {
+    //         if (button.getAttribute('data-lang') === savedLanguage) {
+    //             button.classList.add('active');
+    //         }
+    //     });
+    // }
+});
+
+// Gestion des boutons de langue
+document.querySelectorAll('.language-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+        const inputText = document.getElementById('translationInput').value.trim();
+        if (!inputText) {
+            showAlert('Veuillez entrer un texte à traduire', 'warning');
+            return;
+        }
+
+        // Désactiver tous les autres boutons
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.disabled = true;
         });
-    }
+
+        // Activer le bouton cliqué et montrer le chargement
+        this.classList.add('active');
+        const originalContent = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traduction...';
+
+        try {
+            const response = await fetch('/api/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: inputText,
+                    language: this.dataset.lang
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur de traduction');
+            }
+
+            const data = await response.json();
+            document.getElementById('translationOutput').value = data.text;
+            updateTextStats(data.text, 'translationOutputCharCount', 'translationOutputWordCount', 'translationOutputParaCount');
+            showAlert('Traduction terminée !', 'success');
+        } catch (error) {
+            console.error('Erreur:', error);
+            showAlert('Erreur lors de la traduction', 'danger');
+        } finally {
+            // Réactiver tous les boutons et restaurer le contenu original
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.disabled = false;
+            });
+            this.innerHTML = originalContent;
+        }
+    });
 });
 
 function showNotification(message, isError = false) {
