@@ -26,6 +26,18 @@ body {
     }
 }
 
+@media (min-width: 992px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
 /* Card styling */
 .card {
     background-color: #2D2D2D;

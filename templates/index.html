@@ -58,6 +58,9 @@
                                 </div>
                             </div>
 
+                            <!-- Action Button -->
+                            <button id="reformulateBtn" class="btn btn-success w-100 mb-4">Reformuler</button>
+
                             <!-- Options Section -->
                             <div class="mb-4">
                                 <div class="tag-section-header" id="optionsHeader">
@@ -112,8 +115,7 @@
                                 </div>
                             </div>
 
-                            <!-- Action Button -->
-                            <button id="reformulateBtn" class="btn btn-success w-100">Reformuler</button>
+                            <!-- Removed Action Button -->
                         </div>
                     </div>
                 </div>
@@ -253,6 +255,9 @@
                                 </div>
                             </div>
 
+                            <!-- Action Button -->
+                            <button id="correctText" class="btn btn-success w-100 mb-4">Corriger</button>
+
                             <!-- Options Section -->
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -361,8 +366,7 @@
                                 </div>
                             </div>
 
-                            <!-- Action Button -->
-                            <button id="correctText" class="btn btn-success w-100">Corriger</button>
+                            <!-- Removed Action Button -->
                         </div>
                     </div>
                 </div>
@@ -549,7 +553,20 @@
                                     <i class="bi bi-clipboard"></i>
                                 </button>
                             </div>                            
-                            <!-- <h5 class="mb-3">Ton:</h5> -->
+                            <h5 class="mb-3">Contenu et contexte:</h5>
+                            <div class="textarea-container position-relative">
+                                <textarea id="emailContent" class="form-control mb-4" rows="4" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
+                                <button id="pasteEmailContent" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>                            
+                            <h5 class="mb-3">Prénom NOM:</h5>
+                            <div class="textarea-container position-relative">
+                                <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
+                                <button id="pasteEmailSender" class="btn paste-button" title="Coller">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
                             <div class="mb-4">
                                 <div class="tag-section-header" id="emailToneHeader">
                                     <h6 class="mb-0">
@@ -582,20 +599,6 @@
                                         </span>
                                     </div>
                                 </div>
-                            </div>
-                            <h5 class="mb-3">Contenu et contexte:</h5>
-                            <div class="textarea-container position-relative">
-                                <textarea id="emailContent" class="form-control mb-4" rows="4" placeholder="Décrivez le contenu et le contexte de l'email que vous souhaitez générer..."></textarea>
-                                <button id="pasteEmailContent" class="btn paste-button" title="Coller">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                            </div>                            
-                            <h5 class="mb-3">Prénom NOM:</h5>
-                            <div class="textarea-container position-relative">
-                                <input type="text" id="emailSender" class="form-control mb-4" placeholder="Ex: Jean DUPONT">
-                                <button id="pasteEmailSender" class="btn paste-button" title="Coller">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
                             </div>
                             <button id="generateEmail" class="btn btn-success w-100">Générer l'email</button>
                         </div>
