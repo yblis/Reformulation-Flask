@@ -3,6 +3,3 @@ instance/
 migrations/
 .env
 *.pyc
-.replit
-replit.nix
-uv.lock
